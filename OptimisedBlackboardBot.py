@@ -1,17 +1,39 @@
 import discord, json, sys, os
 from discord.ext import commands
+from pathlib import Path
 
 intents = discord.Intents.all()
 client = commands.Bot(command_prefix="$obb", intents=intents)
 
 whitelist = []
+trustedRoles = []
 logChannelName = ""
 with open('config.json') as f:
     data = json.load(f)
     whitelist = data["whitelisted"]
+    trustedRoles = data["trustedRoles"]
     logChannelName = data["logChannel"]
 
+
+try:
+    f = open("rolemenu.dat")
+    rolemenuData = json.load(f)
+    f.close()
+except:
+    rolemenuData = {}
+
 ignoreMessage = [0]#If a message was deleted as a result of it being a student number, ignore this particular deletion event and don't post it in the log channel
+
+reactions = "🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿".split()
+    
+def checkPerms(msg):
+    roleNames = []
+    for i in range(len(msg.message.author.roles)):
+        roleNames.append(msg.message.author.roles[i].name)
+    if any(i in roleNames for i in trustedRoles):
+        return True
+    return False
+
 
 @client.event
 async def on_ready():
@@ -26,12 +48,14 @@ async def on_message(message):
         await channel.send(message.author.mention + " sent in their student number: ```" + message.content + "```")
         ignoreMessage[0] = message.id
         await message.delete(delay=None)
+    # Now that the response to any message has been handled, process the official commands
+    await client.process_commands(message)
 
 @client.event
 async def on_raw_message_delete(rawMessage):
     guild = client.get_guild(rawMessage.guild_id)
     channel = client.get_channel(rawMessage.channel_id)
-    if not rawMessage.cached_message or rawMessage.message_id == ignoreMessage[0] or rawMessage.cached_message.author.name in whitelist:
+    if not rawMessage.cached_message or channel.name == "student-number-for-verification" or rawMessage.cached_message.author.name in whitelist:
         return    
     message = rawMessage.cached_message
     member = guild.get_member(message.author.id)
@@ -58,6 +82,11 @@ async def on_raw_message_edit(rawMessage):
         return
     guild = client.get_guild(rawMessage.cached_message.author.guild.id)
     channel = client.get_channel(rawMessage.channel_id)
+
+    member = guild.get_member(rawMessage.cached_message.author.id)
+    if member == None or member.bot:
+        return
+    
     before = rawMessage.cached_message.content
     try:
         after = rawMessage.data["content"]
@@ -90,6 +119,240 @@ async def on_raw_message_edit(rawMessage):
             file = discord.File(fp=i.filename,)
             await logChannel.send(content=None,file=file)
             os.remove(i.filename)
+
+##### ROLE MENU #####
+
+@client.command("create")
+async def create(msg, *args):
+    if not checkPerms(msg): # Check the user has a role in trustedRoles
+        await msg.channel.send("You don't have permission to use this command")
+        return
+    if len(args) == 0: # Check for correct argument
+        await msg.channel.send("Please specify the filename of a JSON file to load from")
+        return
+    
+    guild = msg.guild    
+    try:
+        f = open(args[0] + '.json')
+        data = json.load(f)
+        f.close()
+    except:
+        await msg.channel.send('Unable to open JSON file "' + args[0] + '" :frowning:')
+        return
+    statusMessage = await msg.channel.send("File loaded successfully! Creating channels...")
+
+    f = Path("rolemenu.dat")
+    createNewMenu = False
+    if len(args) > 1 and args[1] == "-c" or not f.is_file():
+        createNewMenu = True
+
+    # Check that the target channel exists for the role menu. If not, return and request user run with flag
+    if not createNewMenu:
+        roleMenuChannel = None
+        for i in guild.channels:
+            if i.name == data["roleMenuChannel"]:
+                roleMenuChannel = i
+        if roleMenuChannel == None:
+            await statusMessage.edit(content="No channel currently exists for a role menu, but no -c flag was included to create roles clean. Terminating.")
+            return
+
+    if f.is_file():
+        # Check if we need to remove old rolemenu file
+        if createNewMenu: # Only clear with the -c argument. Otherwise assume it should just be appended
+            try:
+                os.remove("rolemenu.dat")
+                global rolemenuData
+                rolemenuData = {}
+                await statusMessage.edit(content="-c flag included, removing the existing rolemenu.dat") 
+            except:
+                pass
+        else:
+            await statusMessage.edit(content="rolemenu.dat already exists. Appending to existing file...")
+    else:
+        await statusMessage.edit(content="No rolemenu.dat file found. A new file will be created...") 
+    
+    # Find sinbin role
+    sinbinRole = None
+    for i in guild.roles:
+        if i.name == data["sinbinRole"]:
+            sinbinRole = i
+
+    ### CREATE CHANNELS ###
+    courses = data["courses"]
+    for i in courses:
+        if len(courses[i]) > 20:
+            await statusMessage.edit(content="Only 20 courses can exist in a single rolemenu due to reaction limits.\nIssue in " + i + ". Terminating...")
+            return
+
+    
+    for i in courses:
+        await statusMessage.edit(content="Creating " + i + " channels")
+        # Create roles and record roles for overwrites
+        roleObjs = []
+        for j in range(len(courses[i])):
+            role = await guild.create_role(name=courses[i][j], colour=255)# Convert HEX code to integer (Bc that makes sense??) this is blue #0000ff
+            roleObjs.append(role)
+            
+        # Create category overwrites and disable to everyone by default
+        categoryOverwrites = {guild.default_role:discord.PermissionOverwrite(view_channel=False)}
+        if sinbinRole != None:
+            categoryOverwrites[sinbinRole] = discord.PermissionOverwrite(send_messages=False, add_reactions=False, connect=False)
+        for j in range(len(roleObjs)):
+            categoryOverwrites[roleObjs[j]] = discord.PermissionOverwrite(view_channel=True)
+                               
+        # Create category and apply overwrites
+        category = await guild.create_category(name=i, overwrites=categoryOverwrites)
+                               
+        # Create channels and apply overwrites
+        for j in range(len(courses[i])):
+            channelOverwrites = {
+                guild.default_role:discord.PermissionOverwrite(view_channel=False),
+                roleObjs[j]:discord.PermissionOverwrite(view_channel=True)
+            }
+            if sinbinRole != None:
+                channelOverwrites[sinbinRole] = discord.PermissionOverwrite(send_messages=False, add_reactions=False)
+            await guild.create_text_channel(name=courses[i][j], category=category, overwrites=channelOverwrites)
+            
+        # Create voice channel and apply category overwrites
+        await guild.create_voice_channel(i, overwrites=categoryOverwrites, category=category)
+    await statusMessage.edit(content="Course channels created! Generating role menu channel...")
+
+    ### CREATE ROLE MENU ###
+    roleMenuOverwrites = {guild.default_role:discord.PermissionOverwrite(view_channel=False, send_messages=False, add_reactions=False)}
+    for i in guild.roles:
+        if i.name in trustedRoles:
+            roleMenuOverwrites[i] = discord.PermissionOverwrite(view_channel=True, send_messages=True)
+    if createNewMenu:
+        roleMenuChannel = await guild.create_text_channel(name=data["roleMenuChannel"], overwrites=roleMenuOverwrites, position=0) # Role menu will jump to the top of channel list
+    else:
+        for i in guild.channels:
+            if i.name == data["roleMenuChannel"]:
+                roleMenuChannel = i
+    await statusMessage.edit(content="Role menu channel created! Generating menu...")
+    if createNewMenu:
+        await roleMenuChannel.send("Welcome to the course selection channel! React to a message below to gain access to a text channel for that subject")
+
+    for i in courses:
+        await statusMessage.edit(content="Creating " + i + " rolemenu")
+        # Create message to send
+        message = "​\n**" + i + "**\nReact to give yourself a role\n\n"
+        currentMenu = {}
+        
+        for j in range(len(courses[i])):
+            message += reactions[j] + " " + courses[i][j] + "\n\n"
+            currentMenu[reactions[j]] = courses[i][j]
+        menuMessage = await roleMenuChannel.send(message)
+        rolemenuData[str(menuMessage.id)] = currentMenu
+
+        # Add reactions
+        for j in range(len(courses[i])):
+            await menuMessage.add_reaction(reactions[j])
+                                   
+    f = open("rolemenu.dat", "w")
+    json.dump(rolemenuData, f)
+    f.close()
+    await statusMessage.edit(content="And that's a wrap! No more work to do")
+
+@client.command("edit")
+async def edit(msg, *args):
+    if not checkPerms(msg): # Check the user has a role in trustedRoles
+        await msg.channel.send("You don't have permission to use this command")
+        return
+    if len(args) < 3 or len(args) > 4:
+        await msg.send("Incorrect number of arguments!\nUsage: <menuName> <add/remove/update> <roleName> [<newRoleName>]")
+        return
+    # Find message to edit
+    editMessage = None
+    rolemenuKey = None
+    for i in rolemenuData:
+        tempMsg = await msg.channel.fetch_message(int(i))
+        if "**" + args[0] + "**" in tempMsg.content:
+            editMessage = tempMsg
+            rolemenuKey = i
+            break    
+    if editMessage == None:
+        await msg.send("Could not find a menu with that name")
+        return
+
+    if args[1] == "add":
+        newReactionIndex = None
+        for i in range(len(reactions)):
+            if reactions[i] not in rolemenuData[rolemenuKey]:
+                newReactionIndex = i
+                break
+        if newReactionIndex == None or newReactionIndex >= 20:
+            await msg.send("Too many menu items! I can only add 20 reactions!")
+            return
+        newReaction = reactions[newReactionIndex]
+        await editMessage.edit(content=editMessage.content + "\n\n" + newReaction + " " + args[2] + "\n\n")
+        await editMessage.add_reaction(newReaction)
+        rolemenuData[rolemenuKey][newReaction] = args[2]
+        
+        f = open("rolemenu.dat", "w")
+        json.dump(rolemenuData, f)
+        f.close()
+        return
+
+    if args[1] == "remove":
+        if args[2] not in editMessage.content:
+            await msg.send("That role does not exist in this menu")
+            return
+        for i in editMessage.content:
+            startIndex = editMessage.content.find(args[2])
+            endIndex = startIndex + len(args[2])
+            startIndex -= 4 # Allow for the reaction and the space between the reaction and the role name
+        removeReaction = editMessage.content[startIndex + 2:startIndex + 3]
+        await editMessage.edit(content=editMessage.content[:startIndex] + editMessage.content[endIndex:])
+        await editMessage.clear_reaction(removeReaction)
+        del(rolemenuData[rolemenuKey][removeReaction])
+
+        f = open("rolemenu.dat", "w")
+        json.dump(rolemenuData, f)
+        f.close()
+        return
+
+    if args[1] == "update":
+        if args[2] not in editMessage.content:
+            await msg.send("That role does not exist in this menu")
+            return
+        if len(args) < 4:
+            await msg.send("Please specify the value to change the role to")
+            return
+        for i in editMessage.content:
+            startIndex = editMessage.content.find(args[2])
+            endIndex = startIndex + len(args[2])
+        await editMessage.edit(content=editMessage.content[:startIndex] + args[3] + editMessage.content[endIndex:])
+        reaction = editMessage.content[startIndex - 2:startIndex - 1]
+        rolemenuData[rolemenuKey][reaction] = args[3]
+        return    
+
+@client.event
+async def on_raw_reaction_add(reaction):
+    if reaction.member.bot:
+        return
+    channel = client.get_channel(reaction.channel_id)
+    msg = await channel.fetch_message(reaction.message_id)
+    roles = await reaction.member.guild.fetch_roles()
+    if str(msg.id) in rolemenuData and msg.author == client.user:
+        roleName = rolemenuData[str(msg.id)][reaction.emoji.name]
+        for i in range(len(roles)):
+            if roles[i].name == roleName:
+                await reaction.member.add_roles(roles[i])
+
+@client.event
+async def on_raw_reaction_remove(reaction):
+    guild = client.get_guild(reaction.guild_id)
+    member = guild.get_member(reaction.user_id)
+    if member.bot:
+        return
+    roles = await guild.fetch_roles()
+    channel = client.get_channel(reaction.channel_id)
+    msg = await channel.fetch_message(reaction.message_id)
+    if str(msg.id) in rolemenuData and msg.author == client.user:
+        roleName = rolemenuData[str(msg.id)][reaction.emoji.name]
+        for i in range(len(roles)):
+            if roles[i].name == roleName:
+                await member.remove_roles(roles[i])
 
 client.run('OAuth Goes Here')
 print('Closed')

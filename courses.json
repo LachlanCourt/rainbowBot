@@ -1,0 +1,13 @@
+{
+"sinbinRole": "SIN BIN",
+"roleMenuChannel": "course-role-select",
+
+"courses":{
+	"COMP":
+		["COMP1000", "COMP2000"], 
+	"MATH":
+		["MATH1000", "MATH2000"],
+	"SENG":
+		["SENG1000", "SENG2000"]
+	}
+}

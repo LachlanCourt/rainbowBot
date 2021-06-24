@@ -1,0 +1,7 @@
+{
+"whitelisted":[
+    "LachlanCourt"], 
+"logChannel":
+    "edit-delete-log",
+"trustedRoles":["Mods", "Admins"]
+}
