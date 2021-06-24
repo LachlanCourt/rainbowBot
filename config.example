@@ -1,7 +1,6 @@
 {
-"whitelisted":[
-    "LachlanCourt"], 
-"logChannel":
-    "edit-delete-log",
-"trustedRoles":["Mods", "Admins"]
+"whitelisted":["Lachourt"],
+"logChannel": "edit-delete-log",
+"trustedRoles":["Mods", "Admins"],
+"OAuth":"AAAAbbbbbddDDD.fffUUUUUSSSSSDDDK.FF_aaeeehhhgg"
 }

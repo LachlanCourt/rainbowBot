@@ -8,11 +8,13 @@ client = commands.Bot(command_prefix="$obb", intents=intents)
 whitelist = []
 trustedRoles = []
 logChannelName = ""
+OAuthToken = None
 with open('config.json') as f:
     data = json.load(f)
     whitelist = data["whitelisted"]
     trustedRoles = data["trustedRoles"]
     logChannelName = data["logChannel"]
+    OAuthToken = data["OAuth"]
 
 
 try:
@@ -158,18 +160,18 @@ async def create(msg, *args):
 
     if f.is_file():
         # Check if we need to remove old rolemenu file
-        if createNewMenu: # Only clear with the -c argument. Otherwise assume it should just be appended
+        if createNewMenu: # Will be true if either -c argument was given or if rolemenu.dat does not exist. If it does not exist, removing will throw an exception
             try:
                 os.remove("rolemenu.dat")
                 global rolemenuData
                 rolemenuData = {}
-                await statusMessage.edit(content="-c flag included, removing the existing rolemenu.dat") 
+                await statusMessage.edit(content="-c flag included, removing the existing rolemenu.dat...") 
             except:
                 pass
         else:
             await statusMessage.edit(content="rolemenu.dat already exists. Appending to existing file...")
     else:
-        await statusMessage.edit(content="No rolemenu.dat file found. A new file will be created...") 
+        await statusMessage.edit(content="No rolemenu.dat file found. A new file will be created") 
     
     # Find sinbin role
     sinbinRole = None
@@ -184,7 +186,6 @@ async def create(msg, *args):
             await statusMessage.edit(content="Only 20 courses can exist in a single rolemenu due to reaction limits.\nIssue in " + i + ". Terminating...")
             return
 
-    
     for i in courses:
         await statusMessage.edit(content="Creating " + i + " channels")
         # Create roles and record roles for overwrites
@@ -193,7 +194,7 @@ async def create(msg, *args):
             role = await guild.create_role(name=courses[i][j], colour=255)# Convert HEX code to integer (Bc that makes sense??) this is blue #0000ff
             roleObjs.append(role)
             
-        # Create category overwrites and disable to everyone by default
+        # Create category overwrites and disable to @everyone by default
         categoryOverwrites = {guild.default_role:discord.PermissionOverwrite(view_channel=False)}
         if sinbinRole != None:
             categoryOverwrites[sinbinRole] = discord.PermissionOverwrite(send_messages=False, add_reactions=False, connect=False)
@@ -223,12 +224,16 @@ async def create(msg, *args):
         if i.name in trustedRoles:
             roleMenuOverwrites[i] = discord.PermissionOverwrite(view_channel=True, send_messages=True)
     if createNewMenu:
-        roleMenuChannel = await guild.create_text_channel(name=data["roleMenuChannel"], overwrites=roleMenuOverwrites, position=0) # Role menu will jump to the top of channel list
+        roleMenuChannel = await guild.create_text_channel(name=data["roleMenuChannel"], overwrites=roleMenuOverwrites, position=0) # Role menu will jump to the top of channel list and you can move it from there
+        await statusMessage.edit(content="Role menu channel created! Generating menu...")
     else:
-        for i in guild.channels:
-            if i.name == data["roleMenuChannel"]:
-                roleMenuChannel = i
-    await statusMessage.edit(content="Role menu channel created! Generating menu...")
+        await statusMessage.edit(content="Role menu channel found! Generating menu...")
+        #pass ????
+        # I don't think I need this but I don't want to remove it yet just in case
+        for i in guild.channels: #
+            if i.name == data["roleMenuChannel"]: #
+                roleMenuChannel = i #
+    
     if createNewMenu:
         await roleMenuChannel.send("Welcome to the course selection channel! React to a message below to gain access to a text channel for that subject")
 
@@ -237,12 +242,12 @@ async def create(msg, *args):
         # Create message to send
         message = "​\n**" + i + "**\nReact to give yourself a role\n\n"
         currentMenu = {}
-        
         for j in range(len(courses[i])):
             message += reactions[j] + " " + courses[i][j] + "\n\n"
             currentMenu[reactions[j]] = courses[i][j]
+            
         menuMessage = await roleMenuChannel.send(message)
-        rolemenuData[str(menuMessage.id)] = currentMenu
+        rolemenuData[str(menuMessage.id)] = currentMenu # The message id comes in as an integer, but will be serialised as a string when saved to JSON
 
         # Add reactions
         for j in range(len(courses[i])):
@@ -291,6 +296,8 @@ async def edit(msg, *args):
         f = open("rolemenu.dat", "w")
         json.dump(rolemenuData, f)
         f.close()
+        
+        await msg.send("Role added successfully")
         return
 
     if args[1] == "remove":
@@ -309,6 +316,8 @@ async def edit(msg, *args):
         f = open("rolemenu.dat", "w")
         json.dump(rolemenuData, f)
         f.close()
+        
+        await msg.send("Role removed successfully")
         return
 
     if args[1] == "update":
@@ -324,16 +333,27 @@ async def edit(msg, *args):
         await editMessage.edit(content=editMessage.content[:startIndex] + args[3] + editMessage.content[endIndex:])
         reaction = editMessage.content[startIndex - 2:startIndex - 1]
         rolemenuData[rolemenuKey][reaction] = args[3]
-        return    
+
+        f = open("rolemenu.dat", "w")
+        json.dump(rolemenuData, f)
+        f.close()
+        
+        await msg.send("Role updated successfully")
+        return
+
+    # The three valid commands return at the end of them
+    await msg.send("Could not process your request! Check your spelling...")
 
 @client.event
 async def on_raw_reaction_add(reaction):
-    if reaction.member.bot:
+    if reaction.member.bot: # Ignore reaction remove and add events from itself (when editing the menu)
         return
+    # Grab necessary data to analyse the event
     channel = client.get_channel(reaction.channel_id)
     msg = await channel.fetch_message(reaction.message_id)
     roles = await reaction.member.guild.fetch_roles()
-    if str(msg.id) in rolemenuData and msg.author == client.user:
+    # If the message the user reacted to is a rolemenu, get the name of the role related to the reaction they added and give the user that role
+    if str(msg.id) in rolemenuData and msg.author == client.user: # The message id comes in as an integer but is serialised as a string when saved to JSON
         roleName = rolemenuData[str(msg.id)][reaction.emoji.name]
         for i in range(len(roles)):
             if roles[i].name == roleName:
@@ -341,18 +361,25 @@ async def on_raw_reaction_add(reaction):
 
 @client.event
 async def on_raw_reaction_remove(reaction):
+    # Grab necessary data to analyse the event. A lot of the calls used in reaction_add returns null for reaction_remove
+    # because they no longer react to the message so bit of a clunky workaround
     guild = client.get_guild(reaction.guild_id)
     member = guild.get_member(reaction.user_id)
-    if member.bot:
+    if member.bot: # Ignore reaction remove and add events from itself (when editing the menu)
         return
     roles = await guild.fetch_roles()
     channel = client.get_channel(reaction.channel_id)
     msg = await channel.fetch_message(reaction.message_id)
-    if str(msg.id) in rolemenuData and msg.author == client.user:
+
+    # If the message the user reacted to is a rolemenu, get the name of the role related to the reaction they removed and remove that role from the user
+    if str(msg.id) in rolemenuData and msg.author == client.user: # The message id comes in as an integer but is serialised as a string when saved to JSON
         roleName = rolemenuData[str(msg.id)][reaction.emoji.name]
         for i in range(len(roles)):
             if roles[i].name == roleName:
                 await member.remove_roles(roles[i])
 
-client.run('OAuth Goes Here')
-print('Closed')
+try:
+    client.run(OAuthToken)
+    print('Closed')
+except:
+    print("Error starting bot, check OAuth in Config")
