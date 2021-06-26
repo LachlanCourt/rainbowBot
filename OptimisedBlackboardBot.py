@@ -385,6 +385,43 @@ async def update(msg, *args):
         return
     subprocess.call(['sh', './updatebot.sh'])
 
+@client.command("addfile")
+async def update(msg, *args):
+    if not checkPerms(msg): # Check the user has a role in trustedRoles
+        await msg.channel.send("You don't have permission to use this command")
+        return
+    message = msg.message
+    if len(message.attachments) != 1:
+        await msg.send("Please add a single file to this message")
+        return
+    f = Path(message.attachments[0].filename)
+    if f.is_file() and "-o" not in args and "-a" not in args:
+        await msg.send("File already exists. Please specify either -o to overwrite or -a to add a duplicate")
+        return
+    if len(args) > 1:
+        await msg.send("Please specify a single argument -o to overwrite or -a to add a duplicate")
+        return
+    if len(args) == 1:
+        if args[0] == "-o":
+            os.remove(message.attachments[0].filename)
+        if args[0] == "-a":
+            filename = message.attachments[0].filename
+            while Path(filename).is_file():
+                oldFilename = filename
+                filename = ""
+                ext = False
+                for i in range(len(oldFilename) -1, -1, -1):
+                    filename += oldFilename[i]
+                    if oldFilename[i] == ".":
+                        ext = True
+                        filename += ")1(" #Will be reversed
+                filename = filename[::-1]
+            await message.attachments[0].save(filename, seek_begin=True, use_cached=False)
+            await msg.send('File added with filename "' + filename + '".')
+            return        
+    await message.attachments[0].save(message.attachments[0].filename, seek_begin=True, use_cached=False)
+    await msg.send('File added with filename "' + message.attachments[0].filename + '".')
+
 try:
     client.run(OAuthToken)
     print('Closed')
