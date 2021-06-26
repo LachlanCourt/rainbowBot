@@ -1,4 +1,4 @@
-import discord, json, sys, os
+import discord, json, sys, os, subprocess
 from discord.ext import commands
 from pathlib import Path
 
@@ -121,6 +121,40 @@ async def on_raw_message_edit(rawMessage):
             file = discord.File(fp=i.filename,)
             await logChannel.send(content=None,file=file)
             os.remove(i.filename)
+
+@client.event
+async def on_raw_reaction_add(reaction):
+    if reaction.member.bot: # Ignore reaction remove and add events from itself (when editing the menu)
+        return
+    # Grab necessary data to analyse the event
+    channel = client.get_channel(reaction.channel_id)
+    msg = await channel.fetch_message(reaction.message_id)
+    roles = await reaction.member.guild.fetch_roles()
+    # If the message the user reacted to is a rolemenu, get the name of the role related to the reaction they added and give the user that role
+    if str(msg.id) in rolemenuData and msg.author == client.user: # The message id comes in as an integer but is serialised as a string when saved to JSON
+        roleName = rolemenuData[str(msg.id)][reaction.emoji.name]
+        for i in range(len(roles)):
+            if roles[i].name == roleName:
+                await reaction.member.add_roles(roles[i])
+
+@client.event
+async def on_raw_reaction_remove(reaction):
+    # Grab necessary data to analyse the event. A lot of the calls used in reaction_add returns null for reaction_remove
+    # because they no longer react to the message so bit of a clunky workaround
+    guild = client.get_guild(reaction.guild_id)
+    member = guild.get_member(reaction.user_id)
+    if member.bot: # Ignore reaction remove and add events from itself (when editing the menu)
+        return
+    roles = await guild.fetch_roles()
+    channel = client.get_channel(reaction.channel_id)
+    msg = await channel.fetch_message(reaction.message_id)
+
+    # If the message the user reacted to is a rolemenu, get the name of the role related to the reaction they removed and remove that role from the user
+    if str(msg.id) in rolemenuData and msg.author == client.user: # The message id comes in as an integer but is serialised as a string when saved to JSON
+        roleName = rolemenuData[str(msg.id)][reaction.emoji.name]
+        for i in range(len(roles)):
+            if roles[i].name == roleName:
+                await member.remove_roles(roles[i])
 
 ##### ROLE MENU #####
 
@@ -344,39 +378,9 @@ async def edit(msg, *args):
     # The three valid commands return at the end of them
     await msg.send("Could not process your request! Check your spelling...")
 
-@client.event
-async def on_raw_reaction_add(reaction):
-    if reaction.member.bot: # Ignore reaction remove and add events from itself (when editing the menu)
-        return
-    # Grab necessary data to analyse the event
-    channel = client.get_channel(reaction.channel_id)
-    msg = await channel.fetch_message(reaction.message_id)
-    roles = await reaction.member.guild.fetch_roles()
-    # If the message the user reacted to is a rolemenu, get the name of the role related to the reaction they added and give the user that role
-    if str(msg.id) in rolemenuData and msg.author == client.user: # The message id comes in as an integer but is serialised as a string when saved to JSON
-        roleName = rolemenuData[str(msg.id)][reaction.emoji.name]
-        for i in range(len(roles)):
-            if roles[i].name == roleName:
-                await reaction.member.add_roles(roles[i])
-
-@client.event
-async def on_raw_reaction_remove(reaction):
-    # Grab necessary data to analyse the event. A lot of the calls used in reaction_add returns null for reaction_remove
-    # because they no longer react to the message so bit of a clunky workaround
-    guild = client.get_guild(reaction.guild_id)
-    member = guild.get_member(reaction.user_id)
-    if member.bot: # Ignore reaction remove and add events from itself (when editing the menu)
-        return
-    roles = await guild.fetch_roles()
-    channel = client.get_channel(reaction.channel_id)
-    msg = await channel.fetch_message(reaction.message_id)
-
-    # If the message the user reacted to is a rolemenu, get the name of the role related to the reaction they removed and remove that role from the user
-    if str(msg.id) in rolemenuData and msg.author == client.user: # The message id comes in as an integer but is serialised as a string when saved to JSON
-        roleName = rolemenuData[str(msg.id)][reaction.emoji.name]
-        for i in range(len(roles)):
-            if roles[i].name == roleName:
-                await member.remove_roles(roles[i])
+@client.command("update")
+async def update(msg, *args):
+    subprocess.call(['sh', './updatebot.sh'])
 
 try:
     client.run(OAuthToken)
