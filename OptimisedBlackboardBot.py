@@ -16,7 +16,6 @@ with open('config.json') as f:
     logChannelName = data["logChannel"]
     OAuthToken = data["OAuth"]
 
-
 try:
     f = open("rolemenu.dat")
     rolemenuData = json.load(f)
@@ -27,6 +26,8 @@ except:
 ignoreMessage = [0]#If a message was deleted as a result of it being a student number, ignore this particular deletion event and don't post it in the log channel
 
 reactions = "🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿".split()
+
+sourceFiles = [".git", ".gitignore", "config.json", "OptimisedBlackboardBot.py", "README.md", "Examples", "updatebot.sh"]
     
 def checkPerms(msg):
     roleNames = []
@@ -431,11 +432,24 @@ async def remfile(msg, *args):
         await msg.send("Filename not specified")
     
     f = Path(args[0])
-    if not f.is_file() or "/" in args[0] or "\\" in args[0] or args[0] in [".git", ".gitignore", "config.json", "OptimisedBlackboardBot.py", "README.md", "updatebot.sh"]:
+    if not f.is_file() or "/" in args[0] or "\\" in args[0] or args[0] in sourceFiles:
         await msg.send("File does not exist")
         return
     os.remove(args[0])
     await msg.send('File removed')
+
+@client.command("listfiles")
+async def listfiles(msg, *args):
+    if not checkPerms(msg): # Check the user has a role in trustedRoles
+        await msg.channel.send("You don't have permission to use this command")
+        return
+    message = ""
+    for file in os.listdir('./'):
+        if file not in sourceFiles:
+            message += file + "\n"
+    if message == "":
+        message = "None"
+    await msg.send("Files currently saved are as follows\n\n" + message)
 
 try:
     client.run(OAuthToken)
