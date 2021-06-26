@@ -384,9 +384,6 @@ async def update(msg, *args):
         await msg.channel.send("You don't have permission to use this command")
         return
     subprocess.call(['sh', './updatebot.sh'])
-    await msg.send("Updating!")
-    client.close()
-    sys.exit()
 
 try:
     client.run(OAuthToken)
