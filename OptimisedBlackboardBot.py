@@ -380,6 +380,9 @@ async def edit(msg, *args):
 
 @client.command("update")
 async def update(msg, *args):
+    if not checkPerms(msg): # Check the user has a role in trustedRoles
+        await msg.channel.send("You don't have permission to use this command")
+        return
     subprocess.call(['sh', './updatebot.sh'])
     await msg.send("Updating!")
     client.close()
