@@ -386,7 +386,7 @@ async def update(msg, *args):
     subprocess.call(['sh', './updatebot.sh'])
 
 @client.command("addfile")
-async def update(msg, *args):
+async def addfile(msg, *args):
     if not checkPerms(msg): # Check the user has a role in trustedRoles
         await msg.channel.send("You don't have permission to use this command")
         return
