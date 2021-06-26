@@ -422,6 +422,21 @@ async def addfile(msg, *args):
     await message.attachments[0].save(message.attachments[0].filename, seek_begin=True, use_cached=False)
     await msg.send('File added with filename "' + message.attachments[0].filename + '".')
 
+@client.command("remfile")
+async def remfile(msg, *args):
+    if not checkPerms(msg): # Check the user has a role in trustedRoles
+        await msg.channel.send("You don't have permission to use this command")
+        return
+    if len(args) != 1:
+        await msg.send("Filename not specified")
+    
+    f = Path(args[0])
+    if not f.is_file() or "/" in args[0] or "\\" in args[0] or args[0] in [".git", ".gitignore", "config.json", "OptimisedBlackboardBot.py", "README.md", "updatebot.sh"]:
+        await msg.send("File does not exist")
+        return
+    os.remove(args[0])
+    await msg.send('File removed')
+
 try:
     client.run(OAuthToken)
     print('Closed')
