@@ -381,6 +381,9 @@ async def edit(msg, *args):
 @client.command("update")
 async def update(msg, *args):
     subprocess.call(['sh', './updatebot.sh'])
+    await msg.send("Updating!")
+    client.close()
+    sys.exit()
 
 try:
     client.run(OAuthToken)
