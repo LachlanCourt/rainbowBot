@@ -98,7 +98,7 @@ async def on_raw_message_edit(rawMessage):
     beforeAttach = rawMessage.cached_message.attachments
     afterAttach = rawMessage.data["attachments"]
 
-    if before == after and len(beforeAttach) == (afterAttach): #Pinning a message triggers an edit event. Ignore it
+    if before == after and len(beforeAttach) == len(afterAttach): #Pinning a message triggers an edit event. Ignore it
         return
     
     logChannel = discord.utils.get(client.get_all_channels(), guild__name=guild.name, name=logChannelName)
