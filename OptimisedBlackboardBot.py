@@ -28,14 +28,15 @@ ignoreMessage = [0]#If a message was deleted as a result of it being a student n
 reactions = "🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿".split()
 
 sourceFiles = [".git", ".gitignore", "config.json", "OptimisedBlackboardBot.py", "README.md", "Examples", "updatebot.sh"]
+
+permsError = "You don't have permission to use this command"
     
-async def checkPerms(msg):
+def checkPerms(msg):
     roleNames = []
     for i in range(len(msg.message.author.roles)):
         roleNames.append(msg.message.author.roles[i].name)
     if any(i in roleNames for i in trustedRoles):
         return True
-    await msg.channel.send("You don't have permission to use this command")
     return False
 
 
@@ -163,6 +164,7 @@ async def on_raw_reaction_remove(reaction):
 @client.command("create")
 async def create(msg, *args):
     if not checkPerms(msg): # Check the user has a role in trustedRoles
+        await msg.channel.send(permsError)
         return
     if len(args) == 0: # Check for correct argument
         await msg.channel.send("Please specify the filename of a JSON file to load from")
@@ -296,6 +298,7 @@ async def create(msg, *args):
 @client.command("edit")
 async def edit(msg, *args):
     if not checkPerms(msg): # Check the user has a role in trustedRoles
+        await msg.channel.send(permsError)
         return
     if len(args) < 3 or len(args) > 4:
         await msg.send("Incorrect number of arguments!\nUsage: <menuName> <add/remove/update> <roleName> [<newRoleName>]")
@@ -381,12 +384,14 @@ async def edit(msg, *args):
 @client.command("update")
 async def update(msg, *args):
     if not checkPerms(msg): # Check the user has a role in trustedRoles
+        await msg.channel.send(permsError)
         return
     subprocess.call(['sh', './updatebot.sh'])
 
 @client.command("addfile")
 async def addfile(msg, *args):
     if not checkPerms(msg): # Check the user has a role in trustedRoles
+        await msg.channel.send(permsError)
         return
     message = msg.message
     if len(message.attachments) != 1:
@@ -423,6 +428,7 @@ async def addfile(msg, *args):
 @client.command("remfile")
 async def remfile(msg, *args):
     if not checkPerms(msg): # Check the user has a role in trustedRoles
+        await msg.channel.send(permsError)
         return
     if len(args) != 1:
         await msg.send("Filename not specified")
@@ -437,6 +443,7 @@ async def remfile(msg, *args):
 @client.command("listfiles")
 async def listfiles(msg, *args):
     if not checkPerms(msg): # Check the user has a role in trustedRoles
+        await msg.channel.send(permsError)
         return
     message = ""
     for file in os.listdir('./'):
