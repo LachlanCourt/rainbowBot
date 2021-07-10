@@ -29,7 +29,7 @@ reactions = "🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 �
 
 sourceFiles = [".git", ".gitignore", "config.json", "OptimisedBlackboardBot.py", "README.md", "Examples", "updatebot.sh"]
     
-def checkPerms(msg):
+async def checkPerms(msg):
     roleNames = []
     for i in range(len(msg.message.author.roles)):
         roleNames.append(msg.message.author.roles[i].name)
