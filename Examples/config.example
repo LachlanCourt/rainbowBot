@@ -1,6 +1,7 @@
 {
 "whitelisted":["Lachourt"],
-"logChannel": "edit-delete-log",
+"logChannel": "modlog",
+"reportChannel: "edit-delete-log",
 "trustedRoles":["Mods", "Admins"],
 "OAuth":"AAAAbbbbbddDDD.fffUUUUUSSSSSDDDK.FF_aaeeehhhgg"
 }
