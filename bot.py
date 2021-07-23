@@ -542,6 +542,10 @@ async def listfiles(msg, *args):
 
 @client.command("lock")
 async def lock(msg, *args):
+    if not checkPerms(msg): # Check the user has a role in trustedRoles
+        await msg.channel.send(permsError)
+        return
+    
     roleName = msg.channel.name.upper()
     guild = msg.guild
     
