@@ -3,7 +3,7 @@ from discord.ext import commands
 from pathlib import Path
 
 intents = discord.Intents.all()
-client = commands.Bot(command_prefix="$obb", intents=intents)
+client = commands.Bot(command_prefix="$rain", intents=intents)
 
 whitelist = []
 trustedRoles = []
