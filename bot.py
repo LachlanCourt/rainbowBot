@@ -37,7 +37,7 @@ except:
 reactions = "🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿".split()
 
 # Source files cannot be removed and will not show up with a listfiles command, but they can be overwritten
-sourceFiles = [".git", ".gitignore", "config.json", "OptimisedBlackboardBot.py", "README.md", "Examples", "updatebot.sh"]
+sourceFiles = [".git", ".gitignore", "config.json", "bot.py", "README.md", "Examples", "updatebot.sh"]
 
 permsError = "You don't have permission to use this command"
 
