@@ -81,7 +81,7 @@ async def on_message(message):
 async def on_raw_message_delete(rawMessage):
     guild = client.get_guild(rawMessage.guild_id)
     channel = client.get_channel(rawMessage.channel_id)
-    if not rawMessage.cached_message or channel.name == "student-number-for-verification" or rawMessage.cached_message.author.name in whitelist:
+    if not rawMessage.cached_message or channel.name in reportingChannels or rawMessage.cached_message.author.name in whitelist:
         return    
     message = rawMessage.cached_message
     member = guild.get_member(message.author.id)
