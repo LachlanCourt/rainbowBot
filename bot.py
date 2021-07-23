@@ -74,7 +74,7 @@ async def on_message(message):
         guilds = message.author.mutual_guilds
         for guild in guilds:
             logChannel = discord.utils.get(client.get_all_channels(), guild__name=guild.name, name=logChannelName)
-            await logChannel.send(message.author.mention + " sent a DM message, they said\n\n" + message.content)
+            await logChannel.send(message.author.mention + " sent a direct message, they said\n\n" + message.content)
     # Messages that are sent into a channel specified in reportingChannels will be deleted and reposted in the specified reporting log with the custom message
     if message.channel.type != discord.ChannelType.private and message.channel.name in reportingChannels and message.author.name not in whitelist:
         channel = discord.utils.get(client.get_all_channels(), guild__name=message.guild.name, name=reportingChannels[message.channel.name][0])
