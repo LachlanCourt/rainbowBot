@@ -59,5 +59,9 @@ RainbowBot has a build in method of running a shell script on demand. Primarily 
 
 ## TODO
 
-- [] Use argparse instead of the current janky setup
-- [] Change the format of `rolemenu.dat` to allow for multiple different rolemenus and channels. Fix the arguments to make -c not be optional properly
+- [ ] Use argparse instead of the current janky setup
+- [ ] Change the format of `rolemenu.dat` to allow for multiple different rolemenus and channels. Fix the arguments to make -c not be optional properly
+
+## Planned features
+- [ ] Delete messages for moderation by passing a number of messages to clear
+- [ ] 
