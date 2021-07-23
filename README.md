@@ -1,6 +1,6 @@
 # A Discord Bot for University Community Servers
 
-This bot is used to generate and maintain text channels for courses taken by UON students to collaborate and chat. It also provides a number of other moderation tools
+This bot is used to generate and maintain text channels for courses taken by university students to collaborate and chat. It also provides a number of other moderation tools
 
 Commands are restricted to discord users with roles authorised in the config file under "trustedRoles"
 
