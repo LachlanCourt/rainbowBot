@@ -46,6 +46,11 @@ To allow for academic integrity moderation, any edited or deleted message will b
 
 Feature can be disabled by leaving "moderationChannel" an empty string `""`
 
+## Channel locking
+Channels that have been created with the automated channel creation can also be locked for a period of time by disabling send message permissions to the role that makes that channel available. This can be helpful during exams and assessment tasks in order to help moderate for academic integrity.
+
+`$rainlock` will disable send message permissions to the role with the same name as the channel the command is sent. A message will be sent by the bot with an unlocked padlock, a user with a "trustedRole" adding their reaction to this message will unlock the channel again.
+
 ## File Manipulation
 
 It is possible to update the config file or add a new json file for channel creation straight from discord!
