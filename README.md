@@ -64,7 +64,6 @@ RainbowBot has a build in method of running a shell script on demand. Primarily 
 
 ## Planned features
 - [ ] Delete messages for moderation by passing a number of messages to clear
-- [ ] 
 
 ## License
 [MIT](rainbowBot/LICENSE)
