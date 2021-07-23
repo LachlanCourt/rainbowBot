@@ -558,6 +558,7 @@ async def lock(msg, *args):
         await msg.channel.send("Channel can not be locked")
         return
 
+    await msg.message.delete(delay=None)
     await msg.channel.set_permissions(role, read_messages=True, send_messages=False)
     lockedChannels.append(msg.channel.name)
     data = {'channels':lockedChannels}
