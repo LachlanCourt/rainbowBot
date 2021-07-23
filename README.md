@@ -2,12 +2,15 @@
 
 This bot is used to generate and maintain text channels for courses taken by UON students to collaborate and chat. It also provides a number of other moderation tools
 
-# Student Number verification
+# Reporting and Verification
 
-If a message is sent in the channel `student-number-for-verification`, it will automatically be deleted and reposted in `pending-verifications`. `pending-verifications` can then be a moderator only channel and be used to verify students
+There is a number of reasons why you might wish messages to be automatically deleted and reposted elsewhere. Whether it is for sending in personal data to the moderation team for verification, or as a reporting system for people to bring things to the moderators attention.
+
+In the "reportingChannels" section of `config.json` you can add a list of lists to specify what channels should be listened to and where messages should be reposted. The first item in the list is the listening channel, the second item is the channel to repost the message in, and the final item is the message that should be reposted.
+ The `@user` and `@message` keywords will be replaced with the author (As a mention) and message of the sender, respectively
 
 # Edit and delete monitoring
-To allow for academic integrity moderation, any edited or deleted message will be reposted in a channel specified in `config.json`. By default this is `edit-delete-log`
+To allow for academic integrity moderation, any edited or deleted message will be reposted in a channel specified in `config.json` under "moderationChannel". By default this is `edit-delete-log`
 
 # Automated channel creation
 
