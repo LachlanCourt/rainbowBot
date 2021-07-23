@@ -2,15 +2,19 @@ import discord, json, sys, os, subprocess
 from discord.ext import commands
 from pathlib import Path
 
+# Intents give us access to some additional discord moderation features
 intents = discord.Intents.all()
-client = commands.Bot(command_prefix="$obb", intents=intents)
+client = commands.Bot(command_prefix="$rain", intents=intents)
 
+# Load config file
 whitelist = []
 trustedRoles = []
 logChannelName = ""
 moderationChannelName = ""
+reportingChannelsList = []
 OAuthToken = None
-with open('config.json') as f:
+try:
+    f = open('config.json')
     data = json.load(f)
     whitelist = data["whitelisted"]
     trustedRoles = data["trustedRoles"]
@@ -18,15 +22,17 @@ with open('config.json') as f:
     moderationChannelName = data["moderationChannel"]
     reportingChannelsList = data["reportingChannels"]
     OAuthToken = data["OAuth"]
+except:
+    print("Error loading config file. Please ensure it matches the specifications")
+    sys.exit()
 
+# Load role menu file
 try:
     f = open("rolemenu.dat")
     rolemenuData = json.load(f)
     f.close()
 except:
     rolemenuData = {}
-
-ignoreMessage = [0]#If a message was deleted as a result of it being sent in a reporting channel, ignore this particular deletion event and don't trigger the delete event
 
 reactions = "🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿".split()
 
@@ -39,7 +45,8 @@ permsError = "You don't have permission to use this command"
 reportingChannels = {}
 for i in reportingChannelsList:
     reportingChannels[i[0]] = [i[1], i[2]]
-    
+
+# Only discord users with a role in the trustedRoles list will be allowed to use bot commands    
 def checkPerms(msg):
     roleNames = []
     for i in range(len(msg.message.author.roles)):
@@ -60,6 +67,9 @@ async def on_message(message):
         return
     # Messages that have been sent as a direct message to the bot will be reposted in the channel specified in logChannel
     if message.channel.type == discord.ChannelType.private:
+        if logChannelName == "": # Handle gracefully if no channel is specified to send a DM
+            await message.channel.send("I am not set up to receive direct messages, please contact your server administrators another way!")
+            return
         await message.channel.send("Thankyou for your message, it has been passed on to the administrators")
         guilds = message.author.mutual_guilds
         for guild in guilds:
@@ -72,7 +82,6 @@ async def on_message(message):
         replyMessage = replyMessage.replace("@user", message.author.mention)
         replyMessage = replyMessage.replace("@message", message.content)
         await channel.send(replyMessage)
-        ignoreMessage[0] = message.id
         await message.delete(delay=None)
     # Now that the response to any message has been handled, process the official commands
     await client.process_commands(message)
@@ -81,11 +90,13 @@ async def on_message(message):
 async def on_raw_message_delete(rawMessage):
     guild = client.get_guild(rawMessage.guild_id)
     channel = client.get_channel(rawMessage.channel_id)
+    # If the message was sent before the bot was logged on, it is unfortunately innaccessible. Ignore also if the author is on the whitelist
     if not rawMessage.cached_message or channel.name in reportingChannels or rawMessage.cached_message.author.name in whitelist:
         return    
     message = rawMessage.cached_message
     member = guild.get_member(message.author.id)
-    if member == None or member.bot:
+    # Ignore deleted messages if the member no longer exists, they are a bot, or if this functionality is disabled 
+    if member == None or member.bot or moderationChannelName == "":
         return
     moderationChannel = discord.utils.get(client.get_all_channels(), guild__name=guild.name, name=moderationChannelName)
     if len(message.attachments) == 0: # There are no attachments, it was just text
@@ -104,15 +115,18 @@ async def on_raw_message_delete(rawMessage):
             
 @client.event
 async def on_raw_message_edit(rawMessage):
+    # If the message was sent before the bot was logged on, it is unfortunately innaccessible. Ignore also if the author is on the whitelist
     if not rawMessage.cached_message or rawMessage.cached_message.author.name in whitelist:
         return
     guild = client.get_guild(rawMessage.cached_message.author.guild.id)
     channel = client.get_channel(rawMessage.channel_id)
-
     member = guild.get_member(rawMessage.cached_message.author.id)
-    if member == None or member.bot:
+
+    # Ignore deleted messages if the member no longer exists, they are a bot, or if this functionality is disabled 
+    if member == None or member.bot or moderationChannelName == "":
         return
-    
+
+    # Try and grab the data of the message and any attachments
     before = rawMessage.cached_message.content
     try:
         after = rawMessage.data["content"]
@@ -121,9 +135,11 @@ async def on_raw_message_edit(rawMessage):
     beforeAttach = rawMessage.cached_message.attachments
     afterAttach = rawMessage.data["attachments"]
 
-    if before == after and len(beforeAttach) == len(afterAttach): #Pinning a message triggers an edit event. Ignore it
+    #Pinning a message triggers an edit event. Ignore it
+    if before == after and len(beforeAttach) == len(afterAttach):
         return
-    
+
+    # Inform the moderation team
     moderationChannel = discord.utils.get(client.get_all_channels(), guild__name=guild.name, name=moderationChannelName)
     if before == "":
         before = "<<No message content>>"
@@ -167,7 +183,8 @@ async def on_raw_reaction_remove(reaction):
     # because they no longer react to the message so bit of a clunky workaround
     guild = client.get_guild(reaction.guild_id)
     member = guild.get_member(reaction.user_id)
-    if member.bot: # Ignore reaction remove and add events from itself (when editing the menu)
+    # Ignore reaction remove and add events from itself (when editing the menu)
+    if member.bot:
         return
     roles = await guild.fetch_roles()
     channel = client.get_channel(reaction.channel_id)
@@ -310,7 +327,8 @@ async def create(msg, *args):
         # Add reactions
         for j in range(len(courses[i])):
             await menuMessage.add_reaction(reactions[j])
-                                   
+
+    # Save the file so that if the bot disconnects it will be able to reload                               
     f = open("rolemenu.dat", "w")
     json.dump(rolemenuData, f)
     f.close()
@@ -337,7 +355,7 @@ async def edit(msg, *args):
         await msg.send("Could not find a menu with that name")
         return
 
-    if args[1] == "add":
+    if args[1] == "add": # Add a new role to an existing role menu
         newReactionIndex = None
         for i in range(len(reactions)):
             if reactions[i] not in rolemenuData[rolemenuKey]:
@@ -358,7 +376,7 @@ async def edit(msg, *args):
         await msg.send("Role added successfully")
         return
 
-    if args[1] == "remove":
+    if args[1] == "remove": # Remove a role from an existing role menu
         if args[2] not in editMessage.content:
             await msg.send("That role does not exist in this menu")
             return
@@ -378,7 +396,7 @@ async def edit(msg, *args):
         await msg.send("Role removed successfully")
         return
 
-    if args[1] == "update":
+    if args[1] == "update": # Update a role in an existing role menu (Change spelling etc.)
         if args[2] not in editMessage.content:
             await msg.send("That role does not exist in this menu")
             return
@@ -407,7 +425,12 @@ async def update(msg, *args):
     if not checkPerms(msg): # Check the user has a role in trustedRoles
         await msg.channel.send(permsError)
         return
-    subprocess.call(['sh', './updatebot.sh'])
+    f = Path("updatebot.sh")
+    if f.is_file():
+        subprocess.call(['sh', './updatebot.sh'])
+        sys.exit()
+    else:
+        await msg.channel.send("No update script found")
 
 @client.command("addfile")
 async def addfile(msg, *args):
@@ -416,7 +439,7 @@ async def addfile(msg, *args):
         return
     message = msg.message
     if len(message.attachments) != 1:
-        await msg.send("Please add a single file to this message")
+        await msg.send("Please attach a single file to this message")
         return
     f = Path(message.attachments[0].filename)
     if f.is_file() and "-o" not in args and "-a" not in args:
@@ -442,7 +465,7 @@ async def addfile(msg, *args):
                 filename = filename[::-1]
             await message.attachments[0].save(filename, seek_begin=True, use_cached=False)
             await msg.send('File added with filename "' + filename + '".')
-            return        
+            return     
     await message.attachments[0].save(message.attachments[0].filename, seek_begin=True, use_cached=False)
     await msg.send('File added with filename "' + message.attachments[0].filename + '".')
 
@@ -478,4 +501,4 @@ try:
     client.run(OAuthToken)
     print('Closed')
 except:
-    print("Error starting bot, check OAuth in Config")
+    print("Error starting bot, check OAuth token in Config")
