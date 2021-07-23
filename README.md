@@ -1,4 +1,4 @@
-# Optimised Blackboard Bot
+# A Discord Bot for University Community Servers
 
 This bot is used to generate and maintain text channels for courses taken by UON students to collaborate and chat. It also provides a number of other moderation tools
 
@@ -22,11 +22,11 @@ The format is as follows:
 
 These are available by default to anyone with Mods role or Admin role - permission is just shared as a "trusted" role.
 
-Prefix is `$obb` followed by some command. All commands and arguments are case sensitive!
+Prefix is `$rain` followed by some command. All commands and arguments are case sensitive!
 
-`$obbcreate <filename>` will create course channels, roles, and voice channels based on a JSON file with the specified filename
+`$raincreate <filename>` will create course channels, roles, and voice channels based on a JSON file with the specified filename
 
-`$obbedit <rolemenu name> <arg1> <arg2> [<arg3>]` will edit the role menu of the specified name. This command must be sent in the channel that the role menu exists in. It will only edit the role menu - if the reason you are editing is because you are adding or removing channels or roles, you need to manually create or remove these channels or roles. I figure this will be an infrequent thing and so I decided to leave the option open regarding what to do here.
+`$rainedit <rolemenu name> <arg1> <arg2> [<arg3>]` will edit the role menu of the specified name. This command must be sent in the channel that the role menu exists in. It will only edit the role menu - if the reason you are editing is because you are adding or removing channels or roles, you need to manually create or remove these channels or roles. I figure this will be an infrequent thing and so I decided to leave the option open regarding what to do here.
 
 `<arg1>` should be one of the following commands `add`, `remove`, `update`
 
