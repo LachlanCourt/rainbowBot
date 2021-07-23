@@ -34,6 +34,15 @@ try:
 except:
     rolemenuData = {}
 
+# Load locked channel data
+try:
+    f = open("locked.dat")
+    data = json.load(f)
+    lockedChannels = data["channels"]
+    f.close()
+except:
+    lockedChannels = []
+
 reactions = "🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿".split()
 
 # Source files cannot be removed and will not show up with a listfiles command, but they can be overwritten
@@ -51,6 +60,14 @@ def checkPerms(msg):
     roleNames = []
     for i in range(len(msg.message.author.roles)):
         roleNames.append(msg.message.author.roles[i].name)
+    if any(i in roleNames for i in trustedRoles):
+        return True
+    return False
+
+def checkPermsReaction(member):
+    roleNames = []
+    for i in range(len(member.roles)):
+        roleNames.append(member.roles[i].name)
     if any(i in roleNames for i in trustedRoles):
         return True
     return False
@@ -166,9 +183,35 @@ async def on_raw_message_edit(rawMessage):
 async def on_raw_reaction_add(reaction):
     if reaction.member.bot: # Ignore reaction remove and add events from itself (when editing the menu)
         return
+    
     # Grab necessary data to analyse the event
     channel = client.get_channel(reaction.channel_id)
     msg = await channel.fetch_message(reaction.message_id)
+
+    # Check first if the reaction is for a channel that is currently locked
+    if channel.name in lockedChannels:
+        roleName = msg.channel.name.upper()
+        guild = channel.guild
+        
+        role = None
+        for i in guild.roles:
+            if i.name == roleName:
+                role = i
+
+        if role == None:
+            return
+        if reaction.emoji.name == "🔓" and checkPermsReaction(reaction.member):
+            await msg.channel.set_permissions(role, read_messages=True, send_messages=None)
+            lockedChannels.remove(msg.channel.name)
+            data = {'channels':lockedChannels}
+
+            await msg.delete(delay=None)
+
+            f = open("locked.dat", "w")
+            json.dump(data, f)
+            f.close()
+            return
+    
     roles = await reaction.member.guild.fetch_roles()
     # If the message the user reacted to is a rolemenu, get the name of the role related to the reaction they added and give the user that role
     if str(msg.id) in rolemenuData and msg.author == client.user: # The message id comes in as an integer but is serialised as a string when saved to JSON
@@ -496,6 +539,31 @@ async def listfiles(msg, *args):
     if message == "":
         message = "None"
     await msg.send("Files currently saved are as follows\n\n" + message)
+
+@client.command("lock")
+async def lock(msg, *args):
+    roleName = msg.channel.name.upper()
+    guild = msg.guild
+    
+    role = None
+    for i in guild.roles:
+        if i.name == roleName:
+            role = i
+
+    if role == None:
+        await msg.channel.send("Channel can not be locked")
+        return
+
+    await msg.channel.set_permissions(role, read_messages=True, send_messages=False)
+    lockedChannels.append(msg.channel.name)
+    data = {'channels':lockedChannels}
+
+    channel = await msg.channel.send("Channel locked! React with trusted permissions to unlock!")
+    await channel.add_reaction("🔓") 
+
+    f = open("locked.dat", "w")
+    json.dump(data, f)
+    f.close()
 
 try:
     client.run(OAuthToken)
