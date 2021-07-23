@@ -8,14 +8,15 @@ client = commands.Bot(command_prefix="$obb", intents=intents)
 whitelist = []
 trustedRoles = []
 logChannelName = ""
-reportChannelName = ""
+moderationChannelName = ""
 OAuthToken = None
 with open('config.json') as f:
     data = json.load(f)
     whitelist = data["whitelisted"]
     trustedRoles = data["trustedRoles"]
     logChannelName = data["logChannel"]
-    reportChannelName = data["reportChannel"]
+    moderationChannelName = data["moderationChannel"]
+    reportingChannelsList = data["reportingChannels"]
     OAuthToken = data["OAuth"]
 
 try:
@@ -25,13 +26,19 @@ try:
 except:
     rolemenuData = {}
 
-ignoreMessage = [0]#If a message was deleted as a result of it being a student number, ignore this particular deletion event and don't post it in the log channel
+ignoreMessage = [0]#If a message was deleted as a result of it being sent in a reporting channel, ignore this particular deletion event and don't trigger the delete event
 
 reactions = "🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿".split()
 
+# Source files cannot be removed and will not show up with a listfiles command, but they can be overwritten
 sourceFiles = [".git", ".gitignore", "config.json", "OptimisedBlackboardBot.py", "README.md", "Examples", "updatebot.sh"]
 
 permsError = "You don't have permission to use this command"
+
+# Prepare reporting channels
+reportingChannels = {}
+for i in reportingChannelsList:
+    reportingChannels[i[0]] = [i[1], i[2]]
     
 def checkPerms(msg):
     roleNames = []
@@ -48,17 +55,23 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
+    # Don't handle messages from ourself
     if message.author == client.user:
         return
+    # Messages that have been sent as a direct message to the bot will be reposted in the channel specified in logChannel
     if message.channel.type == discord.ChannelType.private:
         await message.channel.send("Thankyou for your message, it has been passed on to the administrators")
         guilds = message.author.mutual_guilds
         for guild in guilds:
             logChannel = discord.utils.get(client.get_all_channels(), guild__name=guild.name, name=logChannelName)
             await logChannel.send(message.author.mention + " sent a DM message, they said\n\n" + message.content)
-    if message.channel.type != discord.ChannelType.private and message.channel.name == "student-number-for-verification" and message.author.name not in whitelist:
-        channel = discord.utils.get(client.get_all_channels(), guild__name=message.guild.name, name="pending-verifications")
-        await channel.send(message.author.mention + " sent in their student number: ```" + message.content + "```")
+    # Messages that are sent into a channel specified in reportingChannels will be deleted and reposted in the specified reporting log with the custom message
+    if message.channel.type != discord.ChannelType.private and message.channel.name in reportingChannels and message.author.name not in whitelist:
+        channel = discord.utils.get(client.get_all_channels(), guild__name=message.guild.name, name=reportingChannels[message.channel.name][0])
+        replyMessage = reportingChannels[message.channel.name][1]
+        replyMessage = replyMessage.replace("@user", message.author.mention)
+        replyMessage = replyMessage.replace("@message", message.content)
+        await channel.send(replyMessage)
         ignoreMessage[0] = message.id
         await message.delete(delay=None)
     # Now that the response to any message has been handled, process the official commands
@@ -74,19 +87,19 @@ async def on_raw_message_delete(rawMessage):
     member = guild.get_member(message.author.id)
     if member == None or member.bot:
         return
-    reportChannel = discord.utils.get(client.get_all_channels(), guild__name=guild.name, name=reportChannelName)
+    moderationChannel = discord.utils.get(client.get_all_channels(), guild__name=guild.name, name=moderationChannelName)
     if len(message.attachments) == 0: # There are no attachments, it was just text
-        await reportChannel.send(message.author.mention + " deleted a message in " + message.channel.mention + ". The message was: \n\n" + message.content)
+        await moderationChannel.send(message.author.mention + " deleted a message in " + message.channel.mention + ". The message was: \n\n" + message.content)
     else: #There was an attachment
         if message.content != "":
-            await reportChannel.send(message.author.mention + " deleted a message in " + message.channel.mention + ". The message was: \n\n" + message.content + "\n\nAnd had the following attachment(s)")
+            await moderationChannel.send(message.author.mention + " deleted a message in " + message.channel.mention + ". The message was: \n\n" + message.content + "\n\nAnd had the following attachment(s)")
         else:
-            await reportChannel.send(message.author.mention + " deleted a message in " + message.channel.mention + ". The message consisted of the following attachement(s)")
+            await moderationChannel.send(message.author.mention + " deleted a message in " + message.channel.mention + ". The message consisted of the following attachement(s)")
         for i in message.attachments:
             # The cached attachment URL becomes invalid after a few minutes. The following ensures valid media is accessible for moderation purposes
             await i.save(i.filename, seek_begin=True, use_cached=False) # Save the media locally from the cached URL before it becomes invalid
             file = discord.File(fp=i.filename,) # Create a discord file object based on this saved media
-            await reportChannel.send(content=None,file=file) # Reupload the media to the log channel
+            await moderationChannel.send(content=None,file=file) # Reupload the media to the log channel
             os.remove(i.filename) # Remove the local download of the media
             
 @client.event
@@ -111,26 +124,26 @@ async def on_raw_message_edit(rawMessage):
     if before == after and len(beforeAttach) == len(afterAttach): #Pinning a message triggers an edit event. Ignore it
         return
     
-    reportChannel = discord.utils.get(client.get_all_channels(), guild__name=guild.name, name=reportChannelName)
+    moderationChannel = discord.utils.get(client.get_all_channels(), guild__name=guild.name, name=moderationChannelName)
     if before == "":
         before = "<<No message content>>"
     if after == "":
         after = "<<No message content>>"
         
-    await reportChannel.send(rawMessage.cached_message.author.mention + " just edited their message in " + channel.mention + ", they changed their original message which said \n\n" + before + "\n\nTo a new message saying \n\n" + after)
+    await moderationChannel.send(rawMessage.cached_message.author.mention + " just edited their message in " + channel.mention + ", they changed their original message which said \n\n" + before + "\n\nTo a new message saying \n\n" + after)
 
     if len(rawMessage.cached_message.attachments) != len(rawMessage.data["attachments"]):
-        await reportChannel.send("They also changed the attachments as follows. Before: ")
+        await moderationChannel.send("They also changed the attachments as follows. Before: ")
         for i in beforeAttach: # See message delete function for details of the following
             await i.save(i.filename, seek_begin=True, use_cached=False)
             file = discord.File(fp=i.filename,)
-            await reportChannel.send(content=None,file=file)
+            await moderationChannel.send(content=None,file=file)
             os.remove(i.filename)
-        await reportChannel.send("After:")
+        await moderationChannel.send("After:")
         for i in afterAttach:
             await i.save(i.filename, seek_begin=True, use_cached=False)
             file = discord.File(fp=i.filename,)
-            await reportChannel.send(content=None,file=file)
+            await moderationChannel.send(content=None,file=file)
             os.remove(i.filename)
 
 @client.event
