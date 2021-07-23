@@ -56,22 +56,17 @@ for i in reportingChannelsList:
     reportingChannels[i[0]] = [i[1], i[2]]
 
 # Only discord users with a role in the trustedRoles list will be allowed to use bot commands    
-def checkPerms(msg):
+def checkPerms(msg, reaction=False):
+    if reaction == True:
+        user = msg
+    else:
+        user = msg.message.author
     roleNames = []
-    for i in range(len(msg.message.author.roles)):
-        roleNames.append(msg.message.author.roles[i].name)
+    for i in range(len(user.roles)):
+        roleNames.append(user.roles[i].name)
     if any(i in roleNames for i in trustedRoles):
         return True
     return False
-
-def checkPermsReaction(member):
-    roleNames = []
-    for i in range(len(member.roles)):
-        roleNames.append(member.roles[i].name)
-    if any(i in roleNames for i in trustedRoles):
-        return True
-    return False
-
 
 @client.event
 async def on_ready():
@@ -200,7 +195,7 @@ async def on_raw_reaction_add(reaction):
 
         if role == None:
             return
-        if reaction.emoji.name == "🔓" and checkPermsReaction(reaction.member):
+        if reaction.emoji.name == "🔓" and checkPerms(reaction.member, reaction=True):
             await msg.channel.set_permissions(role, read_messages=True, send_messages=None)
             lockedChannels.remove(msg.channel.name)
             data = {'channels':lockedChannels}
