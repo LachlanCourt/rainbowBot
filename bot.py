@@ -1,4 +1,4 @@
-import discord, json, sys, os, subprocess
+import discord, json, sys, os, subprocess, re
 from discord.ext import commands
 from pathlib import Path
 
@@ -46,7 +46,7 @@ except:
 reactions = "🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿".split()
 
 # Source files cannot be removed and will not show up with a listfiles command, but they can be overwritten
-sourceFiles = [".git", ".gitignore", "config.json", "bot.py", "README.md", "Examples", "updatebot.sh", "LICENCE"]
+sourceFiles = [".git", ".gitignore", "config.json", "bot.py", "README.md", "Examples", "updatebot.sh", "LICENCE", "locked.dat", "rolemenu.dat"]
 
 permsError = "You don't have permission to use this command"
 
@@ -67,6 +67,34 @@ def checkPerms(msg, reaction=False):
     if any(i in roleNames for i in trustedRoles):
         return True
     return False
+
+def findNewFilename(filename):
+    # Check if the filename has an integer in parentheses like filename(1).dat
+    # Don't change the filename if the file doesn't already exist
+    if re.match(r".*\(\d+\)\..*", filename) == None and Path(filename).is_file(): 
+        # Separate the filename into two sections
+        # The section up to the last decimal
+        startMatch = re.match(r".*\.", filename).span()
+        start = filename[startMatch[0]:startMatch[1] - 1]
+        # The .ext section
+        end = filename[startMatch[1] - 1:]
+        # Add a 1 and put it back together
+        filename = start + "(1)" + end
+    while Path(filename).is_file():
+        # Separate the filename into three sections.
+        # The section up to the opening parenthesis
+        startMatch = re.match(r".*\(", filename).span()
+        start = filename[startMatch[0]:startMatch[1]]
+        # The integer in the middle
+        midMatch = re.search(r"\(\d+\)", filename).span()
+        mid = filename[midMatch[0] + 1:midMatch[1] - 1]
+        # The closing parenthesis and file extension
+        endMatch = re.search(r"\)\..*", filename).span()
+        end = filename[endMatch[0]:endMatch[1]]
+        # Increment the integer and put it back together
+        mid = str(int(mid) + 1)
+        filename = start + mid + end
+    return filename
 
 @client.event
 async def on_ready():
@@ -490,17 +518,7 @@ async def addfile(msg, *args):
         if args[0] == "-o":
             os.remove(message.attachments[0].filename)
         if args[0] == "-a":
-            filename = message.attachments[0].filename
-            while Path(filename).is_file():
-                oldFilename = filename
-                filename = ""
-                ext = False
-                for i in range(len(oldFilename) -1, -1, -1):
-                    filename += oldFilename[i]
-                    if oldFilename[i] == ".":
-                        ext = True
-                        filename += ")1(" #Will be reversed
-                filename = filename[::-1]
+            filename = findNewFilename(message.attachments[0].filename)
             await message.attachments[0].save(filename, seek_begin=True, use_cached=False)
             await msg.send('File added with filename "' + filename + '".')
             return     
@@ -540,27 +558,31 @@ async def lock(msg, *args):
     if not checkPerms(msg): # Check the user has a role in trustedRoles
         await msg.channel.send(permsError)
         return
-    
+
+    # Find the role that affects send message permissions in this channel
     roleName = msg.channel.name.upper()
     guild = msg.guild
-    
     role = None
     for i in guild.roles:
         if i.name == roleName:
             role = i
 
+    # The role name needs to match the uppercase version of the channel name. This will be the case if channels have been made with the automatic channel creation
     if role == None:
         await msg.channel.send("Channel can not be locked")
         return
 
+    # Lock the channel
     lockedChannels.append(msg.channel.name)
     await msg.message.delete(delay=None)
     await msg.channel.set_permissions(role, read_messages=True, send_messages=False)
     data = {'channels':lockedChannels}
 
+    # Set up a way to unlock the channel
     channel = await msg.channel.send("Channel locked! React with trusted permissions to unlock!")
     await channel.add_reaction("🔓") 
 
+    # Save the list of currently locked channels incase the bot goes offline
     f = open("locked.dat", "w")
     json.dump(data, f)
     f.close()
