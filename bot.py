@@ -102,8 +102,8 @@ async def on_message(message):
 async def on_raw_message_delete(rawMessage):
     guild = client.get_guild(rawMessage.guild_id)
     channel = client.get_channel(rawMessage.channel_id)
-    # If the message was sent before the bot was logged on, it is unfortunately innaccessible. Ignore also if the author is on the whitelist
-    if not rawMessage.cached_message or channel.name in reportingChannels or rawMessage.cached_message.author.name in whitelist:
+    # If the message was sent before the bot was logged on, it is unfortunately innaccessible. Ignore also if the author is on the whitelist or if the channel is locked (The lock channel command deletes the message of the sender automatically)
+    if not rawMessage.cached_message or channel.name in reportingChannels or rawMessage.cached_message.author.name in whitelist or channel.name in lockedChannels:
         return    
     message = rawMessage.cached_message
     member = guild.get_member(message.author.id)
@@ -553,9 +553,9 @@ async def lock(msg, *args):
         await msg.channel.send("Channel can not be locked")
         return
 
+    lockedChannels.append(msg.channel.name)
     await msg.message.delete(delay=None)
     await msg.channel.set_permissions(role, read_messages=True, send_messages=False)
-    lockedChannels.append(msg.channel.name)
     data = {'channels':lockedChannels}
 
     channel = await msg.channel.send("Channel locked! React with trusted permissions to unlock!")
