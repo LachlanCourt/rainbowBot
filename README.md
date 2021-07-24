@@ -55,7 +55,7 @@ Channels that have been created with the automated channel creation can also be 
 
 It is possible to update the config file or add a new json file for channel creation straight from discord!
 
-`$rainaddfile` with an attached file will add a file to the cwd - if the file already exists you can pass either `-o` to overwrite, or `-a` to add a copy in which case the file will be added with `(1)` added to the filename
+`$rainaddfile` with an attached file will add a file to the cwd - if the file already exists you can pass either `-o` to overwrite, or `-a` to add a copy in which case the file will be added with an integer eg. `(1)` added to the filename
 
 `$rainremfile <filename>` will remove a file from the cwd  - Source files are protected
 
