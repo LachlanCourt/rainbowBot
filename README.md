@@ -37,7 +37,7 @@ Prefix is `$rain` followed by some command. All commands and arguments are case 
 There is a number of reasons why you might wish messages to be automatically deleted and reposted elsewhere. Whether it is for sending in personal data to the moderation team for verification, or as a reporting system for people to bring things to the moderators attention.
 
 In the "reportingChannels" section of `config.json` you can add a list of lists to specify what channels should be listened to and where messages should be reposted. The first item in the list is the listening channel, the second item is the channel to repost the message in, and the final item is the message that should be reposted.
- The `@user` and `@message` keywords will be replaced with the author (As a mention) and message of the sender, respectively
+ The `@user`, `@message`, and `@<Role>$` keywords will be replaced with the author (As a mention), message of the sender, and the role name respectively
  
 Feature can be disabled by leaving "reportingChannels" an empty list `[]`
 
