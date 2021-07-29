@@ -133,7 +133,8 @@ async def on_message(message):
             roleNameIndex = re.search(r"@.*\$", replyMessage[0:firstOccur]).span()
             roleName = replyMessage[roleNameIndex[0] + 1:roleNameIndex[1] - 1]
             role = getRole(roleName, message.guild)
-            replyMessage = replyMessage.replace(f"@{roleName}$", role.mention)
+            if role != None:
+                replyMessage = replyMessage.replace(f"@{roleName}$", role.mention)
         await channel.send(replyMessage)
         await message.delete(delay=None)
     # Now that the response to any message has been handled, process the official commands
