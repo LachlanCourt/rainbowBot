@@ -68,6 +68,13 @@ def checkPerms(msg, reaction=False):
         return True
     return False
 
+def getRole(roleName, guild):
+    for i in guild.roles:
+        if i.name == roleName:
+            return i
+    return None
+    
+
 def findNewFilename(filename):
     # Check if the filename has an integer in parentheses like filename(1).dat
     # Don't change the filename if the file doesn't already exist
@@ -121,6 +128,13 @@ async def on_message(message):
         replyMessage = reportingChannels[message.channel.name][1]
         replyMessage = replyMessage.replace("@user", message.author.mention)
         replyMessage = replyMessage.replace("@message", message.content)
+        while "$" in replyMessage:
+            firstOccur = replyMessage.index("$") + 1
+            roleNameIndex = re.search(r"@.*\$", replyMessage[0:firstOccur]).span()
+            roleName = replyMessage[roleNameIndex[0] + 1:roleNameIndex[1] - 1]
+            role = getRole(roleName, message.guild)
+            if role != None:
+                replyMessage = replyMessage.replace(f"@{roleName}$", role.mention)
         await channel.send(replyMessage)
         await message.delete(delay=None)
     # Now that the response to any message has been handled, process the official commands
