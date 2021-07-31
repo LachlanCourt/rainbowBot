@@ -124,19 +124,21 @@ async def on_message(message):
             await logChannel.send(message.author.mention + " sent a direct message, they said\n\n" + message.content)
     # Messages that are sent into a channel specified in reportingChannels will be deleted and reposted in the specified reporting log with the custom message
     if message.channel.type != discord.ChannelType.private and message.channel.name in reportingChannels and message.author.name not in whitelist:
+        await message.delete(delay=None)
         channel = discord.utils.get(client.get_all_channels(), guild__name=message.guild.name, name=reportingChannels[message.channel.name][0])
         replyMessage = reportingChannels[message.channel.name][1]
         replyMessage = replyMessage.replace("@user", message.author.mention)
         replyMessage = replyMessage.replace("@message", message.content)
-        while "$" in replyMessage:
-            firstOccur = replyMessage.index("$") + 1
-            roleNameIndex = re.search(r"@.*\$", replyMessage[0:firstOccur]).span()
+        # If there are multiple different role mentions discord replaces each with <@38473847387837> and we want to ignore these
+        # The following matches if an @ symbol is not proceeded by a < symbol, and then matches any number of characters up until the first $ symbol
+        matchString = r"(?<!\<)@.*?\$"
+        while re.search(matchString, replyMessage) != None:
+            roleNameIndex = re.search(matchString, replyMessage).span()
             roleName = replyMessage[roleNameIndex[0] + 1:roleNameIndex[1] - 1]
             role = getRole(roleName, message.guild)
-            if role != None:
-                replyMessage = replyMessage.replace(f"@{roleName}$", role.mention)
+            if role != None: # Only replace if the role actually exists. If not, keep searching through replyMessage
+                replyMessage = replyMessage.replace(f"@{roleName}$", role.mention)               
         await channel.send(replyMessage)
-        await message.delete(delay=None)
     # Now that the response to any message has been handled, process the official commands
     await client.process_commands(message)
 
