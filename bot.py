@@ -129,8 +129,7 @@ async def on_message(message):
         replyMessage = replyMessage.replace("@user", message.author.mention)
         replyMessage = replyMessage.replace("@message", message.content)
         while "$" in replyMessage:
-            firstOccur = replyMessage.index("$") + 1
-            roleNameIndex = re.search(r"@.*\$", replyMessage[0:firstOccur]).span()
+            roleNameIndex = re.search(r"@.*?\$", replyMessage).span()
             roleName = replyMessage[roleNameIndex[0] + 1:roleNameIndex[1] - 1]
             role = getRole(roleName, message.guild)
             if role != None:
