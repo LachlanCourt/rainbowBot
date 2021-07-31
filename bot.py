@@ -124,6 +124,7 @@ async def on_message(message):
             await logChannel.send(message.author.mention + " sent a direct message, they said\n\n" + message.content)
     # Messages that are sent into a channel specified in reportingChannels will be deleted and reposted in the specified reporting log with the custom message
     if message.channel.type != discord.ChannelType.private and message.channel.name in reportingChannels and message.author.name not in whitelist:
+        await message.delete(delay=None)
         channel = discord.utils.get(client.get_all_channels(), guild__name=message.guild.name, name=reportingChannels[message.channel.name][0])
         replyMessage = reportingChannels[message.channel.name][1]
         replyMessage = replyMessage.replace("@user", message.author.mention)
@@ -135,7 +136,6 @@ async def on_message(message):
             if role != None:
                 replyMessage = replyMessage.replace(f"@{roleName}$", role.mention)
         await channel.send(replyMessage)
-        await message.delete(delay=None)
     # Now that the response to any message has been handled, process the official commands
     await client.process_commands(message)
 
