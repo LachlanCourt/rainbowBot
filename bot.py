@@ -56,8 +56,8 @@ for i in reportingChannelsList:
     reportingChannels[i[0]] = [i[1], i[2]]
 
 # Only discord users with a role in the trustedRoles list will be allowed to use bot commands    
-def checkPerms(msg, reaction=False):
-    if reaction == True:
+def checkPerms(msg, author=False):
+    if author == True:
         user = msg
     else:
         user = msg.message.author
@@ -201,8 +201,11 @@ async def on_raw_message_edit(rawMessage):
         before = "<<No message content>>"
     if after == "":
         after = "<<No message content>>"
-        
-    await moderationChannel.send(rawMessage.cached_message.author.mention + " just edited their message in " + channel.mention + ", they changed their original message which said \n\n" + before + "\n\nTo a new message saying \n\n" + after)
+
+    user = rawMessage.cached_message.author.mention
+    if checkPerms(rawMessage.cached_message.author, author=True):
+        user = rawMessage.cached_message.author.name
+    await moderationChannel.send(User + " just edited their message in " + channel.mention + ", they changed their original message which said \n\n" + before + "\n\nTo a new message saying \n\n" + after)
 
     if len(rawMessage.cached_message.attachments) != len(rawMessage.data["attachments"]):
         await moderationChannel.send("They also changed the attachments as follows. Before: ")
@@ -239,7 +242,7 @@ async def on_raw_reaction_add(reaction):
 
         if role == None:
             return
-        if reaction.emoji.name == "🔓" and checkPerms(reaction.member, reaction=True):
+        if reaction.emoji.name == "🔓" and checkPerms(reaction.member, author=True):
             await msg.channel.set_permissions(role, read_messages=True, send_messages=None)
             lockedChannels.remove(msg.channel.name)
             data = {'channels':lockedChannels}
