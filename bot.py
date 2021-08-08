@@ -155,13 +155,20 @@ async def on_raw_message_delete(rawMessage):
     if member == None or member.bot or moderationChannelName == "":
         return
     moderationChannel = discord.utils.get(client.get_all_channels(), guild__name=guild.name, name=moderationChannelName)
+    
+    # People with trusted roles will likely have access to the log channel for deleted messages
+    # Getting a ping every time might get annoying, so don't ping people with trusted roles.
+    user = message.author.mention
+    if checkPerms(message.author, author=True):
+        user = message.author.name
+        
     if len(message.attachments) == 0: # There are no attachments, it was just text
-        await moderationChannel.send(message.author.mention + " deleted a message in " + message.channel.mention + ". The message was: \n\n" + message.content)
+        await moderationChannel.send(user + " deleted a message in " + message.channel.mention + ". The message was: \n\n" + message.content)
     else: #There was an attachment
         if message.content != "":
-            await moderationChannel.send(message.author.mention + " deleted a message in " + message.channel.mention + ". The message was: \n\n" + message.content + "\n\nAnd had the following attachment(s)")
+            await moderationChannel.send(user + " deleted a message in " + message.channel.mention + ". The message was: \n\n" + message.content + "\n\nAnd had the following attachment(s)")
         else:
-            await moderationChannel.send(message.author.mention + " deleted a message in " + message.channel.mention + ". The message consisted of the following attachement(s)")
+            await moderationChannel.send(user + " deleted a message in " + message.channel.mention + ". The message consisted of the following attachement(s)")
         for i in message.attachments:
             # The cached attachment URL becomes invalid after a few minutes. The following ensures valid media is accessible for moderation purposes
             await i.save(i.filename, seek_begin=True, use_cached=False) # Save the media locally from the cached URL before it becomes invalid
@@ -202,10 +209,12 @@ async def on_raw_message_edit(rawMessage):
     if after == "":
         after = "<<No message content>>"
 
+    # People with trusted roles will likely have access to the log channel for edited messages
+    # Getting a ping every time might get annoying, so don't ping people with trusted roles.
     user = rawMessage.cached_message.author.mention
     if checkPerms(rawMessage.cached_message.author, author=True):
         user = rawMessage.cached_message.author.name
-    await moderationChannel.send(User + " just edited their message in " + channel.mention + ", they changed their original message which said \n\n" + before + "\n\nTo a new message saying \n\n" + after)
+    await moderationChannel.send(user + " just edited their message in " + channel.mention + ", they changed their original message which said \n\n" + before + "\n\nTo a new message saying \n\n" + after)
 
     if len(rawMessage.cached_message.attachments) != len(rawMessage.data["attachments"]):
         await moderationChannel.send("They also changed the attachments as follows. Before: ")
