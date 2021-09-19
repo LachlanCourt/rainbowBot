@@ -74,11 +74,15 @@ Feature can be disabled by leaving "logChannel" an empty string `""`
 
 ## TODO
 
-- [ ] Use argparse instead of the current janky setup
 - [ ] Change the format of `rolemenu.dat` to allow for multiple different rolemenus and channels. Fix the arguments to make -c be optional properly
+- [ ] Add auto caps to new roles made with automatic channel creation
+- [ ] Make channel lock and role edit commands be able to be sent from any channel by passing a channel name as an argument
 
 ## Planned features
 - [ ] Delete messages for moderation by passing a number of messages to clear
+- [ ] Muting and warning members by mentioning a member in a message command
+- [ ] Add cronttab-esque system for auto locking channels at certain times
+- [ ] Make it play music!
 
 ## License
 [MIT](https://github.com/LachlanCourt/rainbowBot/blob/master/LICENCE)
