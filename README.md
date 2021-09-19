@@ -4,6 +4,20 @@ This bot is used to generate and maintain text channels for courses taken by uni
 
 Commands are restricted to discord users with roles authorised in the config file under "trustedRoles"
 
+## Setup
+
+1. Install requirements
+
+        pip install -r requirements.txt
+
+2. Setup configuration file from example
+
+        cp config.json.example config.json
+
+3. Run bot!
+
+        python3 bot.py
+
 ## Automated channel creation
 
 The bot also has functionality to read courses from a JSON file and automatically create text and voice channels accordingly.
