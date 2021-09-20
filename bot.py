@@ -302,13 +302,16 @@ async def create(msg, *args):
         await msg.channel.send("Please specify the filename of a JSON file to load from")
         return
     
-    guild = msg.guild    
+    guild = msg.guild
+    filename = args[0]
+    if not filename.endswith(".json"):
+        filename += ".json"
     try:
-        f = open(args[0] + '.json')
+        f = open(filename)
         data = json.load(f)
         f.close()
     except:
-        await msg.channel.send('Unable to open JSON file "' + args[0] + '" :frowning:')
+        await msg.channel.send('Unable to open JSON file "' + filename + '" :frowning:')
         return
     statusMessage = await msg.channel.send("File loaded successfully! Creating channels...")
 
@@ -356,11 +359,11 @@ async def create(msg, *args):
             return
 
     for i in courses:
-        await statusMessage.edit(content="Creating " + i + " channels")
+        await statusMessage.edit(content="Creating " + i.upper() + " channels")
         # Create roles and record roles for overwrites
         roleObjs = []
         for j in range(len(courses[i])):
-            role = await guild.create_role(name=courses[i][j], colour=255)# Convert HEX code to integer (Bc that makes sense??) this is blue #0000ff
+            role = await guild.create_role(name=courses[i][j].upper(), colour=255)# Convert HEX code to integer (Bc that makes sense??) this is blue #0000ff
             roleObjs.append(role)
             
         # Create category overwrites and disable to @everyone by default
@@ -371,7 +374,7 @@ async def create(msg, *args):
             categoryOverwrites[roleObjs[j]] = discord.PermissionOverwrite(view_channel=True)
                                
         # Create category and apply overwrites
-        category = await guild.create_category(name=i, overwrites=categoryOverwrites)
+        category = await guild.create_category(name=i.upper(), overwrites=categoryOverwrites)
                                
         # Create channels and apply overwrites
         for j in range(len(courses[i])):
@@ -407,13 +410,13 @@ async def create(msg, *args):
         await roleMenuChannel.send("Welcome to the course selection channel! React to a message below to gain access to a text channel for that subject")
 
     for i in courses:
-        await statusMessage.edit(content="Creating " + i + " rolemenu")
+        await statusMessage.edit(content="Creating " + i.upper() + " rolemenu")
         # Create message to send
-        message = "​\n**" + i + "**\nReact to give yourself a role\n\n"
+        message = "​\n**" + i.upper() + "**\nReact to give yourself a role\n\n"
         currentMenu = {}
         for j in range(len(courses[i])):
-            message += reactions[j] + " " + courses[i][j] + "\n\n"
-            currentMenu[reactions[j]] = courses[i][j]
+            message += reactions[j] + " " + courses[i][j].upper() + "\n\n"
+            currentMenu[reactions[j]] = courses[i][j].upper()
             
         menuMessage = await roleMenuChannel.send(message)
         rolemenuData[str(menuMessage.id)] = currentMenu # The message id comes in as an integer, but will be serialised as a string when saved to JSON
