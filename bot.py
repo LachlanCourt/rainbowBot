@@ -341,7 +341,7 @@ async def create(msg, *args):
                 channelMenu = rolemenuData[data["roleMenuChannel"]]
                 createNewMenu = False
             else:
-                await statusMessage.edit(content="A role menu exists for the specified channel but the channel appears to be deleted. Run again with -c to clear. Terminating...")
+                await statusMessage.edit(content="A role menu exists for the specified channel but the channel appears to be deleted or inaccessible. Run again with -c to clear the old menu or check my permissions. Terminating...")
                 return
         if len(args) > 1 and args[1] == "-c":
             await statusMessage.edit(content="-c flag included, clearing old role menu...")
