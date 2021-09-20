@@ -27,12 +27,13 @@ except:
     sys.exit()
 
 # Load role menu file
+rolemenuData = {}
 try:
     f = open("rolemenu.dat")
     rolemenuData = json.load(f)
     f.close()
 except:
-    rolemenuData = {}
+    pass
 
 # Load locked channel data
 try:
@@ -316,16 +317,16 @@ async def create(msg, *args):
 
     # Accessing the discord API for this much work takes time so we will keep editing a message along the way to inform the user that it's still doing something
     statusMessage = await msg.channel.send("File loaded successfully! Validating file...")
+    global rolemenuData
+    rolemenuData = {}
     # If a rolemenu.dat file exists, load the existing rolemenu data
     try:
         f = open("rolemenu.dat")
-        global rolemenuData
-        data = json.load(f)
+        #global rolemenuData
+        rolemenuData = json.load(f)
         f.close()
     except:
         await statusMessage.edit(content="Creating new rolemenu file...")
-        global rolemenuData
-        rolemenuData = {}
        
     # Check if a channel menu already exists - if the -c argument was given then we will overwrite it. Otherwise we will load the one that currently exists
     createNewMenu = True
