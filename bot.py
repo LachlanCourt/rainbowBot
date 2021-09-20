@@ -262,15 +262,16 @@ async def on_raw_reaction_add(reaction):
             f = open("locked.dat", "w")
             json.dump(data, f)
             f.close()
-            return
+        return
     
-    roles = await reaction.member.guild.fetch_roles()
-    # If the message the user reacted to is a rolemenu, get the name of the role related to the reaction they added and give the user that role
-    if str(msg.id) in rolemenuData[channel.name] and msg.author == client.user: # The message id comes in as an integer but is serialised as a string when saved to JSON
-        roleName = rolemenuData[channel.name][str(msg.id)][reaction.emoji.name]
-        for i in range(len(roles)):
-            if roles[i].name == roleName:
-                await reaction.member.add_roles(roles[i])
+    if channel.name in rolemenuData:
+        roles = await reaction.member.guild.fetch_roles()
+        # If the message the user reacted to is a rolemenu, get the name of the role related to the reaction they added and give the user that role
+        if str(msg.id) in rolemenuData[channel.name] and msg.author == client.user: # The message id comes in as an integer but is serialised as a string when saved to JSON
+            roleName = rolemenuData[channel.name][str(msg.id)][reaction.emoji.name]
+            for i in range(len(roles)):
+                if roles[i].name == roleName:
+                    await reaction.member.add_roles(roles[i])
 
 @client.event
 async def on_raw_reaction_remove(reaction):
@@ -285,12 +286,13 @@ async def on_raw_reaction_remove(reaction):
     channel = client.get_channel(reaction.channel_id)
     msg = await channel.fetch_message(reaction.message_id)
 
-    # If the message the user reacted to is a rolemenu, get the name of the role related to the reaction they removed and remove that role from the user
-    if str(msg.id) in rolemenuData[channel.name] and msg.author == client.user: # The message id comes in as an integer but is serialised as a string when saved to JSON
-        roleName = rolemenuData[channel.name][str(msg.id)][reaction.emoji.name]
-        for i in range(len(roles)):
-            if roles[i].name == roleName:
-                await member.remove_roles(roles[i])
+    if channel.name in rolemenuData:
+        # If the message the user reacted to is a rolemenu, get the name of the role related to the reaction they removed and remove that role from the user
+        if str(msg.id) in rolemenuData[channel.name] and msg.author == client.user: # The message id comes in as an integer but is serialised as a string when saved to JSON
+            roleName = rolemenuData[channel.name][str(msg.id)][reaction.emoji.name]
+            for i in range(len(roles)):
+                if roles[i].name == roleName:
+                    await member.remove_roles(roles[i])
 
 ##### ROLE MENU #####
 
@@ -393,11 +395,9 @@ async def create(msg, *args):
         await statusMessage.edit(content="Role menu channel created! Generating menu...")
     else:
         await statusMessage.edit(content="Role menu channel found! Generating menu...")
-        #pass ????
-        # I don't think I need this but I don't want to remove it yet just in case
-        for i in guild.channels: #
-            if i.name == data["roleMenuChannel"]: #
-                roleMenuChannel = i #
+        for i in guild.channels:
+            if i.name == data["roleMenuChannel"]:
+                roleMenuChannel = i
     
     if createNewMenu:
         await roleMenuChannel.send("Welcome to the course selection channel! React to a message below to gain access to a text channel for that subject")
