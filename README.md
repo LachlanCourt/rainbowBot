@@ -10,11 +10,13 @@ Commands are restricted to discord users with roles authorised in the config fil
 
         pip install -r requirements.txt
 
-2. Setup configuration file from example
+2. Create configuration file from example
 
         cp config.json.example config.json
 
-3. Run bot!
+3. Generate OAuth Token (see [here](https://discord.com/developers/applications)) and populate config.json
+
+4. Run bot!
 
         python3 bot.py
 
