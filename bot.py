@@ -543,7 +543,11 @@ async def addfile(msg, *args):
     if len(message.attachments) != 1:
         await msg.send("Please attach a single file to this message")
         return
-    f = Path(message.attachments[0].filename)
+    filename = message.attachments[0].filename
+    if filename == "updatebot.sh":
+        await msg.send("Due to security risks, this file cannot be changed this way. Please find another way to add it to the cwd")
+        return
+    f = Path(filename)
     if f.is_file() and "-o" not in args and "-a" not in args:
         await msg.send("File already exists. Please specify either -o to overwrite or -a to add a duplicate")
         return
