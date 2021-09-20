@@ -21,7 +21,7 @@ try:
     logChannelName = data["logChannel"]
     moderationChannelName = data["moderationChannel"]
     reportingChannelsList = data["reportingChannels"]
-    OAuthToken = data["OAuth"]
+    OAuthToken = data["OAuthToken"]
 except:
     print("Error loading config file. Please ensure it matches the specifications")
     sys.exit()
