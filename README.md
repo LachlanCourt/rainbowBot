@@ -20,7 +20,7 @@ Commands are restricted to discord users with roles authorised in the config fil
 
 ## Automated channel creation
 
-The bot also has functionality to read courses from a JSON file and automatically create text and voice channels accordingly.
+The bot has functionality to read courses from a JSON file and automatically create text and voice channels accordingly.
 The format is as follows:
 1. A category for each item in the `courses` dictionary in the specified JSON
 2. Nested in this category, a text channel for each item in that category's list
@@ -88,11 +88,16 @@ Feature can be disabled by leaving "logChannel" an empty string `""`
 
 ## TODO
 
-- [ ] Use argparse instead of the current janky setup
 - [ ] Change the format of `rolemenu.dat` to allow for multiple different rolemenus and channels. Fix the arguments to make -c be optional properly
+- [ ] Add auto caps to new roles made with automatic channel creation
+- [ ] Make channel lock and role edit commands be able to be sent from any channel by passing a channel name as an argument
+- [ ] Earlier return on features that are disabled by checking the necessary channel earlier
 
 ## Planned features
 - [ ] Delete messages for moderation by passing a number of messages to clear
+- [ ] Muting and warning members by mentioning a member in a message command
+- [ ] Add cronttab-esque system for auto locking channels at certain times
+- [ ] Make it play music!
 
 ## License
 [MIT](https://github.com/LachlanCourt/rainbowBot/blob/master/LICENCE)
