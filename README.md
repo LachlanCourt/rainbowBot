@@ -88,10 +88,8 @@ The bot has the capability to receive Direct Messages from users and repost thei
 
 Feature can be disabled by leaving "logChannel" an empty string `""`
 
-## Planned features
-- [ ] Delete messages for moderation by passing a number of messages to clear
-- [ ] Muting and warning members by mentioning a member in a message command
-- [ ] Make it play music!
+## TODO
+Tasks for future development are maintained as [issues](https://github.com/LachlanCourt/rainbowBot/issues)
 
 ## License
 [MIT](https://github.com/LachlanCourt/rainbowBot/blob/master/LICENCE)
