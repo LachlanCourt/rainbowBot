@@ -336,9 +336,19 @@ async def create(msg, *args):
     if data["roleMenuChannel"] in rolemenuData:
         # This seems obsolete to check the flag like this but on the offchance that more flags get introduced to this command later this will ensure it doesn't clash
         if len(args) < 2 or len(args) > 1 and args[1] != "-c":
-            await statusMessage.edit(content="Role Menu already exists, appending to existing menu...")
-            channelMenu = rolemenuData[data["roleMenuChannel"]]
-            createNewMenu = False
+            if any(channel.name == data["roleMenuChannel"] for channel in guild.channels):
+                await statusMessage.edit(content="Role menu already exists, appending to existing menu...")
+                channelMenu = rolemenuData[data["roleMenuChannel"]]
+                createNewMenu = False
+            else:
+                await statusMessage.edit(content="A role menu exists for the specified channel but the channel appears to be deleted. Run again with -c to clear. Terminating...")
+                return
+        if len(args) > 1 and args[1] == "-c":
+            await statusMessage.edit(content="-c flag included, clearing old role menu...")
+            # Further down when generating the role menu, the decision to make a new channel or not is made by seeing whether a menu exists in rolemenuData
+            # If we are clearing with the -c argument we should clear the old menu from rolemenuData
+            del(rolemenuData[data["roleMenuChannel"]])
+            
     
     # Find sinbin role
     sinbinRole = None
