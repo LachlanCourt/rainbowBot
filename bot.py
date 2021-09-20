@@ -433,10 +433,11 @@ async def edit(msg, *args):
     if len(args) < 3 or len(args) > 4:
         await msg.send("Incorrect number of arguments!\nUsage: <menuName> <add/remove/update> <roleName> [<newRoleName>]")
         return
+    channelName = msg.channel.name
     # Find message to edit
     editMessage = None
     rolemenuKey = None
-    for i in rolemenuData:
+    for i in rolemenuData[channelName]:
         tempMsg = await msg.channel.fetch_message(int(i))
         if "**" + args[0] + "**" in tempMsg.content:
             editMessage = tempMsg
@@ -449,7 +450,7 @@ async def edit(msg, *args):
     if args[1] == "add": # Add a new role to an existing role menu
         newReactionIndex = None
         for i in range(len(reactions)):
-            if reactions[i] not in rolemenuData[rolemenuKey]:
+            if reactions[i] not in rolemenuData[channelName][rolemenuKey]:
                 newReactionIndex = i
                 break
         if newReactionIndex == None or newReactionIndex >= 20:
@@ -458,7 +459,7 @@ async def edit(msg, *args):
         newReaction = reactions[newReactionIndex]
         await editMessage.edit(content=editMessage.content + "\n\n" + newReaction + " " + args[2] + "\n\n")
         await editMessage.add_reaction(newReaction)
-        rolemenuData[rolemenuKey][newReaction] = args[2]
+        rolemenuData[channelName][rolemenuKey][newReaction] = args[2]
         
         f = open("rolemenu.dat", "w")
         json.dump(rolemenuData, f)
@@ -478,7 +479,7 @@ async def edit(msg, *args):
         removeReaction = editMessage.content[startIndex + 2:startIndex + 3]
         await editMessage.edit(content=editMessage.content[:startIndex] + editMessage.content[endIndex:])
         await editMessage.clear_reaction(removeReaction)
-        del(rolemenuData[rolemenuKey][removeReaction])
+        del(rolemenuData[channelName][rolemenuKey][removeReaction])
 
         f = open("rolemenu.dat", "w")
         json.dump(rolemenuData, f)
@@ -499,7 +500,7 @@ async def edit(msg, *args):
             endIndex = startIndex + len(args[2])
         await editMessage.edit(content=editMessage.content[:startIndex] + args[3] + editMessage.content[endIndex:])
         reaction = editMessage.content[startIndex - 2:startIndex - 1]
-        rolemenuData[rolemenuKey][reaction] = args[3]
+        rolemenuData[channelName][rolemenuKey][reaction] = args[3]
 
         f = open("rolemenu.dat", "w")
         json.dump(rolemenuData, f)
