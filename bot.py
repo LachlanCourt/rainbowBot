@@ -38,6 +38,7 @@ def parseConfig(filePath):
         raise Exception(e)
 
     try:
+        global whitelist, trustedRoles, logChannelName, moderationChannelName, reportingChannelsList, OAuthToken
         data = json.load(f)
         whitelist = data["whitelisted"]
         trustedRoles = data["trustedRoles"]
