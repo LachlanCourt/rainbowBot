@@ -1,6 +1,5 @@
 class GlobalConfig():
     def __init__(self, whitelist, trustedRoles, logChannelName, moderationChannelName, reportingChannelsList, OAuthToken, roleMenuData, lockedChannels):
-        #self()
         self.whitelist = whitelist
         self.trustedRoles = trustedRoles
         self.logChannelName = logChannelName
