@@ -45,7 +45,7 @@ except:
     pass
 
 # Load locked channel data
-lockedChannels = []
+lockedChannels = {}
 try:
     f = open("locked.dat")
     data = json.load(f)
