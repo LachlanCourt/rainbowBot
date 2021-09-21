@@ -101,8 +101,14 @@ class Moderation(commands.Cog):
             await msg.channel.send(self.config.permsError)
             return
 
+        # If no arguments are given, assume the channel the message was sent in should be locked
+        if len(args) == 0:
+            channel = msg.channel
+        else:
+            channel = discord.utils.get(self.client.get_all_channels(), guild__name=msg.guild.name, name=args[0])
+
         # Find the role that affects send message permissions in this channel
-        roleName = msg.channel.name.upper()
+        roleName = channel.name.upper()
         guild = msg.guild
         role = None
         for i in guild.roles:
@@ -111,18 +117,18 @@ class Moderation(commands.Cog):
 
         # The role name needs to match the uppercase version of the channel name. This will be the case if channels have been made with the automatic channel creation
         if role == None:
-            await msg.channel.send("Channel can not be locked")
+            await channel.send("Channel can not be locked")
             return
 
         # Lock the channel
-        self.config.lockedChannels.append(msg.channel.name)
+        self.config.lockedChannels.append(channel.name)
         await msg.message.delete(delay=None)
         await msg.channel.set_permissions(role, read_messages=True, send_messages=False)
         data = {'channels':self.config.lockedChannels}
 
         # Set up a way to unlock the channel
-        channel = await msg.channel.send("Channel locked! React with trusted permissions to unlock!")
-        await channel.add_reaction("🔓") 
+        message = await channel.send("Channel locked! React with trusted permissions to unlock!")
+        await message.add_reaction("🔓") 
 
         # Save the list of currently locked channels incase the bot goes offline
         f = open("locked.dat", "w")
