@@ -644,7 +644,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process command line arguments')
     parser.add_argument("-C", "--config-file", action="store", dest="configFilePath", default="config.json", required=False, help="File to load config from")
     parser.add_argument("-R", "--role-file", action="store", dest="roleMenuFilePath", default="rolemenu.dat", required=False, help="File to load role data from")
-    parser.add_argument("-L", "--locked-file", action="store", dest="lockedChannelFilePath", default="locked.dat", required=False, help="file to load locked channel data from")
+    parser.add_argument("-L", "--locked-file", action="store", dest="lockedChannelFilePath", default="locked.dat", required=False, help="File to load locked channel data from")
     args = parser.parse_args()
 
     loadRoleMenuData(args.roleMenuFilePath)
