@@ -2,6 +2,9 @@ import discord, json, sys, os, subprocess, re
 from discord.ext import commands
 from pathlib import Path
 
+# Import state handler
+from conf.GlobalConfig import GlobalConfig
+
 # Import cogs
 from cogs.FileHandler import FileHandler
 
@@ -9,74 +12,7 @@ from cogs.FileHandler import FileHandler
 intents = discord.Intents.all()
 client = commands.Bot(command_prefix="$rain", intents=intents)
 
-# Load config file
-whitelist = []
-trustedRoles = []
-logChannelName = ""
-moderationChannelName = ""
-reportingChannelsList = []
-OAuthToken = None
-try:
-    f = open('config.json')
-    data = json.load(f)
-    whitelist = data["whitelisted"]
-    trustedRoles = data["trustedRoles"]
-    logChannelName = data["logChannel"]
-    moderationChannelName = data["moderationChannel"]
-    reportingChannelsList = data["reportingChannels"]
-    OAuthToken = data["OAuthToken"]
-except:
-    print("Error loading config file. Please ensure it matches the specifications")
-    sys.exit()
-
-# Load role menu file
-rolemenuData = {}
-try:
-    f = open("rolemenu.dat")
-    rolemenuData = json.load(f)
-    f.close()
-except:
-    pass
-
-# Load locked channel data
-try:
-    f = open("locked.dat")
-    data = json.load(f)
-    lockedChannels = data["channels"]
-    f.close()
-except:
-    lockedChannels = []
-
-reactions = "🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿".split()
-
-# Source files cannot be removed and will not show up with a listfiles command, but they can be overwritten
-sourceFiles = [".git", ".gitignore", "config.json", "bot.py", "README.md", "Examples", "updatebot.sh", "LICENCE", "locked.dat", "rolemenu.dat"]
-
-permsError = "You don't have permission to use this command"
-
-# Prepare reporting channels
-reportingChannels = {}
-for i in reportingChannelsList:
-    reportingChannels[i[0]] = [i[1], i[2]]
-
-# Only discord users with a role in the trustedRoles list will be allowed to use bot commands    
-def checkPerms(msg, author=False):
-    if author == True:
-        user = msg
-    else:
-        user = msg.message.author
-    roleNames = []
-    for i in range(len(user.roles)):
-        roleNames.append(user.roles[i].name)
-    if any(i in roleNames for i in trustedRoles):
-        return True
-    return False
-
-def getRole(roleName, guild):
-    for i in guild.roles:
-        if i.name == roleName:
-            return i
-    return None
+config = GlobalConfig()
 
 @client.event
 async def on_ready():
@@ -89,19 +25,19 @@ async def on_message(message):
         return
     # Messages that have been sent as a direct message to the bot will be reposted in the channel specified in logChannel
     if message.channel.type == discord.ChannelType.private:
-        if logChannelName == "": # Handle gracefully if no channel is specified to send a DM
+        if config.logChannelName == "": # Handle gracefully if no channel is specified to send a DM
             await message.channel.send("I am not set up to receive direct messages, please contact your server administrators another way!")
             return
         await message.channel.send("Thankyou for your message, it has been passed on to the administrators")
         guilds = message.author.mutual_guilds
         for guild in guilds:
-            logChannel = discord.utils.get(client.get_all_channels(), guild__name=guild.name, name=logChannelName)
+            logChannel = discord.utils.get(client.get_all_channels(), guild__name=guild.name, name=config.logChannelName)
             await logChannel.send(message.author.mention + " sent a direct message, they said\n\n" + message.content)
     # Messages that are sent into a channel specified in reportingChannels will be deleted and reposted in the specified reporting log with the custom message
-    if message.channel.type != discord.ChannelType.private and message.channel.name in reportingChannels and message.author.name not in whitelist:
+    if message.channel.type != discord.ChannelType.private and message.channel.name in config.reportingChannels and message.author.name not in config.whitelist:
         await message.delete(delay=None)
-        channel = discord.utils.get(client.get_all_channels(), guild__name=message.guild.name, name=reportingChannels[message.channel.name][0])
-        replyMessage = reportingChannels[message.channel.name][1]
+        channel = discord.utils.get(client.get_all_channels(), guild__name=message.guild.name, name=config.reportingChannels[message.channel.name][0])
+        replyMessage = config.reportingChannels[message.channel.name][1]
         replyMessage = replyMessage.replace("@user", message.author.mention)
         replyMessage = replyMessage.replace("@message", message.content)
         # If there are multiple different role mentions discord replaces each with <@38473847387837> and we want to ignore these
@@ -110,7 +46,7 @@ async def on_message(message):
         while re.search(matchString, replyMessage) != None:
             roleNameIndex = re.search(matchString, replyMessage).span()
             roleName = replyMessage[roleNameIndex[0] + 1:roleNameIndex[1] - 1]
-            role = getRole(roleName, message.guild)
+            role = config.getRole(roleName, message.guild)
             if role != None: # Only replace if the role actually exists. If not, keep searching through replyMessage
                 replyMessage = replyMessage.replace(f"@{roleName}$", role.mention)               
         await channel.send(replyMessage)
@@ -122,19 +58,19 @@ async def on_raw_message_delete(rawMessage):
     guild = client.get_guild(rawMessage.guild_id)
     channel = client.get_channel(rawMessage.channel_id)
     # If the message was sent before the bot was logged on, it is unfortunately innaccessible. Ignore also if the author is on the whitelist or if the channel is locked (The lock channel command deletes the message of the sender automatically)
-    if not rawMessage.cached_message or channel.name in reportingChannels or rawMessage.cached_message.author.name in whitelist or channel.name in lockedChannels:
+    if not rawMessage.cached_message or channel.name in config.reportingChannels or rawMessage.cached_message.author.name in config.whitelist or channel.name in config.lockedChannels:
         return    
     message = rawMessage.cached_message
     member = guild.get_member(message.author.id)
     # Ignore deleted messages if the member no longer exists, they are a bot, or if this functionality is disabled 
-    if member == None or member.bot or moderationChannelName == "":
+    if member == None or member.bot or config.moderationChannelName == "":
         return
-    moderationChannel = discord.utils.get(client.get_all_channels(), guild__name=guild.name, name=moderationChannelName)
+    moderationChannel = discord.utils.get(client.get_all_channels(), guild__name=guild.name, name=config.moderationChannelName)
     
     # People with trusted roles will likely have access to the log channel for deleted messages
     # Getting a ping every time might get annoying, so don't ping people with trusted roles.
     user = message.author.mention
-    if checkPerms(message.author, author=True):
+    if config.checkPerms(message.author, author=True):
         user = message.author.name
         
     if len(message.attachments) == 0: # There are no attachments, it was just text
@@ -154,14 +90,14 @@ async def on_raw_message_delete(rawMessage):
 @client.event
 async def on_raw_message_edit(rawMessage):
     # If the message was sent before the bot was logged on, it is unfortunately innaccessible. Ignore also if the author is on the whitelist
-    if not rawMessage.cached_message or rawMessage.cached_message.author.name in whitelist:
+    if not rawMessage.cached_message or rawMessage.cached_message.author.name in config.whitelist:
         return
     guild = client.get_guild(rawMessage.cached_message.author.guild.id)
     channel = client.get_channel(rawMessage.channel_id)
     member = guild.get_member(rawMessage.cached_message.author.id)
 
     # Ignore deleted messages if the member no longer exists, they are a bot, or if this functionality is disabled 
-    if member == None or member.bot or moderationChannelName == "":
+    if member == None or member.bot or config.moderationChannelName == "":
         return
 
     # Try and grab the data of the message and any attachments
@@ -178,7 +114,7 @@ async def on_raw_message_edit(rawMessage):
         return
 
     # Inform the moderation team
-    moderationChannel = discord.utils.get(client.get_all_channels(), guild__name=guild.name, name=moderationChannelName)
+    moderationChannel = discord.utils.get(client.get_all_channels(), guild__name=guild.name, name=config.moderationChannelName)
     if before == "":
         before = "<<No message content>>"
     if after == "":
@@ -187,7 +123,7 @@ async def on_raw_message_edit(rawMessage):
     # People with trusted roles will likely have access to the log channel for edited messages
     # Getting a ping every time might get annoying, so don't ping people with trusted roles.
     user = rawMessage.cached_message.author.mention
-    if checkPerms(rawMessage.cached_message.author, author=True):
+    if config.checkPerms(rawMessage.cached_message.author, author=True):
         user = rawMessage.cached_message.author.name
     await moderationChannel.send(user + " just edited their message in " + channel.mention + ", they changed their original message which said \n\n" + before + "\n\nTo a new message saying \n\n" + after)
 
@@ -215,7 +151,7 @@ async def on_raw_reaction_add(reaction):
     msg = await channel.fetch_message(reaction.message_id)
 
     # Check first if the reaction is for a channel that is currently locked
-    if channel.name in lockedChannels:
+    if channel.name in config.lockedChannels:
         roleName = msg.channel.name.upper()
         guild = channel.guild
         
@@ -226,10 +162,10 @@ async def on_raw_reaction_add(reaction):
 
         if role == None:
             return
-        if reaction.emoji.name == "🔓" and checkPerms(reaction.member, author=True):
+        if reaction.emoji.name == "🔓" and config.checkPerms(reaction.member, author=True):
             await msg.channel.set_permissions(role, read_messages=True, send_messages=None)
-            lockedChannels.remove(msg.channel.name)
-            data = {'channels':lockedChannels}
+            config.lockedChannels.remove(msg.channel.name)
+            data = {'channels':config.lockedChannels}
 
             await msg.delete(delay=None)
 
@@ -238,11 +174,11 @@ async def on_raw_reaction_add(reaction):
             f.close()
         return
     
-    if channel.name in rolemenuData:
+    if channel.name in config.rolemenuData:
         roles = await reaction.member.guild.fetch_roles()
         # If the message the user reacted to is a rolemenu, get the name of the role related to the reaction they added and give the user that role
-        if str(msg.id) in rolemenuData[channel.name] and msg.author == client.user: # The message id comes in as an integer but is serialised as a string when saved to JSON
-            roleName = rolemenuData[channel.name][str(msg.id)][reaction.emoji.name]
+        if str(msg.id) in config.rolemenuData[channel.name] and msg.author == client.user: # The message id comes in as an integer but is serialised as a string when saved to JSON
+            roleName = config.rolemenuData[channel.name][str(msg.id)][reaction.emoji.name]
             for i in range(len(roles)):
                 if roles[i].name == roleName:
                     await reaction.member.add_roles(roles[i])
@@ -260,10 +196,10 @@ async def on_raw_reaction_remove(reaction):
     channel = client.get_channel(reaction.channel_id)
     msg = await channel.fetch_message(reaction.message_id)
 
-    if channel.name in rolemenuData:
+    if channel.name in config.rolemenuData:
         # If the message the user reacted to is a rolemenu, get the name of the role related to the reaction they removed and remove that role from the user
-        if str(msg.id) in rolemenuData[channel.name] and msg.author == client.user: # The message id comes in as an integer but is serialised as a string when saved to JSON
-            roleName = rolemenuData[channel.name][str(msg.id)][reaction.emoji.name]
+        if str(msg.id) in config.rolemenuData[channel.name] and msg.author == client.user: # The message id comes in as an integer but is serialised as a string when saved to JSON
+            roleName = config.rolemenuData[channel.name][str(msg.id)][reaction.emoji.name]
             for i in range(len(roles)):
                 if roles[i].name == roleName:
                     await member.remove_roles(roles[i])
@@ -272,8 +208,8 @@ async def on_raw_reaction_remove(reaction):
 
 @client.command("create")
 async def create(msg, *args):
-    if not checkPerms(msg): # Check the user has a role in trustedRoles
-        await msg.channel.send(permsError)
+    if not config.checkPerms(msg): # Check the user has a role in trustedRoles
+        await msg.channel.send(config.permsError)
         return
     if len(args) == 0: # Check for correct argument
         await msg.channel.send("Please specify the filename of a JSON file to load from")
@@ -293,13 +229,11 @@ async def create(msg, *args):
 
     # Accessing the discord API for this much work takes time so we will keep editing a message along the way to inform the user that it's still doing something
     statusMessage = await msg.channel.send("File loaded successfully! Validating file...")
-    global rolemenuData
-    rolemenuData = {}
+    config.rolemenuData = {}
     # If a rolemenu.dat file exists, load the existing rolemenu data
     try:
         f = open("rolemenu.dat")
-        #global rolemenuData
-        rolemenuData = json.load(f)
+        config.rolemenuData = json.load(f)
         f.close()
     except:
         await statusMessage.edit(content="Creating new rolemenu file...")
@@ -307,12 +241,12 @@ async def create(msg, *args):
     # Check if a channel menu already exists - if the -c argument was given then we will overwrite it. Otherwise we will load the one that currently exists
     createNewMenu = True
     channelMenu = {}
-    if data["roleMenuChannel"] in rolemenuData:
+    if data["roleMenuChannel"] in config.rolemenuData:
         # This seems obsolete to check the flag like this but on the offchance that more flags get introduced to this command later this will ensure it doesn't clash
-        if len(args) < 2 or len(args) > 1 and args[1] != "-c":
+        if len(args) < 2 or (len(args) > 1 and args[1] != "-c"):
             if any(channel.name == data["roleMenuChannel"] for channel in guild.channels):
                 await statusMessage.edit(content="Role menu already exists, appending to existing menu...")
-                channelMenu = rolemenuData[data["roleMenuChannel"]]
+                channelMenu = config.rolemenuData[data["roleMenuChannel"]]
                 createNewMenu = False
             else:
                 await statusMessage.edit(content="A role menu exists for the specified channel but the channel appears to be deleted or inaccessible. Run again with -c to clear the old menu or check my permissions. Terminating...")
@@ -321,7 +255,7 @@ async def create(msg, *args):
             await statusMessage.edit(content="-c flag included, clearing old role menu...")
             # Further down when generating the role menu, the decision to make a new channel or not is made by seeing whether a menu exists in rolemenuData
             # If we are clearing with the -c argument we should clear the old menu from rolemenuData
-            del(rolemenuData[data["roleMenuChannel"]])
+            del(config.rolemenuData[data["roleMenuChannel"]])
             
     
     # Find sinbin role
@@ -372,7 +306,7 @@ async def create(msg, *args):
     ### CREATE ROLE MENU ###
     roleMenuOverwrites = {guild.default_role:discord.PermissionOverwrite(view_channel=False, send_messages=False, add_reactions=False)}
     for i in guild.roles:
-        if i.name in trustedRoles:
+        if i.name in config.trustedRoles:
             roleMenuOverwrites[i] = discord.PermissionOverwrite(view_channel=True, send_messages=True)
     if createNewMenu:
         roleMenuChannel = await guild.create_text_channel(name=data["roleMenuChannel"], overwrites=roleMenuOverwrites, position=0) # Role menu will jump to the top of channel list and you can move it from there
@@ -392,27 +326,27 @@ async def create(msg, *args):
         message = "​\n**" + i.upper() + "**\nReact to give yourself a role\n\n"
         currentMenu = {}
         for j in range(len(courses[i])):
-            message += reactions[j] + " " + courses[i][j].upper() + "\n\n"
-            currentMenu[reactions[j]] = courses[i][j].upper()
+            message += config.reactions[j] + " " + courses[i][j].upper() + "\n\n"
+            currentMenu[config.reactions[j]] = courses[i][j].upper()
             
         menuMessage = await roleMenuChannel.send(message)
         channelMenu[str(menuMessage.id)] = currentMenu # The message id comes in as an integer, but will be serialised as a string when saved to JSON
 
         # Add reactions
         for j in range(len(courses[i])):
-            await menuMessage.add_reaction(reactions[j])
+            await menuMessage.add_reaction(config.reactions[j])
 
-    rolemenuData[data["roleMenuChannel"]] = channelMenu
+    config.rolemenuData[data["roleMenuChannel"]] = channelMenu
     # Save the file so that if the bot disconnects it will be able to reload                               
     f = open("rolemenu.dat", "w")
-    json.dump(rolemenuData, f)
+    json.dump(config.rolemenuData, f)
     f.close()
     await statusMessage.edit(content="And that's a wrap! No more work to do")
 
 @client.command("edit")
 async def edit(msg, *args):
-    if not checkPerms(msg): # Check the user has a role in trustedRoles
-        await msg.channel.send(permsError)
+    if not config.checkPerms(msg): # Check the user has a role in trustedRoles
+        await msg.channel.send(config.permsError)
         return
     if len(args) < 3 or len(args) > 4:
         await msg.send("Incorrect number of arguments!\nUsage: <menuName> <add/remove/update> <roleName> [<newRoleName>]")
@@ -421,7 +355,7 @@ async def edit(msg, *args):
     # Find message to edit
     editMessage = None
     rolemenuKey = None
-    for i in rolemenuData[channelName]:
+    for i in config.rolemenuData[channelName]:
         tempMsg = await msg.channel.fetch_message(int(i))
         if "**" + args[0] + "**" in tempMsg.content:
             editMessage = tempMsg
@@ -433,20 +367,20 @@ async def edit(msg, *args):
 
     if args[1] == "add": # Add a new role to an existing role menu
         newReactionIndex = None
-        for i in range(len(reactions)):
-            if reactions[i] not in rolemenuData[channelName][rolemenuKey]:
+        for i in range(len(config.reactions)):
+            if config.reactions[i] not in config.rolemenuData[channelName][rolemenuKey]:
                 newReactionIndex = i
                 break
         if newReactionIndex == None or newReactionIndex >= 20:
             await msg.send("Too many menu items! I can only add 20 reactions!")
             return
-        newReaction = reactions[newReactionIndex]
+        newReaction = config.reactions[newReactionIndex]
         await editMessage.edit(content=editMessage.content + "\n\n" + newReaction + " " + args[2] + "\n\n")
         await editMessage.add_reaction(newReaction)
-        rolemenuData[channelName][rolemenuKey][newReaction] = args[2]
+        config.rolemenuData[channelName][rolemenuKey][newReaction] = args[2]
         
         f = open("rolemenu.dat", "w")
-        json.dump(rolemenuData, f)
+        json.dump(config.rolemenuData, f)
         f.close()
         
         await msg.send("Role added successfully")
@@ -463,10 +397,10 @@ async def edit(msg, *args):
         removeReaction = editMessage.content[startIndex + 2:startIndex + 3]
         await editMessage.edit(content=editMessage.content[:startIndex] + editMessage.content[endIndex:])
         await editMessage.clear_reaction(removeReaction)
-        del(rolemenuData[channelName][rolemenuKey][removeReaction])
+        del(config.rolemenuData[channelName][rolemenuKey][removeReaction])
 
         f = open("rolemenu.dat", "w")
-        json.dump(rolemenuData, f)
+        json.dump(config.rolemenuData, f)
         f.close()
         
         await msg.send("Role removed successfully")
@@ -484,10 +418,10 @@ async def edit(msg, *args):
             endIndex = startIndex + len(args[2])
         await editMessage.edit(content=editMessage.content[:startIndex] + args[3] + editMessage.content[endIndex:])
         reaction = editMessage.content[startIndex - 2:startIndex - 1]
-        rolemenuData[channelName][rolemenuKey][reaction] = args[3]
+        config.rolemenuData[channelName][rolemenuKey][reaction] = args[3]
 
         f = open("rolemenu.dat", "w")
-        json.dump(rolemenuData, f)
+        json.dump(config.rolemenuData, f)
         f.close()
         
         await msg.send("Role updated successfully")
@@ -498,8 +432,8 @@ async def edit(msg, *args):
 
 @client.command("update")
 async def update(msg, *args):
-    if not checkPerms(msg): # Check the user has a role in trustedRoles
-        await msg.channel.send(permsError)
+    if not config.checkPerms(msg): # Check the user has a role in trustedRoles
+        await msg.channel.send(config.permsError)
         return
     f = Path("updatebot.sh")
     if f.is_file():
@@ -510,8 +444,8 @@ async def update(msg, *args):
 
 @client.command("lock")
 async def lock(msg, *args):
-    if not checkPerms(msg): # Check the user has a role in trustedRoles
-        await msg.channel.send(permsError)
+    if not config.checkPerms(msg): # Check the user has a role in trustedRoles
+        await msg.channel.send(config.permsError)
         return
 
     # Find the role that affects send message permissions in this channel
@@ -528,10 +462,10 @@ async def lock(msg, *args):
         return
 
     # Lock the channel
-    lockedChannels.append(msg.channel.name)
+    config.lockedChannels.append(msg.channel.name)
     await msg.message.delete(delay=None)
     await msg.channel.set_permissions(role, read_messages=True, send_messages=False)
-    data = {'channels':lockedChannels}
+    data = {'channels':config.lockedChannels}
 
     # Set up a way to unlock the channel
     channel = await msg.channel.send("Channel locked! React with trusted permissions to unlock!")
@@ -542,11 +476,10 @@ async def lock(msg, *args):
     json.dump(data, f)
     f.close()
 
-
-client.add_cog(FileHandler(client, sourceFiles, checkPerms, permsError))
+client.add_cog(FileHandler(client, config.sourceFiles, config.checkPerms, config.permsError))
 
 try:
-    client.run(OAuthToken)
+    client.run(config.OAuthToken)
     print('Closed')
 except:
     print("Error starting bot, check OAuth token in Config")

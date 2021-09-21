@@ -4,3 +4,5 @@ updatebot.sh
 *.txt
 
 cogs/__pycache__/
+
+conf/__pycache__/
