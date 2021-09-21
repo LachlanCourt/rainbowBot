@@ -476,7 +476,7 @@ async def lock(msg, *args):
     json.dump(data, f)
     f.close()
 
-client.add_cog(FileHandler(client, config.sourceFiles, config.checkPerms, config.permsError))
+client.add_cog(FileHandler(client, config))
 
 try:
     client.run(config.OAuthToken)
