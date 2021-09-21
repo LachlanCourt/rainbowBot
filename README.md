@@ -4,6 +4,22 @@ This bot is used to generate and maintain text channels for courses taken by uni
 
 Commands are restricted to discord users with roles authorised in the config file under "trustedRoles"
 
+## Setup
+
+1. Install requirements
+
+        pip install -r requirements.txt
+
+2. Create configuration file from example
+
+        cp config.json.example config.json
+
+3. Generate OAuth Token (see [here](https://discord.com/developers/applications)) and populate config.json
+
+4. Run bot!
+
+        python3 bot.py
+
 ## Automated channel creation
 
 The bot has functionality to read courses from a JSON file and automatically create text and voice channels accordingly.
@@ -72,18 +88,12 @@ The bot has the capability to receive Direct Messages from users and repost thei
 
 Feature can be disabled by leaving "logChannel" an empty string `""`
 
+## Contribution
+Contributions are welcome! Please read the [contribution guide](https://github.com/LachlanCourt/rainbowBot/blob/master/contribution%20guide.md) before commencing development
+
+
 ## TODO
-
-- [ ] Change the format of `rolemenu.dat` to allow for multiple different rolemenus and channels. Fix the arguments to make -c be optional properly
-- [ ] Add auto caps to new roles made with automatic channel creation
-- [ ] Make channel lock and role edit commands be able to be sent from any channel by passing a channel name as an argument
-- [ ] Earlier return on features that are disabled by checking the necessary channel earlier
-
-## Planned features
-- [ ] Delete messages for moderation by passing a number of messages to clear
-- [ ] Muting and warning members by mentioning a member in a message command
-- [ ] Add cronttab-esque system for auto locking channels at certain times
-- [ ] Make it play music!
+Tasks for future development are maintained as [issues](https://github.com/LachlanCourt/rainbowBot/issues)
 
 ## License
 [MIT](https://github.com/LachlanCourt/rainbowBot/blob/master/LICENCE)
