@@ -39,5 +39,3 @@ class MessageHandler(commands.Cog):
                 if role != None: # Only replace if the role actually exists. If not, keep searching through replyMessage
                     replyMessage = replyMessage.replace(f"@{roleName}$", role.mention)               
             await channel.send(replyMessage)
-        # Now that the response to any message has been handled, process the official commands
-        await self.client.process_commands(message)
