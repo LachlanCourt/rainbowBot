@@ -32,13 +32,14 @@ class GlobalConfig():
             pass
 
         # Load locked channel data
+        self.lockedChannels = []
         try:
             f = open("locked.dat")
             data = json.load(f)
             self.lockedChannels = data["channels"]
             f.close()
         except:
-            self.lockedChannels = []
+            pass
 
         self.reactions = "🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿".split()
 

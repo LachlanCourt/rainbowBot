@@ -6,3 +6,7 @@ updatebot.sh
 cogs/__pycache__/
 
 conf/__pycache__/
+
+source/Global/__pycache__/
+
+source/cogs/__pycache__/
