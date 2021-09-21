@@ -128,3 +128,38 @@ class Moderation(commands.Cog):
         f = open("locked.dat", "w")
         json.dump(data, f)
         f.close()
+
+    # Reaction add event specific to unlocking channels
+    # For the reaction add event regarding assigning roles, check RoleMenu cog
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(self, reaction):
+        if reaction.member.bot: # Ignore reaction remove and add events from itself (when editing the menu)
+            return
+        
+        # Grab necessary data to analyse the event
+        channel = self.client.get_channel(reaction.channel_id)
+        msg = await channel.fetch_message(reaction.message_id)
+
+        # Check first if the reaction is for a channel that is currently locked
+        if channel.name in self.config.lockedChannels:
+            roleName = msg.channel.name.upper()
+            guild = channel.guild
+            
+            role = None
+            for i in guild.roles:
+                if i.name == roleName:
+                    role = i
+
+            if role == None:
+                return
+            if reaction.emoji.name == "🔓" and self.config.checkPerms(reaction.member, author=True):
+                await msg.channel.set_permissions(role, read_messages=True, send_messages=None)
+                self.config.lockedChannels.remove(msg.channel.name)
+                data = {'channels':self.config.lockedChannels}
+
+                await msg.delete(delay=None)
+
+                f = open("locked.dat", "w")
+                json.dump(data, f)
+                f.close()
+            return
