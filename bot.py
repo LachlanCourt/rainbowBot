@@ -1,14 +1,14 @@
 import discord
 from discord.ext import commands
 
-# Import state handler
-from source.Global.GlobalConfig import GlobalConfig
+# To hold global configuration and variables
+from cogs.GlobalConfig import GlobalConfig
 
 # Import cogs
-from source.cogs.FileHandler import FileHandler
-from source.cogs.Moderation import Moderation
-from source.cogs.RoleMenu import RoleMenu
-from source.cogs.MessageHandler import MessageHandler
+from cogs.cogs.FileHandler import FileHandler
+from cogs.cogs.Moderation import Moderation
+from cogs.cogs.RoleMenu import RoleMenu
+from cogs.cogs.MessageHandler import MessageHandler
 
 # Intents give us access to some additional discord moderation features
 intents = discord.Intents.all()
