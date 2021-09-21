@@ -1,6 +1,5 @@
 import discord, json
 from discord.ext import commands
-#from pathlib import Path
 
 class Moderation(commands.Cog):
 
