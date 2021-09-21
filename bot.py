@@ -14,17 +14,20 @@ from cogs.cogs.MessageHandler import MessageHandler
 intents = discord.Intents.all()
 client = commands.Bot(command_prefix="$rain", intents=intents)
 
+# Load the global config which will run some file reads and set default variables
 config = GlobalConfig()
 
 @client.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
 
+# Add each of the cogs, passing in the configuration
 client.add_cog(FileHandler(client, config))
 client.add_cog(Moderation(client, config))
 client.add_cog(RoleMenu(client, config))
 client.add_cog(MessageHandler(client, config))
 
+# Start bot
 try:
     client.run(config.OAuthToken)
     print('Closed')
