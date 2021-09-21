@@ -3,10 +3,4 @@ updatebot.sh
 *.dat
 *.txt
 
-cogs/__pycache__/
-
-conf/__pycache__/
-
-source/Global/__pycache__/
-
-source/cogs/__pycache__/
+*__pycache__*
