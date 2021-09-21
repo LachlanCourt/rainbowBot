@@ -1,3 +1,6 @@
 *.json
 updatebot.sh
 *.dat
+*.txt
+
+cogs/__pycache__/
