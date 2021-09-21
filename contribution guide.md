@@ -1,4 +1,5 @@
 # Contribution Guide
+Please contact the repository owner before commencing development to be added as a contributor.
 
 ## Selecting a task
 Development tasks are maintained as issues. Unless explicitly discussed otherwise, development should be designed to close issues. Tasks should be simple and atomic, if there are two distinct elements of the task that need to be created, it should be two separate issues and two separate tasks, if possible. Once a task has been selected, the issue will be assigned to you on github.
