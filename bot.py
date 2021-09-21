@@ -430,18 +430,6 @@ async def edit(msg, *args):
     # The three valid commands return at the end of them
     await msg.send("Could not process your request! Check your spelling...")
 
-@client.command("update")
-async def update(msg, *args):
-    if not config.checkPerms(msg): # Check the user has a role in trustedRoles
-        await msg.channel.send(config.permsError)
-        return
-    f = Path("updatebot.sh")
-    if f.is_file():
-        subprocess.call(['sh', './updatebot.sh'])
-        sys.exit()
-    else:
-        await msg.channel.send("No update script found")
-
 @client.command("lock")
 async def lock(msg, *args):
     if not config.checkPerms(msg): # Check the user has a role in trustedRoles

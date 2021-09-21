@@ -93,3 +93,15 @@ class FileHandler(commands.Cog):
         if message == "":
             message = "None"
         await msg.send("Files currently saved are as follows\n\n" + message)
+
+    @commands.command("update")
+    async def update(self, msg, *args):
+        if not self.config.checkPerms(msg): # Check the user has a role in trustedRoles
+            await msg.channel.send(self.config.permsError)
+            return
+        f = Path("updatebot.sh")
+        if f.is_file():
+            subprocess.call(['sh', './updatebot.sh'])
+            sys.exit()
+        else:
+            await msg.channel.send("No update script found")
