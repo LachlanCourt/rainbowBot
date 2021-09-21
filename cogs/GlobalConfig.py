@@ -1,45 +1,14 @@
-import sys, json
-
 class GlobalConfig():
-    def __init__(self):
-        # Load config file
-        self.whitelist = []
-        self.trustedRoles = []
-        self.logChannelName = ""
-        self.moderationChannelName = ""
-        self.reportingChannelsList = []
-        self.OAuthToken = None
-        try:
-            f = open('config.json')
-            data = json.load(f)
-            self.whitelist = data["whitelisted"]
-            self.trustedRoles = data["trustedRoles"]
-            self.logChannelName = data["logChannel"]
-            self.moderationChannelName = data["moderationChannel"]
-            self.reportingChannelsList = data["reportingChannels"]
-            self.OAuthToken = data["OAuthToken"]
-        except:
-            print("Error loading config file. Please ensure it matches the specifications")
-            sys.exit()
-
-        # Load role menu file
-        self.rolemenuData = {}
-        try:
-            f = open("rolemenu.dat")
-            self.rolemenuData = json.load(f)
-            f.close()
-        except:
-            pass
-
-        # Load locked channel data
-        self.lockedChannels = []
-        try:
-            f = open("locked.dat")
-            data = json.load(f)
-            self.lockedChannels = data["channels"]
-            f.close()
-        except:
-            pass
+    def __init__(self, whitelist, trustedRoles, logChannelName, moderationChannelName, reportingChannelsList, OAuthToken, roleMenuData, lockedChannels):
+        #self()
+        self.whitelist = whitelist
+        self.trustedRoles = trustedRoles
+        self.logChannelName = logChannelName
+        self.moderationChannelName = moderationChannelName
+        self.reportingChannelsList = reportingChannelsList
+        self.OAuthToken = OAuthToken
+        self.roleMenuData = roleMenuData
+        self.lockedChannels = lockedChannels        
 
         self.reactions = "🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿".split()
 
