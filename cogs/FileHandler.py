@@ -4,8 +4,11 @@ from pathlib import Path
 
 class FileHandler(commands.Cog):
     
-    def __init__(self, bot):
+    def __init__(self, bot, sourceFiles, checkPerms, permsError):
         self.bot = bot
+        self.sourceFiles = sourceFiles
+        self.checkPerms = checkPerms
+        self.permsError = permsError
 
     def findNewFilename(self, filename):
         # Check if the filename has an integer in parentheses like filename(1).dat
@@ -37,9 +40,9 @@ class FileHandler(commands.Cog):
     
     @commands.command("addfile")
     async def addfile(self, msg, *args):
-        #if not checkPerms(msg): # Check the user has a role in trustedRoles
-            #await msg.channel.send(permsError)
-            #return
+        if not self.checkPerms(msg): # Check the user has a role in trustedRoles
+            await msg.channel.send(self.permsError)
+            return
         message = msg.message
         if len(message.attachments) != 1:
             await msg.send("Please attach a single file to this message")
@@ -68,14 +71,13 @@ class FileHandler(commands.Cog):
 
     @commands.command("remfile")
     async def remfile(self, msg, *args):
-        #if not checkPerms(msg): # Check the user has a role in trustedRoles
-            #await msg.channel.send(permsError)
-            #return
+        if not self.checkPerms(msg): # Check the user has a role in trustedRoles
+            await msg.channel.send(self.permsError)
+            return
         if len(args) != 1:
             await msg.send("Filename not specified")
-        sourceFiles = []
         f = Path(args[0])
-        if not f.is_file() or "/" in args[0] or "\\" in args[0] or args[0] in sourceFiles:
+        if not f.is_file() or "/" in args[0] or "\\" in args[0] or args[0] in self.sourceFiles:
             await msg.send("File does not exist")
             return
         os.remove(args[0])
@@ -83,13 +85,12 @@ class FileHandler(commands.Cog):
 
     @commands.command("listfiles")
     async def listfiles(self, msg, *args):
-        #if not checkPerms(msg): # Check the user has a role in trustedRoles
-            #await msg.channel.send(permsError)
-            #return
+        if not self.checkPerms(msg): # Check the user has a role in trustedRoles
+            await msg.channel.send(self.permsError)
+            return
         message = ""
-        sourceFiles = []
         for file in os.listdir('./'):
-            if file not in sourceFiles:
+            if file not in self.sourceFiles:
                 message += file + "\n"
         if message == "":
             message = "None"

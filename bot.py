@@ -2,7 +2,7 @@ import discord, json, sys, os, subprocess, re
 from discord.ext import commands
 from pathlib import Path
 
-#Import cogs
+# Import cogs
 from cogs.FileHandler import FileHandler
 
 # Intents give us access to some additional discord moderation features
@@ -543,7 +543,7 @@ async def lock(msg, *args):
     f.close()
 
 
-client.add_cog(FileHandler(client))
+client.add_cog(FileHandler(client, sourceFiles, checkPerms, permsError))
 
 try:
     client.run(OAuthToken)
