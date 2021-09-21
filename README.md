@@ -91,6 +91,7 @@ Feature can be disabled by leaving "logChannel" an empty string `""`
 ## Contribution
 Contributions are welcome! Please read the [contribution guide](https://github.com/LachlanCourt/rainbowBot/blob/master/contribution%20guide.md) before commencing development
 
+
 ## TODO
 Tasks for future development are maintained as [issues](https://github.com/LachlanCourt/rainbowBot/issues)
 
