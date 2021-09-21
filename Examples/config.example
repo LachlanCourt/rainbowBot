@@ -1,7 +1,7 @@
 {
 "whitelisted":["Lachourt"],
 "logChannel": "modlog",
-"moderationChannel: "edit-delete-log",
+"moderationChannel": "edit-delete-log",
 "reportingChannels":[["verification", "pending-verifications", "@user sent in their verification code:```@message```"], ["report", "modlog", "@user sent a message to report:\n\n@message"]],
 "trustedRoles":["Mods", "Admins"],
 "OAuth":"AAAAbbbbbddDDD.fffUUUUUSSSSSDDDK.FF_aaeeehhhgg"
