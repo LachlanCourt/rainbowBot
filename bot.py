@@ -1,59 +1,71 @@
 import discord, json, sys, os, subprocess, re
 from discord.ext import commands
 from pathlib import Path
+import argparse
 
 # Intents give us access to some additional discord moderation features
 intents = discord.Intents.all()
 client = commands.Bot(command_prefix="$rain", intents=intents)
 
-# Load config file
+# Config
 whitelist = []
 trustedRoles = []
 logChannelName = ""
 moderationChannelName = ""
 reportingChannelsList = []
 OAuthToken = None
-try:
-    f = open('config.json')
-    data = json.load(f)
-    whitelist = data["whitelisted"]
-    trustedRoles = data["trustedRoles"]
-    logChannelName = data["logChannel"]
-    moderationChannelName = data["moderationChannel"]
-    reportingChannelsList = data["reportingChannels"]
-    OAuthToken = data["OAuth"]
-except:
-    print("Error loading config file. Please ensure it matches the specifications")
-    sys.exit()
-
-# Load role menu file
-try:
-    f = open("rolemenu.dat")
-    rolemenuData = json.load(f)
-    f.close()
-except:
-    rolemenuData = {}
-
-# Load locked channel data
-try:
-    f = open("locked.dat")
-    data = json.load(f)
-    lockedChannels = data["channels"]
-    f.close()
-except:
-    lockedChannels = []
-
-reactions = "🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿".split()
+rolemenuData = {}
+lockedChannels = []
+reportingChannels = {}
 
 # Source files cannot be removed and will not show up with a listfiles command, but they can be overwritten
 sourceFiles = [".git", ".gitignore", "config.json", "bot.py", "README.md", "Examples", "updatebot.sh", "LICENCE", "locked.dat", "rolemenu.dat"]
 
 permsError = "You don't have permission to use this command"
 
+reactions = "🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿".split()
+
 # Prepare reporting channels
-reportingChannels = {}
-for i in reportingChannelsList:
-    reportingChannels[i[0]] = [i[1], i[2]]
+def prepareReportingChannels():
+    for i in reportingChannelsList:
+        reportingChannels[i[0]] = [i[1], i[2]]
+
+# Parse config file
+def parseConfig(filePath):
+    try:
+       f = open(filePath)
+    except Exception as e:
+        raise Exception(e)
+
+    try:
+        data = json.load(f)
+        whitelist = data["whitelisted"]
+        trustedRoles = data["trustedRoles"]
+        logChannelName = data["logChannel"]
+        moderationChannelName = data["moderationChannel"]
+        reportingChannelsList = data["reportingChannels"]
+        OAuthToken = data["OAuth"]
+    except Exception as e:
+        raise Exception(e)
+
+# Load role menu file
+def loadRoleMenuData(filePath):
+    try:
+        f = open(filePath)
+        rolemenuData = json.load(f)
+        f.close()
+    except:
+        rolemenuData = {}
+
+# Load locked channel data
+def loadLockedChannelData(filePath):
+    try:
+        f = open(filePath)
+        data = json.load(f)
+        lockedChannels = data["channels"]
+        f.close()
+    except:
+        lockedChannels = []
 
 # Only discord users with a role in the trustedRoles list will be allowed to use bot commands    
 def checkPerms(msg, author=False):
@@ -615,8 +627,20 @@ async def lock(msg, *args):
     json.dump(data, f)
     f.close()
 
-try:
-    client.run(OAuthToken)
-    print('Closed')
-except:
-    print("Error starting bot, check OAuth token in Config")
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Process command line arguments')
+    parser.add_argument("-C", "--config-file", action="store", dest="configFilePath", default="config.json", required=False, help="File to load config from")
+    parser.add_argument("-R", "--role-file", action="store", dest="roleMenuFilePath", default="rolemenu.dat", required=False, help="File to load role data from")
+    parser.add_argument("-L", "--locked-file", action="store", dest="lockedChannelFilePath", default="locked.dat", required=False, help="file to load locked channel data from")
+    args = parser.parse_args()
+
+    loadRoleMenuData(args.roleMenuFilePath)
+    loadLockedChannelData(args.lockedChannelFilePath)
+    try:
+        parseConfig(args.configFilePath)
+        prepareReportingChannels()
+        client.run(OAuthToken)
+        print('Closed')
+    except Exception as e:
+        print(e)
