@@ -1,12 +1,12 @@
 class GlobalConfig():
-    def __init__(self, whitelist, trustedRoles, logChannelName, moderationChannelName, reportingChannelsList, OAuthToken, roleMenuData, lockedChannels):
+    def __init__(self, whitelist, trustedRoles, logChannelName, moderationChannelName, reportingChannelsList, OAuthToken, rolemenuData, lockedChannels):
         self.whitelist = whitelist
         self.trustedRoles = trustedRoles
         self.logChannelName = logChannelName
         self.moderationChannelName = moderationChannelName
         self.reportingChannelsList = reportingChannelsList
         self.OAuthToken = OAuthToken
-        self.roleMenuData = roleMenuData
+        self.rolemenuData = rolemenuData
         self.lockedChannels = lockedChannels        
 
         self.reactions = "🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿".split()

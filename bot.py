@@ -39,7 +39,7 @@ except:
 rolemenuData = {}
 try:
     f = open("rolemenu.dat")
-    self.rolemenuData = json.load(f)
+    rolemenuData = json.load(f)
     f.close()
 except:
     pass
