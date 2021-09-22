@@ -9,6 +9,7 @@ from cogs.FileHandler import FileHandler
 from cogs.Moderation import Moderation
 from cogs.RoleMenu import RoleMenu
 from cogs.MessageHandler import MessageHandler
+from cogs.Tasks import Tasks
 
 # Intents give us access to some additional discord moderation features
 intents = discord.Intents.all()
@@ -67,6 +68,7 @@ client.add_cog(FileHandler(client, config))
 client.add_cog(Moderation(client, config))
 client.add_cog(RoleMenu(client, config))
 client.add_cog(MessageHandler(client, config))
+client.add_cog(Tasks(client, config))
 
 # Start bot
 try:
