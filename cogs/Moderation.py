@@ -130,7 +130,7 @@ class Moderation(commands.Cog):
             return
 
         # Set up a way to unlock the channel
-        message = await msg.channel.send("Channel" + (("") if (channel.name == msg.channel.name) else (" \"" + channel.name + "\"")) + " locked! React with trusted permissions to unlock")
+        message = await msg.channel.send("Channel" + (("") if (channel.name == msg.channel.name) else (" " + channel.mention)) + " locked! React with trusted permissions to unlock")
         await message.add_reaction("🔓") 
 
         # Add the locked channel to the list so that it can be unlocked again
