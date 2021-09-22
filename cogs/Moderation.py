@@ -136,10 +136,11 @@ class Moderation(commands.Cog):
         # Add the locked channel to the list so that it can be unlocked again
         self.config.lockedChannels[str(message.id)] = channel.name
         # Delete the command message. If this comes as a command then the first line will run, if it is called from Tasks cog then the second line will run
-        try:
-            await msg.message.delete(delay=None)
-        except:
+        if len(args) > 1 and args[1]:
             await msg.delete(delay=None)
+        else:
+            await msg.message.delete(delay=None)
+            
         # Lock channel
         await channel.set_permissions(role, read_messages=True, send_messages=False)
         data = {'channels':self.config.lockedChannels}

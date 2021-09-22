@@ -76,7 +76,7 @@ class Tasks(commands.Cog):
                     # Send lock message
                     message = await logChannel.send("Locking channel " + task[2] + "...")
                     # Save returned message
-                    await Moderation.lock(self, message, task[2])
+                    await Moderation.lock(self, message, task[2], True)
             if task[1] == "lock" and task[3] == "until" and self.isNow(task[4]):
                 
                 if task[2] in list(self.config.lockedChannels.values()):
