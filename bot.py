@@ -1,6 +1,5 @@
 import discord, argparse
 from discord.ext import commands
-import argparse
 
 # To hold global configuration and variables
 from cogs.GlobalConfig import GlobalConfig
