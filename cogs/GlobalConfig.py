@@ -29,6 +29,9 @@ class GlobalConfig():
                 self.reportingChannels[i[0]] = [i[1], i[2]]
         try:
             f = open(filePath)
+        except Exception as e:
+            raise Exception(e)
+        try:
             data = json.load(f)
             self.whitelist = data["whitelisted"]
             self.trustedRoles = data["trustedRoles"]
@@ -39,7 +42,7 @@ class GlobalConfig():
             prepReportingChannels()
             f.close()
         except Exception as e:
-            raise Exception(e)
+            raise Exception(f"Error: Cannot parse {filePath}: " + str(e))
 
     # Parse role menu data
     def _parseRoleMenuData(self, filePath):
