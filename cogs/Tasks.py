@@ -87,10 +87,11 @@ class Tasks(commands.Cog):
                     logChannel = discord.utils.get(self.client.get_all_channels(), guild__name=guild.name, name=self.config.logChannelName)
                     message = await logChannel.fetch_message(int(messageID))
                     # Remove and then re-add the reaction to trigger the normal unlock process
-                    self.config.processReaction = True
-                    await message.clear_reactions()
-                    await message.add_reaction("🔓") 
-                    self.config.processReaction = False
+                    await Moderation.unlock(self, message, task[2])
+##                    self.config.processReaction = True
+##                    await message.clear_reactions()
+##                    await message.add_reaction("🔓") 
+##                    self.config.processReaction = False
                     
                     
                 

@@ -163,23 +163,27 @@ class Moderation(commands.Cog):
         # Check first if the reaction is for a channel that is currently locked
         if str(message.id) in self.config.lockedChannels:
             # Get the channel that was locked
-            channel = discord.utils.get(self.client.get_all_channels(), guild__name=message.guild.name, name=self.config.lockedChannels[str(message.id)])
-            
-            roleName = self.config.lockedChannels[str(message.id)].upper()
-            guild = channel.guild
-            
-            role = self.config.getRole(roleName, guild)
-            if role == None:
-                return
-            
+
             if reaction.emoji.name == "🔓" and self.config.checkPerms(reaction.member, author=True):
-                await channel.set_permissions(role, read_messages=True, send_messages=None)
-                del(self.config.lockedChannels[str(message.id)])
-                data = {'channels':self.config.lockedChannels}
+                await self.unlock(message, self.config.lockedChannels[str(message.id)])
 
-                await message.delete(delay=None)
+    async def unlock(self, message, channelName):
+        channel = discord.utils.get(self.client.get_all_channels(), guild__name=message.guild.name, name=channelName)
+        guild = channel.guild
 
-                f = open("locked.dat", "w")
-                json.dump(data, f)
-                f.close()
+        roleName = self.config.lockedChannels[str(message.id)].upper()
+        role = self.config.getRole(roleName, guild)
+        if role == None:
             return
+        
+        await channel.set_permissions(role, read_messages=True, send_messages=None)
+        del(self.config.lockedChannels[str(message.id)])
+        data = {'channels':self.config.lockedChannels}
+
+        await message.delete(delay=None)
+
+        f = open("locked.dat", "w")
+        json.dump(data, f)
+        f.close()
+        return
+        
