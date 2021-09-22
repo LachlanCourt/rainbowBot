@@ -12,7 +12,7 @@ class Moderation(commands.Cog):
         guild = self.client.get_guild(rawMessage.guild_id)
         channel = self.client.get_channel(rawMessage.channel_id)
         # If the message was sent before the bot was logged on, it is unfortunately innaccessible. Ignore also if the author is on the whitelist or if the channel is locked (The lock channel command deletes the message of the sender automatically)
-        if not rawMessage.cached_message or channel.name in self.config.reportingChannels or rawMessage.cached_message.author.name in self.config.whitelist or channel.name in self.config.lockedChannels:
+        if not rawMessage.cached_message or channel.name in self.config.reportingChannels or rawMessage.cached_message.author.name in self.config.whitelist or channel.name in list(self.config.lockedChannels.values()) or rawMessage.cached_message.content.startswith("$rain"):
             return    
         message = rawMessage.cached_message
         member = guild.get_member(message.author.id)
@@ -101,8 +101,23 @@ class Moderation(commands.Cog):
             await msg.channel.send(self.config.permsError)
             return
 
+        # If no arguments are given, assume the channel the message was sent in should be locked
+        if len(args) == 0:
+            channel = msg.channel
+        else:
+            # Try as given, lowercase and uppercase
+            options = [args[0], args[0].lower(), args[0].upper()]
+            channel = None
+            for name in options:
+                channel = discord.utils.get(self.client.get_all_channels(), guild__name=msg.guild.name, name=name)
+                if channel != None:
+                    break
+            if channel == None:
+                await msg.channel.send("Channel \"" + args[0] + "\" not found. Please check your spelling")
+                return
+        
         # Find the role that affects send message permissions in this channel
-        roleName = msg.channel.name.upper()
+        roleName = channel.name.upper()
         guild = msg.guild
         role = None
         for i in guild.roles:
@@ -111,18 +126,20 @@ class Moderation(commands.Cog):
 
         # The role name needs to match the uppercase version of the channel name. This will be the case if channels have been made with the automatic channel creation
         if role == None:
-            await msg.channel.send("Channel can not be locked")
+            await channel.send("Channel can not be locked")
             return
 
-        # Lock the channel
-        self.config.lockedChannels.append(msg.channel.name)
-        await msg.message.delete(delay=None)
-        await msg.channel.set_permissions(role, read_messages=True, send_messages=False)
-        data = {'channels':self.config.lockedChannels}
-
         # Set up a way to unlock the channel
-        channel = await msg.channel.send("Channel locked! React with trusted permissions to unlock!")
-        await channel.add_reaction("🔓") 
+        message = await msg.channel.send("Channel" + (("") if (channel.name == msg.channel.name) else (" " + channel.mention)) + " locked! React with trusted permissions to unlock")
+        await message.add_reaction("🔓") 
+
+        # Add the locked channel to the list so that it can be unlocked again
+        self.config.lockedChannels[str(message.id)] = channel.name
+        # Delete the command message
+        await msg.message.delete(delay=None)
+        # Lock channel
+        await channel.set_permissions(role, read_messages=True, send_messages=False)
+        data = {'channels':self.config.lockedChannels}
 
         # Save the list of currently locked channels incase the bot goes offline
         f = open("locked.dat", "w")
@@ -135,29 +152,29 @@ class Moderation(commands.Cog):
     async def on_raw_reaction_add(self, reaction):
         if reaction.member.bot: # Ignore reaction remove and add events from itself (when editing the menu)
             return
-        
+          
         # Grab necessary data to analyse the event
-        channel = self.client.get_channel(reaction.channel_id)
-        msg = await channel.fetch_message(reaction.message_id)
+        messageChannel = self.client.get_channel(reaction.channel_id)
+        message = await messageChannel.fetch_message(reaction.message_id)                
 
         # Check first if the reaction is for a channel that is currently locked
-        if channel.name in self.config.lockedChannels:
-            roleName = msg.channel.name.upper()
+        if str(message.id) in self.config.lockedChannels:
+            # Get the channel that was locked
+            channel = discord.utils.get(self.client.get_all_channels(), guild__name=message.guild.name, name=self.config.lockedChannels[str(message.id)])
+            
+            roleName = self.config.lockedChannels[str(message.id)].upper()
             guild = channel.guild
             
-            role = None
-            for i in guild.roles:
-                if i.name == roleName:
-                    role = i
-
+            role = self.config.getRole(roleName, guild)
             if role == None:
                 return
+            
             if reaction.emoji.name == "🔓" and self.config.checkPerms(reaction.member, author=True):
-                await msg.channel.set_permissions(role, read_messages=True, send_messages=None)
-                self.config.lockedChannels.remove(msg.channel.name)
+                await channel.set_permissions(role, read_messages=True, send_messages=None)
+                del(self.config.lockedChannels[str(message.id)])
                 data = {'channels':self.config.lockedChannels}
 
-                await msg.delete(delay=None)
+                await message.delete(delay=None)
 
                 f = open("locked.dat", "w")
                 json.dump(data, f)
