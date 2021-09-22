@@ -35,7 +35,7 @@ class GlobalConfig():
             self.logChannelName = data["logChannel"]
             self.moderationChannelName = data["moderationChannel"]
             self.reportingChannelsList = data["reportingChannels"]
-            self.OAuthToken = data["OAuth"]
+            self.OAuthToken = data["OAuthToken"]
             prepReportingChannels()
             f.close()
         except Exception as e:
