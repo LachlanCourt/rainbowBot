@@ -97,7 +97,7 @@ class Moderation(commands.Cog):
 
     @commands.command("lock")
     async def lock(self, msg, *args):
-        if not self.config.checkPerms(msg): # Check the user has a role in trustedRoles
+        if not self.config.checkPerms(msg.author, True): # Check the user has a role in trustedRoles
             await msg.channel.send(self.config.permsError)
             return
 
@@ -131,12 +131,15 @@ class Moderation(commands.Cog):
 
         # Set up a way to unlock the channel
         message = await msg.channel.send("Channel" + (("") if (channel.name == msg.channel.name) else (" " + channel.mention)) + " locked! React with trusted permissions to unlock")
-        await message.add_reaction("🔓") 
+        await message.add_reaction("🔓")         
 
         # Add the locked channel to the list so that it can be unlocked again
         self.config.lockedChannels[str(message.id)] = channel.name
-        # Delete the command message
-        await msg.message.delete(delay=None)
+        # Delete the command message. If this comes as a command then the first line will run, if it is called from Tasks cog then the second line will run
+        try:
+            await msg.message.delete(delay=None)
+        except:
+            await msg.delete(delay=None)
         # Lock channel
         await channel.set_permissions(role, read_messages=True, send_messages=False)
         data = {'channels':self.config.lockedChannels}
@@ -150,7 +153,7 @@ class Moderation(commands.Cog):
     # For the reaction add event regarding assigning roles, check RoleMenu cog
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, reaction):
-        if reaction.member.bot: # Ignore reaction remove and add events from itself (when editing the menu)
+        if reaction.member.bot and not self.config.processReaction: # Ignore reaction remove and add events from itself
             return
           
         # Grab necessary data to analyse the event

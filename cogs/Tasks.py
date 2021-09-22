@@ -9,7 +9,7 @@ class Tasks(commands.Cog):
     def __init__(self, client, config):
         self.client = client
         self.config = config
-        self.printer.start()
+        self.scheduler.start()
 
     @staticmethod
     def isNow(cronStamp):
@@ -52,8 +52,8 @@ class Tasks(commands.Cog):
 ##        await Moderation.lock(self, msg, "comp1000")
 
     
-    @tasks.loop(seconds=5.0) # Change to minutes
-    async def printer(self):
+    @tasks.loop(minutes=1.0)
+    async def scheduler(self):
         # Reads file in the same format as crontab
         # Minute Hour Date Month Day
         f = open("tasks.json")
@@ -61,14 +61,37 @@ class Tasks(commands.Cog):
         f.close()
         tasks = data["tasks"]
 
-        for i in tasks:
-            if isNow(i[0]):
-                if i[1] == "lock":
-                    # Generate message object
+        guild = None
+        for i in self.client.guilds:
+            if i.name == data["serverName"]:
+                guild = i
+        if guild == None:
+            return
 
+        for task in tasks:
+            if self.isNow(task[0]):
+                if task[1] == "lock":
                     # Get log channel
+                    logChannel = discord.utils.get(self.client.get_all_channels(), guild__name=guild.name, name=self.config.logChannelName)
                     # Send lock message
+                    message = await logChannel.send("Locking channel " + task[2] + "...")
                     # Save returned message
-                    Moderation.lock(self, message, i[2])
+                    await Moderation.lock(self, message, task[2])
+            if task[1] == "lock" and task[3] == "until" and self.isNow(task[4]):
+                
+                if task[2] in list(self.config.lockedChannels.values()):
+                    messageID = None
+                    for i in self.config.lockedChannels:
+                        if self.config.lockedChannels[i] == task[2]:
+                            messageID = i
+                    logChannel = discord.utils.get(self.client.get_all_channels(), guild__name=guild.name, name=self.config.logChannelName)
+                    message = await logChannel.fetch_message(int(messageID))
+                    # Remove and then re-add the reaction to trigger the normal unlock process
+                    self.config.processReaction = True
+                    await message.clear_reactions()
+                    await message.add_reaction("🔓") 
+                    self.config.processReaction = False
+                    
+                    
+                
         
-        print(tasks)
