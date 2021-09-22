@@ -1,4 +1,4 @@
-import discord
+import discord, argparse
 from discord.ext import commands
 import argparse
 
