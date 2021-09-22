@@ -1,6 +1,6 @@
 import json
 class GlobalConfig():
-    def __init__(self, whitelist, trustedRoles, logChannelName, moderationChannelName, reportingChannelsList, OAuthToken, roleMenuData, lockedChannels):
+    def __init__(self):
         self.whitelist = []
         self.trustedRoles = []
         self.logChannelName = ""
