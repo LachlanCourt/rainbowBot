@@ -8,7 +8,7 @@ class GlobalConfig():
         self.reportingChannelsList = []
         self.reportingChannels = {}
         self.OAuthToken = None
-        self.roleMenuData = {}
+        self.rolemenuData = {}
         self.lockedChannels = []   
         self.reactions = "🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿".split()
         self.permsError = "You don't have permission to use this command"
