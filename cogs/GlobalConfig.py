@@ -15,14 +15,16 @@ class GlobalConfig():
         # Source files cannot be removed and will not show up with a listfiles command, but they can be overwritten
         self.sourceFiles = [".git", ".gitignore", "config.json", "bot.py", "README.md", "Examples", "updatebot.sh", "LICENCE", "locked.dat", "rolemenu.dat"]
 
+    # Parse all configs
     def parseAll(self, configFilePath, roleMenuFilePath, lockedChannelFilePath):   
         self._parseConfig(configFilePath)
         self._parseRoleMenuData(roleMenuFilePath)
         self._parseLockedChannelData(lockedChannelFilePath)
 
+    # Parse main config
     def _parseConfig(self, filePath):
         # Prepare reporting channels
-        def prepReportingChannels(self):
+        def prepReportingChannels():
             for i in self.reportingChannelsList:
                 self.reportingChannels[i[0]] = [i[1], i[2]]
         try:
@@ -39,6 +41,7 @@ class GlobalConfig():
         except Exception as e:
             raise Exception(e)
 
+    # Parse role menu data
     def _parseRoleMenuData(self, filePath):
         try:
             f = open(filePath)
@@ -47,6 +50,7 @@ class GlobalConfig():
         except Exception:
             self.rolemenuData = {}
 
+    # Parse locked channel data
     def _parseLockedChannelData(self, filePath):
         try:
             f = open(filePath)
