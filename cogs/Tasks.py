@@ -102,8 +102,57 @@ class Tasks(commands.Cog):
             await msg.channel.send("No file specified")
             return
 
-        valid, response = Validator.validate(args[0])
+        filename = args[0]
+        if not filename.endswith(".json"):
+            filename += ".json"
+
+        valid, response = Validator.validate(filename)
         await msg.channel.send(response)
+
+    @commands.command("addtask")
+    async def addtask(self, msg, *args):
+        if not self.config.checkPerms(msg): # Check the user has a role in trustedRoles
+            await msg.channel.send(self.config.permsError)
+            return
+        if len(args) == 0:
+            await msg.channel.send("No file specified")
+            return
+        
+        filename = args[0]
+        if not filename.endswith(".json"):
+            filename += ".json"
+            
+        valid, response = Validator.validate(filename)
+        if valid:
+            self.config.registeredTasks.append(filename)
+            f = open("tasks.dat", "w")
+            json.dump({"registeredTasks":self.config.registeredTasks}, f)
+            f.close()
+            await msg.channel.send("Task file " + filename + " registered successfully")
+        else:
+            await msg.channel.send("Invalid filename " + args[0])
+
+    @commands.command("remtask")
+    async def remtask(self, msg, *args):
+        if not self.config.checkPerms(msg): # Check the user has a role in trustedRoles
+            await msg.channel.send(self.config.permsError)
+            return
+        if len(args) == 0:
+            await msg.channel.send("No file specified")
+            return
+
+        filename = args[0]
+        if not filename.endswith(".json"):
+            filename += ".json"
+
+        if filename in self.config.registeredTasks:
+            self.config.registeredTasks.remove(filename)
+            f = open(self.config.tasksFilepath, "w")
+            json.dump({"registeredTasks":self.config.registeredTasks}, f)
+            f.close()
+            await msg.channel.send("Task file " + filename + " unregistered successfully")
+        else:
+            await msg.channel.send("Task file " + filename + " is not currently registered")
 
 
 
