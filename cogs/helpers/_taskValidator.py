@@ -18,14 +18,14 @@ class Validator:
             for task in tasks:
                 start = task[0].split()
                 command = task[1]
-                channelName = task[2]
+                args = task[2]
                 preposition = task[3]
                 end = task[4].split()
-                out += f"Excecute command \"{command}\" at {start[1] if start[1] != '*' else 'any'}:{start[0] if start[0] != '*' else 'any'}"
+                out += f"Excecute command `{command} {args}` at {start[1] if start[1] != '*' else 'any'}:{start[0] if start[0] != '*' else 'any'}"
                 out += f" on day {start[2] if start[2] != '*' else 'any'} of {months[start[3]]} if it is {days[start[4]]}day\n"
 
                 if preposition == "until":
-                    out += f"    Revert command \"{command}\" at {end[1] if end[1] != '*' else 'any'}:{end[0] if end[0] != '*' else 'any'}"
+                    out += f"    Revert command `{command} {args}` at {end[1] if end[1] != '*' else 'any'}:{end[0] if end[0] != '*' else 'any'}"
                     out += f" on day {end[2] if end[2] != '*' else 'any'} of {months[end[3]]} if it is {days[end[4]]}day\n\n"
 
             return True, "File is valid. Tasks will run at the following times:\n\n" + out
