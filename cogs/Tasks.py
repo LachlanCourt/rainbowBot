@@ -69,25 +69,29 @@ class Tasks(commands.Cog):
             return
 
         for task in tasks:
-            if self.isNow(task[0]):
-                if task[1] == "lock":
+            start = task[0]
+            command = task[1]
+            channelName = task[2]
+            preposition = preposition
+            end = task[4]
+            if command == "lock":
+                if self.isNow(start):
                     # Get log channel
                     logChannel = discord.utils.get(self.client.get_all_channels(), guild__name=guild.name, name=self.config.logChannelName)
                     # Send lock message
-                    message = await logChannel.send("Locking channel " + task[2] + "...")
+                    message = await logChannel.send("Locking channel " + channelName + "...")
                     # Save returned message
-                    await Moderation.lock(self, message, task[2], True)
-            if task[1] == "lock" and task[3] == "until" and self.isNow(task[4]):
-                
-                if task[2] in list(self.config.lockedChannels.values()):
-                    messageID = None
-                    for i in self.config.lockedChannels:
-                        if self.config.lockedChannels[i] == task[2]:
-                            messageID = i
-                    logChannel = discord.utils.get(self.client.get_all_channels(), guild__name=guild.name, name=self.config.logChannelName)
-                    message = await logChannel.fetch_message(int(messageID))
-                    # Call the unlock function on the channel which will delete the message
-                    await Moderation.unlock(self, message, task[2])
+                    await Moderation.lock(self, message, channelName, True)
+                if preposition == "until" and self.isNow(end):
+                    if channelName in list(self.config.lockedChannels.values()):
+                        messageID = None
+                        for i in self.config.lockedChannels:
+                            if self.config.lockedChannels[i] == channelName:
+                                messageID = i
+                        logChannel = discord.utils.get(self.client.get_all_channels(), guild__name=guild.name, name=self.config.logChannelName)
+                        message = await logChannel.fetch_message(int(messageID))
+                        # Call the unlock function on the channel which will delete the message
+                        await Moderation.unlock(self, message, channelName)
 
                     
                     
