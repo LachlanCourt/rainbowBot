@@ -1,4 +1,4 @@
-import discord, sys, json
+import discord, argparse
 from discord.ext import commands
 
 # To hold global configuration and variables
@@ -15,49 +15,8 @@ from cogs.Tasks import Tasks
 intents = discord.Intents.all()
 client = commands.Bot(command_prefix="$rain", intents=intents)
 
-# Load config file
-whitelist = []
-trustedRoles = []
-logChannelName = ""
-moderationChannelName = ""
-reportingChannelsList = []
-OAuthToken = None
-try:
-    f = open('config.json')
-    data = json.load(f)
-    whitelist = data["whitelisted"]
-    trustedRoles = data["trustedRoles"]
-    logChannelName = data["logChannel"]
-    moderationChannelName = data["moderationChannel"]
-    reportingChannelsList = data["reportingChannels"]
-    OAuthToken = data["OAuthToken"]
-    f.close()
-except:
-    print("Error loading config file. Please ensure it matches the specifications")
-    sys.exit()
-
-# Load role menu file
-rolemenuData = {}
-try:
-    f = open("rolemenu.dat")
-    rolemenuData = json.load(f)
-    f.close()
-except:
-    pass
-
-# Load locked channel data
-lockedChannels = {}
-try:
-    f = open("locked.dat")
-    data = json.load(f)
-    lockedChannels = data["channels"]
-    f.close()
-except:
-    pass
-
-
 # Load the global config which will run some file reads and set default variables
-config = GlobalConfig(whitelist, trustedRoles, logChannelName, moderationChannelName, reportingChannelsList, OAuthToken, rolemenuData, lockedChannels)
+config = GlobalConfig()
 
 @client.event
 async def on_ready():
@@ -71,8 +30,16 @@ client.add_cog(MessageHandler(client, config))
 client.add_cog(Tasks(client, config))
 
 # Start bot
-try:
-    client.run(config.OAuthToken)
-    print('Closed')
-except:
-    print("Error starting bot, check OAuth Token in Config")
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Process command line arguments')
+    parser.add_argument("-C", "--config-file", action="store", dest="configFilePath", default="config.json", required=False, help="File to load config from")
+    parser.add_argument("-R", "--role-file", action="store", dest="roleMenuFilePath", default="rolemenu.dat", required=False, help="File to load role data from")
+    parser.add_argument("-L", "--locked-file", action="store", dest="lockedChannelFilePath", default="locked.dat", required=False, help="File to load locked channel data from")
+    args = parser.parse_args()
+
+    try:
+        config.parseAll(args.configFilePath, args.roleMenuFilePath, args.lockedChannelFilePath)
+        client.run(config.OAuthToken)
+        print('Closed')
+    except Exception as e:
+        print(e)
