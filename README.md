@@ -65,7 +65,9 @@ Feature can be disabled by leaving "moderationChannel" an empty string `""`
 ## Channel locking
 Channels that have been created with the automated channel creation can also be locked for a period of time by disabling send message permissions to the role that makes that channel available. This can be helpful during exams and assessment tasks in order to help moderate for academic integrity.
 
-`$rainlock` will disable send message permissions to the role with the same name as the channel the command is sent. A message will be sent by the bot with an unlocked padlock, a user with a "trustedRole" adding their reaction to this message will unlock the channel again.
+`$rainlock [channelName]` is a manual command that will disable send message permissions to the role with the same name as the selected channel. If no argument is given, the selected channel is the name of the channel in which the command is sent. If an argument is given, the selected channel will be the channel whose name matches the argument. Either way, a message will be sent by the bot into the channel the command was sent with an unlocked padlock, a user with a "trustedRole" adding their reaction to this message will unlock the channel again.
+
+Alternatively, a file with a schedule of lock and unlock times can be added into the root directory and registered with `$rainaddtask <filename>`. Registered task files will lock and unlock channels automatically according to the times specified. Note that the time will not fall exactly on the minute so it is recommended to choose a time slightly earlier than the exact time that you need a channel to be locked. The format of times in this file should match that of linux cron jobs. If at any point you are not using a specific file anymore, it is recommended that you run `$rainremtask <filename>` to unmount the task and save processing power.
 
 ## File Manipulation
 
