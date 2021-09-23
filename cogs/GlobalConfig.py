@@ -9,17 +9,20 @@ class GlobalConfig():
         self.reportingChannels = {}
         self.OAuthToken = None
         self.rolemenuData = {}
-        self.lockedChannels = []   
+        self.lockedChannels = {}
+        self.registeredTasks = []
+        self.tasksFilepath = ""
         self.reactions = "🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿".split()
         self.permsError = "You don't have permission to use this command"
         # Source files cannot be removed and will not show up with a listfiles command, but they can be overwritten
         self.sourceFiles = [".git", ".gitignore", "config.json", "bot.py", "README.md", "Examples", "updatebot.sh", "LICENCE", "locked.dat", "rolemenu.dat"]
 
     # Parse all configs
-    def parseAll(self, configFilePath, roleMenuFilePath, lockedChannelFilePath):   
+    def parseAll(self, configFilePath, roleMenuFilePath, lockedChannelFilePath, taskFilePath):   
         self._parseConfig(configFilePath)
         self._parseRoleMenuData(roleMenuFilePath)
         self._parseLockedChannelData(lockedChannelFilePath)
+        self._parseTaskData(taskFilePath)
 
     # Parse main config
     def _parseConfig(self, filePath):
@@ -61,7 +64,18 @@ class GlobalConfig():
             self.lockedChannels = data["channels"]
             f.close()
         except Exception:
-            self.lockedChannels = []
+            self.lockedChannels = {}
+
+    # Parse task data
+    def _parseTaskData(self, filePath):
+        self.tasksFilepath = filePath
+        try:
+            f = open(filePath)
+            data = json.load(f)
+            self.registeredTasks = data["registeredTasks"]
+            f.close()
+        except Exception:
+            self.registeredTasks = []
 
     # Only discord users with a role in the trustedRoles list will be allowed to use bot commands    
     def checkPerms(self, msg, author=False):
