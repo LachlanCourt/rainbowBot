@@ -3,6 +3,7 @@ from discord.ext import commands
 from discord.ext import tasks
 
 from cogs.Moderation import Moderation
+from cogs.helpers._taskValidator import Validator
 
 class Tasks(commands.Cog):
 
@@ -46,11 +47,6 @@ class Tasks(commands.Cog):
                 return False
 
         return True
-
-##    @commands.command("test")
-##    async def test(self, msg):
-##        await Moderation.lock(self, msg, "comp1000")
-
     
     @tasks.loop(minutes=1.0)
     async def scheduler(self):
@@ -72,7 +68,7 @@ class Tasks(commands.Cog):
             start = task[0]
             command = task[1]
             channelName = task[2]
-            preposition = preposition
+            preposition = task[3]
             end = task[4]
             if command == "lock":
                 if self.isNow(start):
@@ -93,7 +89,65 @@ class Tasks(commands.Cog):
                         # Call the unlock function on the channel which will delete the message
                         await Moderation.unlock(self, message, channelName)
 
-                    
+    @commands.command("checktask")
+    async def checktask(self, msg, *args):
+        if not self.config.checkPerms(msg): # Check the user has a role in trustedRoles
+            await msg.channel.send(self.config.permsError)
+            return
+        if len(args) == 0:
+            await msg.channel.send("No file specified")
+            return
+
+        valid, response = Validator.validate(args[0])
+        await msg.channel.send(response)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            
                     
                 
         
