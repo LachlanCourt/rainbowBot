@@ -10,7 +10,14 @@ class Tasks(commands.Cog):
     def __init__(self, client, config):
         self.client = client
         self.config = config
-        self.scheduler.start()
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        # If there are no registered tasks there is no reason for the scheduler to run
+        # Start this in here rather than in init function because init function runs before file read
+        # So registeredTasks would always be 0
+        if len(self.config.registeredTasks) > 0:
+            self.scheduler.start()
 
     @staticmethod
     def isNow(cronStamp):
@@ -129,6 +136,8 @@ class Tasks(commands.Cog):
             json.dump({"registeredTasks":self.config.registeredTasks}, f)
             f.close()
             await msg.channel.send("Task file " + filename + " registered successfully")
+            if not self.scheduler.is_running():
+                self.scheduler.start()
         else:
             await msg.channel.send("Invalid filename " + args[0])
 
@@ -143,7 +152,7 @@ class Tasks(commands.Cog):
 
         filename = args[0]
         if not filename.endswith(".json"):
-            filename += ".json"
+            filename += ".json"            
 
         if filename in self.config.registeredTasks:
             self.config.registeredTasks.remove(filename)
@@ -151,6 +160,8 @@ class Tasks(commands.Cog):
             json.dump({"registeredTasks":self.config.registeredTasks}, f)
             f.close()
             await msg.channel.send("Task file " + filename + " unregistered successfully")
+            if len(self.config.registeredTasks) == 0:
+                self.scheduler.stop()
         else:
             await msg.channel.send("Task file " + filename + " is not currently registered")
 

@@ -74,7 +74,6 @@ class GlobalConfig():
             data = json.load(f)
             self.registeredTasks = data["registeredTasks"]
             f.close()
-            
         except Exception:
             self.registeredTasks = []
 
