@@ -52,42 +52,46 @@ class Tasks(commands.Cog):
     async def scheduler(self):
         # Reads file in the same format as crontab
         # Minute Hour Date Month Day
-        f = open("tasks.json")
-        data = json.load(f)
-        f.close()
-        tasks = data["tasks"]
+        for filename in self.config.registeredTasks:
+            valid, n = Validator.validate(filename)
+            if not valid:
+                continue
+            f = open(filename)
+            data = json.load(f)
+            f.close()
+            tasks = data["tasks"]
 
-        guild = None
-        for i in self.client.guilds:
-            if i.name == data["serverName"]:
-                guild = i
-        if guild == None:
-            return
+            guild = None
+            for i in self.client.guilds:
+                if i.name == data["serverName"]:
+                    guild = i
+            if guild == None:
+                return
 
-        for task in tasks:
-            start = task[0]
-            command = task[1]
-            channelName = task[2]
-            preposition = task[3]
-            end = task[4]
-            if command == "lock":
-                if self.isNow(start):
-                    # Get log channel
-                    logChannel = discord.utils.get(self.client.get_all_channels(), guild__name=guild.name, name=self.config.logChannelName)
-                    # Send lock message
-                    message = await logChannel.send("Locking channel " + channelName + "...")
-                    # Save returned message
-                    await Moderation.lock(self, message, channelName, True)
-                if preposition == "until" and self.isNow(end):
-                    if channelName in list(self.config.lockedChannels.values()):
-                        messageID = None
-                        for i in self.config.lockedChannels:
-                            if self.config.lockedChannels[i] == channelName:
-                                messageID = i
+            for task in tasks:
+                start = task[0]
+                command = task[1]
+                channelName = task[2]
+                preposition = task[3]
+                end = task[4]
+                if command == "lock":
+                    if self.isNow(start):
+                        # Get log channel
                         logChannel = discord.utils.get(self.client.get_all_channels(), guild__name=guild.name, name=self.config.logChannelName)
-                        message = await logChannel.fetch_message(int(messageID))
-                        # Call the unlock function on the channel which will delete the message
-                        await Moderation.unlock(self, message, channelName)
+                        # Send lock message
+                        message = await logChannel.send("Locking channel " + channelName + "...")
+                        # Save returned message
+                        await Moderation.lock(self, message, channelName, True)
+                    if preposition == "until" and self.isNow(end):
+                        if channelName in list(self.config.lockedChannels.values()):
+                            messageID = None
+                            for i in self.config.lockedChannels:
+                                if self.config.lockedChannels[i] == channelName:
+                                    messageID = i
+                            logChannel = discord.utils.get(self.client.get_all_channels(), guild__name=guild.name, name=self.config.logChannelName)
+                            message = await logChannel.fetch_message(int(messageID))
+                            # Call the unlock function on the channel which will delete the message
+                            await Moderation.unlock(self, message, channelName)
 
     @commands.command("checktask")
     async def checktask(self, msg, *args):
