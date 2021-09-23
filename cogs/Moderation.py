@@ -154,7 +154,7 @@ class Moderation(commands.Cog):
     # For the reaction add event regarding assigning roles, check RoleMenu cog
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, reaction):
-        if reaction.member.bot and not self.config.processReaction: # Ignore reaction remove and add events from itself
+        if reaction.member.bot: # Ignore reaction remove and add events from itself
             return
           
         # Grab necessary data to analyse the event

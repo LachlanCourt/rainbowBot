@@ -8,7 +8,6 @@ class GlobalConfig():
         self.OAuthToken = OAuthToken
         self.rolemenuData = rolemenuData
         self.lockedChannels = lockedChannels
-        self.processReaction = False
 
         self.reactions = "🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿".split()
 
