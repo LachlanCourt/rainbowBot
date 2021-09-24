@@ -125,11 +125,14 @@ class Tasks(commands.Cog):
         if len(args) == 0:
             await msg.channel.send("No file specified")
             return
+        if "/" in filename or "\\" in filename:
+            await msg.channel.send("Cannot use relative filepaths or subdirectories")
+            return
         
         filename = args[0]
         if not filename.endswith(".json"):
             filename += ".json"
-            
+        
         valid, response = Validator.validate(filename)
         if valid:
             self.config.registeredTasks.append(filename)
