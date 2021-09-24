@@ -1,8 +1,8 @@
 {
-    "whitelisted": [],
-    "trustedRoles": [],
+    "whitelisted": [True],
+    "trustedRoles": [True],
     "logChannel": "",
     "moderationChannel": "",
-    "reportingChannels": [],
+    "reportingChannels": [True],
     "OAuthToken": ""
 }
