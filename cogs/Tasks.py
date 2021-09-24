@@ -82,12 +82,13 @@ class Tasks(commands.Cog):
                 preposition = task[3]
                 end = task[4]
                 if command == "lock":
-                    if self.isNow(start):
+                    # Only lock channel if it is not already locked
+                    if self.isNow(start) and channelName not in list(self.config.lockedChannels.values()):
                         # Get log channel
                         logChannel = discord.utils.get(self.client.get_all_channels(), guild__name=guild.name, name=self.config.logChannelName)
                         # Send lock message
                         message = await logChannel.send("Locking channel " + channelName + "...")
-                        # Save returned message
+                        # Lock channel specified
                         await Moderation.lock(self, message, channelName, True)
                     if preposition == "until" and self.isNow(end):
                         if channelName in list(self.config.lockedChannels.values()):
