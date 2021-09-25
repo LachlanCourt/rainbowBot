@@ -78,27 +78,28 @@ class Tasks(commands.Cog):
             for task in tasks:
                 start = task[0]
                 command = task[1]
-                channelName = task[2]
+                args = task[2]
                 preposition = task[3]
                 end = task[4]
                 if command == "lock":
-                    if self.isNow(start):
+                    # Only lock channel if it is not already locked
+                    if self.isNow(start) and args not in list(self.config.lockedChannels.values()):
                         # Get log channel
-                        logChannel = discord.utils.get(self.client.get_all_channels(), guild__name=guild.name, name=self.config.logChannelName)
+                        logChannel = discord.utils.get(self.client.get_all_channels(), guild__name=guild.name, name=self.config.logargs)
                         # Send lock message
-                        message = await logChannel.send("Locking channel " + channelName + "...")
-                        # Save returned message
-                        await Moderation.lock(self, message, channelName, True)
+                        message = await logChannel.send("Locking channel " + args + "...")
+                        # Lock channel specified
+                        await Moderation.lock(self, message, args, True)
                     if preposition == "until" and self.isNow(end):
-                        if channelName in list(self.config.lockedChannels.values()):
+                        if args in list(self.config.lockedChannels.values()):
                             messageID = None
                             for i in self.config.lockedChannels:
-                                if self.config.lockedChannels[i] == channelName:
+                                if self.config.lockedChannels[i] == args:
                                     messageID = i
-                            logChannel = discord.utils.get(self.client.get_all_channels(), guild__name=guild.name, name=self.config.logChannelName)
+                            logChannel = discord.utils.get(self.client.get_all_channels(), guild__name=guild.name, name=self.config.logargs)
                             message = await logChannel.fetch_message(int(messageID))
                             # Call the unlock function on the channel which will delete the message
-                            await Moderation.unlock(self, message, channelName)
+                            await Moderation.unlock(self, message, args)
 
     @commands.command("checktask")
     async def checktask(self, msg, *args):
@@ -124,11 +125,14 @@ class Tasks(commands.Cog):
         if len(args) == 0:
             await msg.channel.send("No file specified")
             return
+        if "/" in filename or "\\" in filename:
+            await msg.channel.send("Cannot use relative filepaths or subdirectories")
+            return
         
         filename = args[0]
         if not filename.endswith(".json"):
             filename += ".json"
-            
+        
         valid, response = Validator.validate(filename)
         if valid:
             self.config.registeredTasks.append(filename)

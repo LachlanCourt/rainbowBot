@@ -21,7 +21,7 @@ class Validator:
                 args = task[2]
                 preposition = task[3]
                 end = task[4].split()
-                out += f"Excecute command `{command} {args}` at {start[1] if start[1] != '*' else 'any'}:{start[0] if start[0] != '*' else 'any'}"
+                out += f"Execute command `{command} {args}` at {start[1] if start[1] != '*' else 'any'}:{start[0] if start[0] != '*' else 'any'}"
                 out += f" on day {start[2] if start[2] != '*' else 'any'} of {months[start[3]]} if it is {days[start[4]]}day\n"
 
                 if preposition == "until":
