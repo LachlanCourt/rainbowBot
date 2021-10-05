@@ -1,4 +1,4 @@
-import discord, json
+import discord, json, os
 from discord.ext import commands
 
 class Moderation(commands.Cog):
