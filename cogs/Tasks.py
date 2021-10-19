@@ -125,13 +125,14 @@ class Tasks(commands.Cog):
         if len(args) == 0:
             await msg.channel.send("No file specified")
             return
-        if "/" in filename or "\\" in filename:
-            await msg.channel.send("Cannot use relative filepaths or subdirectories")
-            return
         
         filename = args[0]
         if not filename.endswith(".json"):
             filename += ".json"
+            
+        if "/" in filename or "\\" in filename:
+            await msg.channel.send("Cannot use relative filepaths or subdirectories")
+            return
         
         valid, response = Validator.validate(filename)
         if valid:
@@ -168,54 +169,4 @@ class Tasks(commands.Cog):
                 self.scheduler.stop()
         else:
             await msg.channel.send("Task file " + filename + " is not currently registered")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            
-                    
-                
-        
+      
