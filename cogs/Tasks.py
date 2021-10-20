@@ -156,7 +156,7 @@ class Tasks(commands.Cog):
             return
         
         valid, response = Validator.validate(filename)
-        if valid:
+        if valid and filename not in self.config.registeredTasks:
             self.config.registeredTasks.append(filename)
             f = open("tasks.dat", "w")
             json.dump({"registeredTasks":self.config.registeredTasks}, f)
@@ -164,6 +164,8 @@ class Tasks(commands.Cog):
             await msg.channel.send("Task file " + filename + " registered successfully")
             if not self.scheduler.is_running():
                 self.scheduler.start()
+        elif valid:
+            await msg.channel.send("That task file has already been registered! Use the `taskstatus` for a list of currently registered tasks")
         else:
             await msg.channel.send("Invalid filename " + args[0])
 
