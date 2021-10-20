@@ -10,6 +10,7 @@ class Tasks(commands.Cog):
     def __init__(self, client, config):
         self.client = client
         self.config = config
+        self.sendTick = False
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -75,6 +76,11 @@ class Tasks(commands.Cog):
             if guild == None:
                 return
 
+            if self.sendTick:
+                logChannel = discord.utils.get(self.client.get_all_channels(), guild__name=guild.name, name=self.config.logChannelName)
+                await logChannel.send("Status tick for task loop. Ticks are only sent once per `taskstatus` command")
+                self.sendTick = False
+
             for task in tasks:
                 start = task[0]
                 command = task[1]
@@ -116,6 +122,21 @@ class Tasks(commands.Cog):
 
         valid, response = Validator.validate(filename)
         await msg.channel.send(response)
+
+    @commands.command("taskstatus")
+    async def taskstatus(self, msg):
+        # Not that if the last task has only just been removed, this function will return a false positive for the
+        # minute afterwards as the loop doesn't properly stop until the minute is up in order to close gracefully
+        if not self.config.checkPerms(msg): # Check the user has a role in trustedRoles
+            await msg.channel.send(self.config.permsError)
+            return
+        if self.scheduler.is_running():
+            n = "\n" + ("\n" if len(self.config.registeredTasks) > 0 else "")
+            files = n + "\n".join(self.config.registeredTasks) + n
+            await msg.channel.send(f"Task loop is running, watching the following files:{files}Status tick will be sent to {self.config.logChannelName} within one minute")
+            self.sendTick = True
+        else:
+            await msg.channel.send("Task loop is stopped. Add a task with `addtask` to start the loop")
 
     @commands.command("addtask")
     async def addtask(self, msg, *args):
