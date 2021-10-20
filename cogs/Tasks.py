@@ -91,7 +91,7 @@ class Tasks(commands.Cog):
                     # Only lock channel if it is not already locked
                     if self.isNow(start) and args not in list(self.config.lockedChannels.values()):
                         # Get log channel
-                        logChannel = discord.utils.get(self.client.get_all_channels(), guild__name=guild.name, name=self.config.logargs)
+                        logChannel = discord.utils.get(self.client.get_all_channels(), guild__name=guild.name, name=self.config.logChannelName)
                         # Send lock message
                         message = await logChannel.send("Locking channel " + args + "...")
                         # Lock channel specified
@@ -102,7 +102,7 @@ class Tasks(commands.Cog):
                             for i in self.config.lockedChannels:
                                 if self.config.lockedChannels[i] == args:
                                     messageID = i
-                            logChannel = discord.utils.get(self.client.get_all_channels(), guild__name=guild.name, name=self.config.logargs)
+                            logChannel = discord.utils.get(self.client.get_all_channels(), guild__name=guild.name, name=self.config.logChannelName)
                             message = await logChannel.fetch_message(int(messageID))
                             # Call the unlock function on the channel which will delete the message
                             await Moderation.unlock(self, message, args)
