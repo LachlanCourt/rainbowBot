@@ -10,6 +10,7 @@ class Tasks(commands.Cog):
     def __init__(self, client, config):
         self.client = client
         self.config = config
+        self.sendTick = False
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -75,6 +76,11 @@ class Tasks(commands.Cog):
             if guild == None:
                 return
 
+            if self.sendTick:
+                logChannel = discord.utils.get(self.client.get_all_channels(), guild__name=guild.name, name=self.config.logChannelName)
+                await logChannel.send("Status tick for task loop. Ticks are only sent once per `taskstatus` command")
+                self.sendTick = False
+
             for task in tasks:
                 start = task[0]
                 command = task[1]
@@ -85,7 +91,7 @@ class Tasks(commands.Cog):
                     # Only lock channel if it is not already locked
                     if self.isNow(start) and args not in list(self.config.lockedChannels.values()):
                         # Get log channel
-                        logChannel = discord.utils.get(self.client.get_all_channels(), guild__name=guild.name, name=self.config.logargs)
+                        logChannel = discord.utils.get(self.client.get_all_channels(), guild__name=guild.name, name=self.config.logChannelName)
                         # Send lock message
                         message = await logChannel.send("Locking channel " + args + "...")
                         # Lock channel specified
@@ -96,7 +102,7 @@ class Tasks(commands.Cog):
                             for i in self.config.lockedChannels:
                                 if self.config.lockedChannels[i] == args:
                                     messageID = i
-                            logChannel = discord.utils.get(self.client.get_all_channels(), guild__name=guild.name, name=self.config.logargs)
+                            logChannel = discord.utils.get(self.client.get_all_channels(), guild__name=guild.name, name=self.config.logChannelName)
                             message = await logChannel.fetch_message(int(messageID))
                             # Call the unlock function on the channel which will delete the message
                             await Moderation.unlock(self, message, args)
@@ -117,6 +123,21 @@ class Tasks(commands.Cog):
         valid, response = Validator.validate(filename)
         await msg.channel.send(response)
 
+    @commands.command("taskstatus")
+    async def taskstatus(self, msg):
+        # Not that if the last task has only just been removed, this function will return a false positive for the
+        # minute afterwards as the loop doesn't properly stop until the minute is up in order to close gracefully
+        if not self.config.checkPerms(msg): # Check the user has a role in trustedRoles
+            await msg.channel.send(self.config.permsError)
+            return
+        if self.scheduler.is_running():
+            n = "\n" + ("\n" if len(self.config.registeredTasks) > 0 else "")
+            files = n + "\n".join(self.config.registeredTasks) + n
+            await msg.channel.send(f"Task loop is running, watching the following files:{files}Status tick will be sent to {self.config.logChannelName} within one minute")
+            self.sendTick = True
+        else:
+            await msg.channel.send("Task loop is stopped. Add a task with `addtask` to start the loop")
+
     @commands.command("addtask")
     async def addtask(self, msg, *args):
         if not self.config.checkPerms(msg): # Check the user has a role in trustedRoles
@@ -135,7 +156,7 @@ class Tasks(commands.Cog):
             return
         
         valid, response = Validator.validate(filename)
-        if valid:
+        if valid and filename not in self.config.registeredTasks:
             self.config.registeredTasks.append(filename)
             f = open("tasks.dat", "w")
             json.dump({"registeredTasks":self.config.registeredTasks}, f)
@@ -143,6 +164,8 @@ class Tasks(commands.Cog):
             await msg.channel.send("Task file " + filename + " registered successfully")
             if not self.scheduler.is_running():
                 self.scheduler.start()
+        elif valid:
+            await msg.channel.send("That task file has already been registered! Use the `taskstatus` for a list of currently registered tasks")
         else:
             await msg.channel.send("Invalid filename " + args[0])
 
