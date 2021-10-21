@@ -10,7 +10,7 @@ class GlobalConfig():
         self.OAuthToken = None
         self.rolemenuData = {}
         self.lockedChannels = {}
-        self.registeredTasks = []
+        self.registeredTasks = {}
         self.tasksFilepath = ""
         self.reactions = "🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿".split()
         self.permsError = "You don't have permission to use this command"
@@ -75,7 +75,7 @@ class GlobalConfig():
             self.registeredTasks = data["registeredTasks"]
             f.close()
         except Exception:
-            self.registeredTasks = []
+            self.registeredTasks = {}
 
     # Only discord users with a role in the trustedRoles list will be allowed to use bot commands    
     def checkPerms(self, msg, author=False):

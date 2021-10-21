@@ -60,7 +60,8 @@ class Tasks(commands.Cog):
     async def scheduler(self):
         # Reads file in the same format as crontab
         # Minute Hour Date Month Day
-        for filename in self.config.registeredTasks:
+        for filename in self.config.registeredTasks.keys():
+            guildId = self.config.registeredTasks[filename]
             valid, n = Validator.validate(filename)
             if not valid:
                 continue
@@ -71,7 +72,7 @@ class Tasks(commands.Cog):
 
             guild = None
             for i in self.client.guilds:
-                if i.name == data["serverName"]:
+                if i.id == guildId:
                     guild = i
             if guild == None:
                 return
@@ -132,7 +133,7 @@ class Tasks(commands.Cog):
             return
         if self.scheduler.is_running():
             n = "\n" + ("\n" if len(self.config.registeredTasks) > 0 else "")
-            files = n + "\n".join(self.config.registeredTasks) + n
+            files = n + "\n".join(self.config.registeredTasks.keys()) + n
             await msg.channel.send(f"Task loop is running, watching the following files:{files}Status tick will be sent to {self.config.logChannelName} within one minute")
             self.sendTick = True
         else:
@@ -157,7 +158,7 @@ class Tasks(commands.Cog):
         
         valid, response = Validator.validate(filename)
         if valid and filename not in self.config.registeredTasks:
-            self.config.registeredTasks.append(filename)
+            self.config.registeredTasks[filename] = msg.guild.id
             f = open("tasks.dat", "w")
             json.dump({"registeredTasks":self.config.registeredTasks}, f)
             f.close()
@@ -183,7 +184,7 @@ class Tasks(commands.Cog):
             filename += ".json"            
 
         if filename in self.config.registeredTasks:
-            self.config.registeredTasks.remove(filename)
+            del(self.config.registeredTasks[filename])
             f = open(self.config.tasksFilepath, "w")
             json.dump({"registeredTasks":self.config.registeredTasks}, f)
             f.close()
