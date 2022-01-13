@@ -1,4 +1,4 @@
-import discord, argparse
+import discord, argparse, logging
 from discord.ext import commands
 
 # To hold global configuration and variables
@@ -28,6 +28,13 @@ client.add_cog(Moderation(client, config))
 client.add_cog(RoleMenu(client, config))
 client.add_cog(MessageHandler(client, config))
 client.add_cog(Tasks(client, config))
+
+# Configure Logging
+logger = logging.getLogger('discord')
+logger.setLevel(logging.DEBUG)
+handler = logging.FileHandler(filename='rainbowBot.log', encoding='utf-8', mode='w')
+handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+logger.addHandler(handler)
 
 # Start bot
 if __name__ == "__main__":
