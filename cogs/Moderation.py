@@ -39,28 +39,16 @@ class Moderation(commands.Cog):
 
         if len(message.attachments) == 0:  # There are no attachments, it was just text
             await moderationChannel.send(
-                user
-                + " deleted a message in "
-                + message.channel.mention
-                + ". The message was: \n\n"
-                + message.content
+                f"{user} deleted a message in {message.channel.mention}. The message was: \n\n{message.content}"
             )
         else:  # There was an attachment
             if message.content != "":
                 await moderationChannel.send(
-                    user
-                    + " deleted a message in "
-                    + message.channel.mention
-                    + ". The message was: \n\n"
-                    + message.content
-                    + "\n\nAnd had the following attachment(s)"
+                    f"{user} deleted a message in {message.channel.mention}. The message was: \n\n{message.content}\n\nAnd had the following attachment(s)"
                 )
             else:
                 await moderationChannel.send(
-                    user
-                    + " deleted a message in "
-                    + message.channel.mention
-                    + ". The message consisted of the following attachement(s)"
+                    f"{user} deleted a message in {message.channel.mention}. The message consisted of the following attachement(s)"
                 )
             for i in message.attachments:
                 # The cached attachment URL becomes invalid after a few minutes. The following ensures valid media is accessible for moderation purposes
@@ -121,13 +109,7 @@ class Moderation(commands.Cog):
         if self.config.checkPerms(rawMessage.cached_message.author, level=2):
             user = rawMessage.cached_message.author.name
         await moderationChannel.send(
-            user
-            + " just edited their message in "
-            + channel.mention
-            + ", they changed their original message which said \n\n"
-            + before
-            + "\n\nTo a new message saying \n\n"
-            + after
+            f"{user} just edited their message in {channel.mention}, they changed their original message which said\n\n{before}\n\nTo a new message saying\n\n{after}"
         )
 
         if len(rawMessage.cached_message.attachments) != len(
@@ -182,7 +164,7 @@ class Moderation(commands.Cog):
                     break
             if channel == None:
                 await msg.channel.send(
-                    'Channel "' + args[0] + '" not found. Please check your spelling'
+                    f'Channel "{args[0]}" not found. Please check your spelling'
                 )
                 return
 
@@ -200,10 +182,11 @@ class Moderation(commands.Cog):
             return
 
         # Set up a way to unlock the channel
+        dynamicContent = (
+            ("") if (channel.name == msg.channel.name) else (f" {channel.mention}")
+        )  # This doesn't work inside an f string so it has been pulled out
         message = await msg.channel.send(
-            "Channel"
-            + (("") if (channel.name == msg.channel.name) else (" " + channel.mention))
-            + " locked! React with trusted permissions to unlock"
+            f"Channel{dynamicContent} locked! React with trusted permissions to unlock"
         )
         await message.add_reaction("🔓")
 

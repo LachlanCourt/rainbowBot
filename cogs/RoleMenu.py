@@ -31,9 +31,7 @@ class RoleMenu(commands.Cog):
             data = json.load(f)
             f.close()
         except:
-            await msg.channel.send(
-                'Unable to open JSON file "' + filename + '" :frowning:'
-            )
+            await msg.channel.send(f'Unable to open JSON file "{filename}" :frowning:')
             return
 
         # Accessing the discord API for this much work takes time so we will keep editing a message along the way to inform the user that it's still doing something
@@ -82,16 +80,14 @@ class RoleMenu(commands.Cog):
         for i in courses:
             if len(courses[i]) > 20:
                 await statusMessage.edit(
-                    content="Only 20 courses can exist in a single rolemenu due to reaction limits.\nIssue in "
-                    + i
-                    + ". Terminating..."
+                    content=f"Only 20 courses can exist in a single rolemenu due to reaction limits.\nIssue in {i}. Terminating..."
                 )
                 return
         await statusMessage.edit(
             content="File loaded successfully! Creating channels..."
         )
         for i in courses:
-            await statusMessage.edit(content="Creating " + i.upper() + " channels")
+            await statusMessage.edit(content=f"Creating {i.upper()} channels")
             # Create roles and record roles for overwrites
             roleObjs = []
             for j in range(len(courses[i])):
@@ -194,14 +190,12 @@ class RoleMenu(commands.Cog):
             )
 
         for i in courses:
-            await statusMessage.edit(content="Creating " + i.upper() + " rolemenu")
+            await statusMessage.edit(content=f"Creating {i.upper()} rolemenu")
             # Create message to send
-            message = "​\n**" + i.upper() + "**\nReact to give yourself a role\n\n"
+            message = f"​\n**{i.upper()}**\nReact to give yourself a role\n\n"
             currentMenu = {}
             for j in range(len(courses[i])):
-                message += (
-                    self.config.reactions[j] + " " + courses[i][j].upper() + "\n\n"
-                )
+                message += f"{self.config.reactions[j]} {courses[i][j].upper()}\n\n"
                 currentMenu[self.config.reactions[j]] = courses[i][j].upper()
 
             menuMessage = await roleMenuChannel.send(message)
@@ -239,7 +233,7 @@ class RoleMenu(commands.Cog):
         rolemenuKey = None
         for i in self.config.rolemenuData[channelName]:
             tempMsg = await msg.channel.fetch_message(int(i))
-            if "**" + args[0] + "**" in tempMsg.content:
+            if f"**{args[0]}**" in tempMsg.content:
                 editMessage = tempMsg
                 rolemenuKey = i
                 break
@@ -261,12 +255,7 @@ class RoleMenu(commands.Cog):
                 return
             newReaction = self.config.reactions[newReactionIndex]
             await editMessage.edit(
-                content=editMessage.content
-                + "\n\n"
-                + newReaction
-                + " "
-                + args[2]
-                + "\n\n"
+                content=f"{editMessage.content}\n\n{newReaction} {args[2]}\n\n"
             )
             await editMessage.add_reaction(newReaction)
             self.config.rolemenuData[channelName][rolemenuKey][newReaction] = args[2]
@@ -288,8 +277,7 @@ class RoleMenu(commands.Cog):
                 startIndex -= 4  # Allow for the reaction and the space between the reaction and the role name
             removeReaction = editMessage.content[startIndex + 2 : startIndex + 3]
             await editMessage.edit(
-                content=editMessage.content[:startIndex]
-                + editMessage.content[endIndex:]
+                content=f"{editMessage.content[:startIndex]}{editMessage.content[endIndex:]}"
             )
             await editMessage.clear_reaction(removeReaction)
             del self.config.rolemenuData[channelName][rolemenuKey][removeReaction]
@@ -314,9 +302,7 @@ class RoleMenu(commands.Cog):
                 startIndex = editMessage.content.find(args[2])
                 endIndex = startIndex + len(args[2])
             await editMessage.edit(
-                content=editMessage.content[:startIndex]
-                + args[3]
-                + editMessage.content[endIndex:]
+                content=f"{editMessage.content[:startIndex]}{args[3]}{editMessage.content[endIndex:]}"
             )
             reaction = editMessage.content[startIndex - 2 : startIndex - 1]
             self.config.rolemenuData[channelName][rolemenuKey][reaction] = args[3]

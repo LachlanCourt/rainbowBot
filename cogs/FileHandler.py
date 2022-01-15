@@ -19,7 +19,7 @@ class FileHandler(commands.Cog):
             # The .ext section
             end = filename[startMatch[1] - 1 :]
             # Add a 1 and put it back together
-            filename = start + "(1)" + end
+            filename = f"{start}(1){end}"
         while Path(filename).is_file():
             # Separate the filename into three sections.
             # The section up to the opening parenthesis
@@ -33,7 +33,7 @@ class FileHandler(commands.Cog):
             end = filename[endMatch[0] : endMatch[1]]
             # Increment the integer and put it back together
             mid = str(int(mid) + 1)
-            filename = start + mid + end
+            filename = f"{start}{mid}{end}"
         return filename
 
     # High level authorisation required
@@ -73,14 +73,12 @@ class FileHandler(commands.Cog):
                 await message.attachments[0].save(
                     filename, seek_begin=True, use_cached=False
                 )
-                await msg.send('File added with filename "' + filename + '".')
+                await msg.send(f'File added with filename "{filename}".')
                 return
         await message.attachments[0].save(
             message.attachments[0].filename, seek_begin=True, use_cached=False
         )
-        await msg.send(
-            'File added with filename "' + message.attachments[0].filename + '".'
-        )
+        await msg.send(f'File added with filename "{message.attachments[0].filename}".')
 
     # High level authorisation required
     @commands.command("remfile")
@@ -115,10 +113,10 @@ class FileHandler(commands.Cog):
         message = ""
         for file in os.listdir("./"):
             if file not in self.config.sourceFiles:
-                message += file + "\n"
+                message += f"{file}\n"
         if message == "":
             message = "None"
-        await msg.send("Files currently saved are as follows\n\n" + message)
+        await msg.send(f"Files currently saved are as follows\n\n{message}")
 
     # High level authorisation required
     @commands.command("update")
