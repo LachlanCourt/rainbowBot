@@ -2,8 +2,6 @@
 
 This bot is used to generate and maintain text channels for courses taken by university students to collaborate and chat. It also provides a number of other moderation tools
 
-Commands are restricted to discord users with roles authorised in the config file under "trustedRoles"
-
 ## Setup
 
 1. Install requirements
@@ -20,7 +18,13 @@ Commands are restricted to discord users with roles authorised in the config fil
 
         python3 bot.py
 
+## Authorisation
+
+Commands are restricted by discord roles specified in the config file. There are three levels of authorisation that restrict the moderation and bot management commands, in the format `[[highLevelAuthorisation], [moderateLevelAuthorisation], [lowLevelAutherisation]]`. If a restriction is not specified for a command below, it can be used by anyone in the server.
+
 ## Automated channel creation
+
+Moderate level authorisation required
 
 The bot has functionality to read courses from a JSON file and automatically create text and voice channels accordingly.
 The format is as follows:
@@ -63,6 +67,9 @@ To allow for academic integrity moderation, any edited or deleted message will b
 Feature can be disabled by leaving "moderationChannel" an empty string `""`
 
 ## Channel locking
+
+Low level authorisation required
+
 Channels that have been created with the automated channel creation can also be locked for a period of time by disabling send message permissions to the role that makes that channel available. This can be helpful during exams and assessment tasks in order to help moderate for academic integrity.
 
 `$rainlock [channelName]` is a manual command that will disable send message permissions to the role with the same name as the selected channel. If no argument is given, the selected channel is the name of the channel in which the command is sent. If an argument is given, the selected channel will be the channel whose name matches the argument. Either way, a message will be sent by the bot into the channel the command was sent with an unlocked padlock, a user with a "trustedRole" adding their reaction to this message will unlock the channel again.
@@ -70,6 +77,8 @@ Channels that have been created with the automated channel creation can also be 
 Alternatively, a file with a schedule of lock and unlock times can be added into the root directory and registered with `$rainaddtask <filename>`. Registered task files will lock and unlock channels automatically according to the times specified. Note that the time will not fall exactly on the minute so it is recommended to choose a time slightly earlier than the exact time that you need a channel to be locked. The format of times in this file should match that of linux cron jobs. If at any point you are not using a specific file anymore, it is recommended that you run `$rainremtask <filename>` to unmount the task and save processing power. Files can be validated by using the command `$rainchecktask <filename>` which will validate the task file.
 
 ## File Manipulation
+
+High level authorisation required
 
 It is possible to update the config file or add a new json file for channel creation straight from discord!
 
@@ -80,6 +89,9 @@ It is possible to update the config file or add a new json file for channel crea
 `$rainlistfiles` will list all files currently the cwd - Source files are excluded
 
 ## Updating Bot
+
+High level authorisation required
+
 RainbowBot has a built in method of running a shell script on demand. Primarily this is designed to pull the latest master from GitHub and restart the bot, but it can have many other applications.
 
 `$rainupdate` is the command that will run an executable shell script in the cwd named `updatebot.sh`

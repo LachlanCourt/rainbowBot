@@ -36,9 +36,12 @@ class FileHandler(commands.Cog):
             filename = start + mid + end
         return filename
 
+    # High level authorisation required
     @commands.command("addfile")
     async def addfile(self, msg, *args):
-        if not self.config.checkPerms(msg):  # Check the user has a role in trustedRoles
+        if not self.config.checkPerms(
+            msg.message.author
+        ):  # Check the user has a role in trustedRoles
             await msg.channel.send(self.config.permsError)
             return
         message = msg.message
@@ -79,9 +82,12 @@ class FileHandler(commands.Cog):
             'File added with filename "' + message.attachments[0].filename + '".'
         )
 
+    # High level authorisation required
     @commands.command("remfile")
     async def remfile(self, msg, *args):
-        if not self.config.checkPerms(msg):  # Check the user has a role in trustedRoles
+        if not self.config.checkPerms(
+            msg.message.author
+        ):  # Check the user has a role in trustedRoles
             await msg.channel.send(self.config.permsError)
             return
         if len(args) != 1:
@@ -98,9 +104,12 @@ class FileHandler(commands.Cog):
         os.remove(args[0])
         await msg.send("File removed")
 
+    # High level authorisation required
     @commands.command("listfiles")
     async def listfiles(self, msg, *args):
-        if not self.config.checkPerms(msg):  # Check the user has a role in trustedRoles
+        if not self.config.checkPerms(
+            msg.message.author
+        ):  # Check the user has a role in trustedRoles
             await msg.channel.send(self.config.permsError)
             return
         message = ""
@@ -111,9 +120,12 @@ class FileHandler(commands.Cog):
             message = "None"
         await msg.send("Files currently saved are as follows\n\n" + message)
 
+    # High level authorisation required
     @commands.command("update")
     async def update(self, msg, *args):
-        if not self.config.checkPerms(msg):  # Check the user has a role in trustedRoles
+        if not self.config.checkPerms(
+            msg.message.author
+        ):  # Check the user has a role in trustedRoles
             await msg.channel.send(self.config.permsError)
             return
         f = Path("updatebot.sh")
