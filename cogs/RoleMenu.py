@@ -8,6 +8,7 @@ class RoleMenu(commands.Cog):
         self.client = client
         self.config = config
 
+    # Moderate level authorisation required
     @commands.command("create")
     async def create(self, msg, *args):
         if not self.config.checkPerms(
@@ -203,6 +204,7 @@ class RoleMenu(commands.Cog):
         f.close()
         await statusMessage.edit(content="And that's a wrap! No more work to do")
 
+    # Moderate level authorisation required
     @commands.command("edit")
     async def edit(self, msg, *args):
         if not self.config.checkPerms(

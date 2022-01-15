@@ -126,6 +126,7 @@ class Tasks(commands.Cog):
                             # Call the unlock function on the channel which will delete the message
                             await Moderation.unlock(self, message, args)
 
+    # High level authorisation required
     @commands.command("checktask")
     async def checktask(self, msg, *args):
         if not self.config.checkPerms(
@@ -144,6 +145,7 @@ class Tasks(commands.Cog):
         valid, response = Validator.validate(filename)
         await msg.channel.send(response)
 
+    # High level authorisation required
     @commands.command("taskstatus")
     async def taskstatus(self, msg):
         # Not that if the last task has only just been removed, this function will return a false positive for the
@@ -165,6 +167,7 @@ class Tasks(commands.Cog):
                 "Task loop is stopped. Add a task with `addtask` to start the loop"
             )
 
+    # High level authorisation required
     @commands.command("addtask")
     async def addtask(self, msg, *args):
         if not self.config.checkPerms(
@@ -200,6 +203,7 @@ class Tasks(commands.Cog):
         else:
             await msg.channel.send("Invalid filename " + args[0])
 
+    # High level authorisation required
     @commands.command("remtask")
     async def remtask(self, msg, *args):
         if not self.config.checkPerms(

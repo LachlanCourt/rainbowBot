@@ -156,6 +156,7 @@ class Moderation(commands.Cog):
                 await moderationChannel.send(content=None, file=file)
                 os.remove(i.filename)
 
+    # Low level authorisation required
     @commands.command("lock")
     async def lock(self, msg, *args):
         if not self.config.checkPerms(
