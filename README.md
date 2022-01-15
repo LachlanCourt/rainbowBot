@@ -36,6 +36,8 @@ Prefix is `$rain` followed by some command. All commands and arguments are case 
 
 `$raincreate <filename>` will create course channels, roles, and voice channels based on a JSON file with the specified filename
 
+The format of the courses JSON can be seen in the examples directory. The channel structure should be a dictionary where the keys indicate the name of the category, and the items are a list of subjects to be nested in that category. In regards to custom overwrites, this will allow you to add restrictions accross the entire generated channels on a per-role basis. The dictionary keys should be the role name, and the items should be a list of lists with the name of the permission in snake case, and either a -1, 0, or 1 to indicate Deny, Inherit or Allow.
+
 `$rainedit <rolemenu name> <arg1> <arg2> [<arg3>]` will edit the role menu of the specified name. This command must be sent in the channel that the role menu exists in. It will only edit the role menu - if the reason you are editing is because you are adding or removing channels or roles, you need to manually create or remove these channels or roles. I figure this will be an infrequent thing and so I decided to leave the option open regarding what to do here.
 
 `<arg1>` should be one of the following commands `add`, `remove`, `update`
