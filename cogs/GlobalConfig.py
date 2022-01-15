@@ -1,5 +1,7 @@
 import json
-class GlobalConfig():
+
+
+class GlobalConfig:
     def __init__(self):
         self.whitelist = []
         self.trustedRoles = []
@@ -15,10 +17,23 @@ class GlobalConfig():
         self.reactions = "🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿".split()
         self.permsError = "You don't have permission to use this command"
         # Source files cannot be removed and will not show up with a listfiles command, but they can be overwritten
-        self.sourceFiles = [".git", ".gitignore", "config.json", "bot.py", "README.md", "Examples", "updatebot.sh", "LICENCE", "locked.dat", "rolemenu.dat"]
+        self.sourceFiles = [
+            ".git",
+            ".gitignore",
+            "config.json",
+            "bot.py",
+            "README.md",
+            "Examples",
+            "updatebot.sh",
+            "LICENCE",
+            "locked.dat",
+            "rolemenu.dat",
+        ]
 
     # Parse all configs
-    def parseAll(self, configFilePath, roleMenuFilePath, lockedChannelFilePath, taskFilePath):   
+    def parseAll(
+        self, configFilePath, roleMenuFilePath, lockedChannelFilePath, taskFilePath
+    ):
         self._parseConfig(configFilePath)
         self._parseRoleMenuData(roleMenuFilePath)
         self._parseLockedChannelData(lockedChannelFilePath)
@@ -30,6 +45,7 @@ class GlobalConfig():
         def prepReportingChannels():
             for i in self.reportingChannelsList:
                 self.reportingChannels[i[0]] = [i[1], i[2]]
+
         try:
             f = open(filePath)
         except Exception as e:
@@ -77,7 +93,7 @@ class GlobalConfig():
         except Exception:
             self.registeredTasks = {}
 
-    # Only discord users with a role in the trustedRoles list will be allowed to use bot commands    
+    # Only discord users with a role in the trustedRoles list will be allowed to use bot commands
     def checkPerms(self, msg, author=False):
         if author == True:
             user = msg
