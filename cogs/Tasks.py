@@ -128,7 +128,9 @@ class Tasks(commands.Cog):
 
     @commands.command("checktask")
     async def checktask(self, msg, *args):
-        if not self.config.checkPerms(msg):  # Check the user has a role in trustedRoles
+        if not self.config.checkPerms(
+            msg.message.author
+        ):  # Check the user has a role in trustedRoles
             await msg.channel.send(self.config.permsError)
             return
         if len(args) == 0:
@@ -146,7 +148,9 @@ class Tasks(commands.Cog):
     async def taskstatus(self, msg):
         # Not that if the last task has only just been removed, this function will return a false positive for the
         # minute afterwards as the loop doesn't properly stop until the minute is up in order to close gracefully
-        if not self.config.checkPerms(msg):  # Check the user has a role in trustedRoles
+        if not self.config.checkPerms(
+            msg.message.author
+        ):  # Check the user has a role in trustedRoles
             await msg.channel.send(self.config.permsError)
             return
         if self.scheduler.is_running():
@@ -163,7 +167,9 @@ class Tasks(commands.Cog):
 
     @commands.command("addtask")
     async def addtask(self, msg, *args):
-        if not self.config.checkPerms(msg):  # Check the user has a role in trustedRoles
+        if not self.config.checkPerms(
+            msg.message.author
+        ):  # Check the user has a role in trustedRoles
             await msg.channel.send(self.config.permsError)
             return
         if len(args) == 0:
@@ -196,7 +202,9 @@ class Tasks(commands.Cog):
 
     @commands.command("remtask")
     async def remtask(self, msg, *args):
-        if not self.config.checkPerms(msg):  # Check the user has a role in trustedRoles
+        if not self.config.checkPerms(
+            msg.message.author
+        ):  # Check the user has a role in trustedRoles
             await msg.channel.send(self.config.permsError)
             return
         if len(args) == 0:

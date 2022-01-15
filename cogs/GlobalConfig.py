@@ -4,7 +4,7 @@ import json
 class GlobalConfig:
     def __init__(self):
         self.whitelist = []
-        self.trustedRoles = []
+        self.trustedRoles = [[], [], []]
         self.logChannelName = ""
         self.moderationChannelName = ""
         self.reportingChannelsList = []
@@ -94,15 +94,12 @@ class GlobalConfig:
             self.registeredTasks = {}
 
     # Only discord users with a role in the trustedRoles list will be allowed to use bot commands
-    def checkPerms(self, msg, author=False):
-        if author == True:
-            user = msg
-        else:
-            user = msg.message.author
+    # Permission levels start at 0 and go to 2
+    def checkPerms(self, author, level=0):
         roleNames = []
-        for i in range(len(user.roles)):
-            roleNames.append(user.roles[i].name)
-        if any(i in roleNames for i in self.trustedRoles):
+        for i in range(len(author.roles)):
+            roleNames.append(author.roles[i].name)
+        if any(i in roleNames for i in self.trustedRoles[level]):
             return True
         return False
 

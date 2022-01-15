@@ -34,7 +34,7 @@ class Moderation(commands.Cog):
         # People with trusted roles will likely have access to the log channel for deleted messages
         # Getting a ping every time might get annoying, so don't ping people with trusted roles.
         user = message.author.mention
-        if self.config.checkPerms(message.author, author=True):
+        if self.config.checkPerms(message.author):
             user = message.author.name
 
         if len(message.attachments) == 0:  # There are no attachments, it was just text
@@ -118,7 +118,7 @@ class Moderation(commands.Cog):
         # People with trusted roles will likely have access to the log channel for edited messages
         # Getting a ping every time might get annoying, so don't ping people with trusted roles.
         user = rawMessage.cached_message.author.mention
-        if self.config.checkPerms(rawMessage.cached_message.author, author=True):
+        if self.config.checkPerms(rawMessage.cached_message.author):
             user = rawMessage.cached_message.author.name
         await moderationChannel.send(
             user
@@ -159,7 +159,7 @@ class Moderation(commands.Cog):
     @commands.command("lock")
     async def lock(self, msg, *args):
         if not self.config.checkPerms(
-            msg.author, True
+            msg.author
         ):  # Check the user has a role in trustedRoles
             await msg.channel.send(self.config.permsError)
             return
@@ -238,9 +238,7 @@ class Moderation(commands.Cog):
         if str(message.id) in self.config.lockedChannels:
             # Get the channel that was locked
 
-            if reaction.emoji.name == "🔓" and self.config.checkPerms(
-                reaction.member, author=True
-            ):
+            if reaction.emoji.name == "🔓" and self.config.checkPerms(reaction.member):
                 await self.unlock(message, self.config.lockedChannels[str(message.id)])
 
     async def unlock(self, message, channelName):

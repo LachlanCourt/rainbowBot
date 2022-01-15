@@ -38,7 +38,9 @@ class FileHandler(commands.Cog):
 
     @commands.command("addfile")
     async def addfile(self, msg, *args):
-        if not self.config.checkPerms(msg):  # Check the user has a role in trustedRoles
+        if not self.config.checkPerms(
+            msg.message.author
+        ):  # Check the user has a role in trustedRoles
             await msg.channel.send(self.config.permsError)
             return
         message = msg.message
@@ -81,7 +83,9 @@ class FileHandler(commands.Cog):
 
     @commands.command("remfile")
     async def remfile(self, msg, *args):
-        if not self.config.checkPerms(msg):  # Check the user has a role in trustedRoles
+        if not self.config.checkPerms(
+            msg.message.author
+        ):  # Check the user has a role in trustedRoles
             await msg.channel.send(self.config.permsError)
             return
         if len(args) != 1:
