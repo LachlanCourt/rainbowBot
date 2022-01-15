@@ -99,7 +99,10 @@ class GlobalConfig:
         roleNames = []
         for i in range(len(author.roles)):
             roleNames.append(author.roles[i].name)
-        if any(i in roleNames for i in self.trustedRoles[level]):
+        allAllowedRoles = []
+        for i in range(level, -1, -1):
+            allAllowedRoles += self.trustedRoles[i][:]
+        if any(i in roleNames for i in allAllowedRoles):
             return True
         return False
 
