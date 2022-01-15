@@ -32,9 +32,7 @@ class MessageHandler(commands.Cog):
                     name=self.config.logChannelName,
                 )
                 await logChannel.send(
-                    message.author.mention
-                    + " sent a direct message, they said\n\n"
-                    + message.content
+                    f"{message.author.mention} sent a direct message, they said\n\n{message.content}"
                 )
         # Messages that are sent into a channel specified in reportingChannels will be deleted and reposted in the specified reporting log with the custom message
         if (

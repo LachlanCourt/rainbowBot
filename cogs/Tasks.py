@@ -106,9 +106,7 @@ class Tasks(commands.Cog):
                             name=self.config.logChannelName,
                         )
                         # Send lock message
-                        message = await logChannel.send(
-                            "Locking channel " + args + "..."
-                        )
+                        message = await logChannel.send(f"Locking channel {args}...")
                         # Lock channel specified
                         await Moderation.lock(self, message, args, True)
                     if preposition == "until" and self.isNow(end):
@@ -193,7 +191,7 @@ class Tasks(commands.Cog):
             f = open("tasks.dat", "w")
             json.dump({"registeredTasks": self.config.registeredTasks}, f)
             f.close()
-            await msg.channel.send("Task file " + filename + " registered successfully")
+            await msg.channel.send(f"Task file {filename} registered successfully")
             if not self.scheduler.is_running():
                 self.scheduler.start()
         elif valid:
@@ -201,7 +199,7 @@ class Tasks(commands.Cog):
                 "That task file has already been registered! Use the `taskstatus` for a list of currently registered tasks"
             )
         else:
-            await msg.channel.send("Invalid filename " + args[0])
+            await msg.channel.send(f"Invalid filename {args[0]}")
 
     # High level authorisation required
     @commands.command("remtask")
@@ -224,12 +222,8 @@ class Tasks(commands.Cog):
             f = open(self.config.tasksFilepath, "w")
             json.dump({"registeredTasks": self.config.registeredTasks}, f)
             f.close()
-            await msg.channel.send(
-                "Task file " + filename + " unregistered successfully"
-            )
+            await msg.channel.send(f"Task file {filename} unregistered successfully")
             if len(self.config.registeredTasks) == 0:
                 self.scheduler.stop()
         else:
-            await msg.channel.send(
-                "Task file " + filename + " is not currently registered"
-            )
+            await msg.channel.send(f"Task file {filename} is not currently registered")
