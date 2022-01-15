@@ -11,7 +11,7 @@ class RoleMenu(commands.Cog):
     @commands.command("create")
     async def create(self, msg, *args):
         if not self.config.checkPerms(
-            msg.message.author
+            msg.message.author, level=1
         ):  # Check the user has a role in trustedRoles
             await msg.channel.send(self.config.permsError)
             return
@@ -206,7 +206,7 @@ class RoleMenu(commands.Cog):
     @commands.command("edit")
     async def edit(self, msg, *args):
         if not self.config.checkPerms(
-            msg.message.author
+            msg.message.author, level=1
         ):  # Check the user has a role in trustedRoles
             await msg.channel.send(self.config.permsError)
             return

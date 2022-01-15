@@ -34,7 +34,7 @@ class Moderation(commands.Cog):
         # People with trusted roles will likely have access to the log channel for deleted messages
         # Getting a ping every time might get annoying, so don't ping people with trusted roles.
         user = message.author.mention
-        if self.config.checkPerms(message.author):
+        if self.config.checkPerms(message.author, level=2):
             user = message.author.name
 
         if len(message.attachments) == 0:  # There are no attachments, it was just text
@@ -118,7 +118,7 @@ class Moderation(commands.Cog):
         # People with trusted roles will likely have access to the log channel for edited messages
         # Getting a ping every time might get annoying, so don't ping people with trusted roles.
         user = rawMessage.cached_message.author.mention
-        if self.config.checkPerms(rawMessage.cached_message.author):
+        if self.config.checkPerms(rawMessage.cached_message.author, level=2):
             user = rawMessage.cached_message.author.name
         await moderationChannel.send(
             user
@@ -159,7 +159,7 @@ class Moderation(commands.Cog):
     @commands.command("lock")
     async def lock(self, msg, *args):
         if not self.config.checkPerms(
-            msg.author
+            msg.author, level=2
         ):  # Check the user has a role in trustedRoles
             await msg.channel.send(self.config.permsError)
             return

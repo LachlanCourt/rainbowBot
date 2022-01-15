@@ -104,7 +104,9 @@ class FileHandler(commands.Cog):
 
     @commands.command("listfiles")
     async def listfiles(self, msg, *args):
-        if not self.config.checkPerms(msg):  # Check the user has a role in trustedRoles
+        if not self.config.checkPerms(
+            msg.message.author
+        ):  # Check the user has a role in trustedRoles
             await msg.channel.send(self.config.permsError)
             return
         message = ""
@@ -117,7 +119,9 @@ class FileHandler(commands.Cog):
 
     @commands.command("update")
     async def update(self, msg, *args):
-        if not self.config.checkPerms(msg):  # Check the user has a role in trustedRoles
+        if not self.config.checkPerms(
+            msg.message.author
+        ):  # Check the user has a role in trustedRoles
             await msg.channel.send(self.config.permsError)
             return
         f = Path("updatebot.sh")

@@ -94,7 +94,7 @@ class GlobalConfig:
             self.registeredTasks = {}
 
     # Only discord users with a role in the trustedRoles list will be allowed to use bot commands
-    # Permission levels start at 0 and go to 2
+    # Permission levels start at the strictest level at 0 and go to 2
     def checkPerms(self, author, level=0):
         roleNames = []
         for i in range(len(author.roles)):
