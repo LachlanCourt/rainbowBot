@@ -1,6 +1,6 @@
 {
     "whitelisted": [],
-    "trustedRoles": [],
+    "trustedRoles": [[], [], []],
     "logChannel": "",
     "moderationChannel": "",
     "reportingChannels": [],
