@@ -19,7 +19,9 @@ This bot is used to generate and maintain text channels for courses taken by uni
         python3 bot.py
 
 ## Authorisation
+
 Commands are restricted by discord roles specified in the config file. There are three levels of authorisation that restrict the moderation and bot management commands, in the format `[[highLevelAuthorisation], [moderateLevelAuthorisation], [lowLevelAutherisation]]`. If a restriction is not specified for a command below, it can be used by anyone in the server.
+
 ## Automated channel creation
 
 Moderate level authorisation required
