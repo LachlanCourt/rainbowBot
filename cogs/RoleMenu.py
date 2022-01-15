@@ -113,9 +113,18 @@ class RoleMenu(commands.Cog):
                 if overwriteRole:
                     categoryOverwrites[overwriteRole] = discord.PermissionOverwrite()
                     for customOverwrite in data["customOverwrites"][overwriteRoleName]:
-                        categoryOverwrites[overwriteRole].__setattr__(
-                            customOverwrite[0], overwriteReference[customOverwrite[1]]
-                        )
+                        try:
+                            categoryOverwrites[overwriteRole].__setattr__(
+                                customOverwrite[0],
+                                overwriteReference[customOverwrite[1]],
+                            )
+                        except AttributeError:
+                            await msg.channel.send(
+                                f"Invalid permission name {customOverwrite[0]}. Overwrite not applied"
+                            )
+                            print(
+                                f"Invalid permission name {customOverwrite[0]}. Overwrite not applied"
+                            )
                     customChannelOverwrites[overwriteRole] = categoryOverwrites[
                         overwriteRole
                     ]
