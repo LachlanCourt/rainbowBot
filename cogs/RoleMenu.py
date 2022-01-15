@@ -77,12 +77,6 @@ class RoleMenu(commands.Cog):
                 # If we are clearing with the -c argument we should clear the old menu from rolemenuData
                 del self.config.rolemenuData[data["roleMenuChannel"]]
 
-        # Find sinbin role
-        sinbinRole = None
-        for i in guild.roles:
-            if i.name == data["sinbinRole"]:
-                sinbinRole = i
-
         ### CREATE CHANNELS ###
         courses = data["courses"]
         for i in courses:
@@ -110,10 +104,23 @@ class RoleMenu(commands.Cog):
             categoryOverwrites = {
                 guild.default_role: discord.PermissionOverwrite(view_channel=False)
             }
-            if sinbinRole != None:
-                categoryOverwrites[sinbinRole] = discord.PermissionOverwrite(
-                    send_messages=False, add_reactions=False, connect=False
-                )
+
+            # Find and generate custom overwrites for category and channel simultaneously
+            overwriteReference = {-1: False, 0: None, 1: True}
+            customChannelOverwrites = {}
+            for overwriteRoleName in data["customOverwrites"]:
+                overwriteRole = self.config.getRole(overwriteRoleName, guild)
+                if overwriteRole:
+                    categoryOverwrites[overwriteRole] = discord.PermissionOverwrite()
+                    for customOverwrite in data["customOverwrites"][overwriteRoleName]:
+                        categoryOverwrites[overwriteRole].__setattr__(
+                            customOverwrite[0], overwriteReference[customOverwrite[1]]
+                        )
+                    customChannelOverwrites[overwriteRole] = categoryOverwrites[
+                        overwriteRole
+                    ]
+
+            # Add view channel permission to the role specific to that channel
             for j in range(len(roleObjs)):
                 categoryOverwrites[roleObjs[j]] = discord.PermissionOverwrite(
                     view_channel=True
@@ -130,10 +137,10 @@ class RoleMenu(commands.Cog):
                     guild.default_role: discord.PermissionOverwrite(view_channel=False),
                     roleObjs[j]: discord.PermissionOverwrite(view_channel=True),
                 }
-                if sinbinRole != None:
-                    channelOverwrites[sinbinRole] = discord.PermissionOverwrite(
-                        send_messages=False, add_reactions=False
-                    )
+                for customOverwriteRole in customChannelOverwrites:
+                    channelOverwrites[customOverwriteRole] = customChannelOverwrites[
+                        customOverwriteRole
+                    ]
                 await guild.create_text_channel(
                     name=courses[i][j], category=category, overwrites=channelOverwrites
                 )
