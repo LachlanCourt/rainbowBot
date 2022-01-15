@@ -238,7 +238,9 @@ class Moderation(commands.Cog):
         if str(message.id) in self.config.lockedChannels:
             # Get the channel that was locked
 
-            if reaction.emoji.name == "🔓" and self.config.checkPerms(reaction.member):
+            if reaction.emoji.name == "🔓" and self.config.checkPerms(
+                reaction.member, level=2
+            ):
                 await self.unlock(message, self.config.lockedChannels[str(message.id)])
 
     async def unlock(self, message, channelName):
