@@ -9,7 +9,7 @@ class FileHandler(commands.Cog):
         self.config = config
 
     def log(self, msg):
-        self.config.logger.debug(msg)
+        self.config.logger.debug(f"FileHandler: {msg}")
 
     def findNewFilename(self, filename):
         # Check if the filename has an integer in parentheses like filename(1).dat
