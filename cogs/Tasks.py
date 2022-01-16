@@ -12,12 +12,16 @@ class Tasks(commands.Cog):
         self.config = config
         self.sendTick = False
 
+    def log(self, msg):
+        self.config.logger.debug(f"Tasks: {msg}")
+
     @commands.Cog.listener()
     async def on_ready(self):
         # If there are no registered tasks there is no reason for the scheduler to run
         # Start this in here rather than in init function because init function runs before file read
         # So registeredTasks would always be 0
         if len(self.config.registeredTasks) > 0:
+            self.log("Starting scheduler")
             self.scheduler.start()
 
     @staticmethod
@@ -109,6 +113,7 @@ class Tasks(commands.Cog):
                         message = await logChannel.send(f"Locking channel {args}...")
                         # Lock channel specified
                         await Moderation.lock(self, message, args, True)
+                        self.log(f"Channel {args} locked automatically")
                     if preposition == "until" and self.isNow(end):
                         if args in list(self.config.lockedChannels.values()):
                             messageID = None
@@ -123,10 +128,12 @@ class Tasks(commands.Cog):
                             message = await logChannel.fetch_message(int(messageID))
                             # Call the unlock function on the channel which will delete the message
                             await Moderation.unlock(self, message, args)
+                            self.log(f"Channel {args} unlocked automatically")
 
     # High level authorisation required
     @commands.command("checktask")
     async def checktask(self, msg, *args):
+        self.log("Check task command receieved")
         if not self.config.checkPerms(
             msg.message.author
         ):  # Check the user has a role in trustedRoles
@@ -146,6 +153,7 @@ class Tasks(commands.Cog):
     # High level authorisation required
     @commands.command("taskstatus")
     async def taskstatus(self, msg):
+        self.log("Taskstatus command receieved")
         # Not that if the last task has only just been removed, this function will return a false positive for the
         # minute afterwards as the loop doesn't properly stop until the minute is up in order to close gracefully
         if not self.config.checkPerms(
@@ -168,6 +176,7 @@ class Tasks(commands.Cog):
     # High level authorisation required
     @commands.command("addtask")
     async def addtask(self, msg, *args):
+        self.log("Addtask command receieved")
         if not self.config.checkPerms(
             msg.message.author
         ):  # Check the user has a role in trustedRoles
@@ -204,6 +213,7 @@ class Tasks(commands.Cog):
     # High level authorisation required
     @commands.command("remtask")
     async def remtask(self, msg, *args):
+        self.log("Remtask command receieved")
         if not self.config.checkPerms(
             msg.message.author
         ):  # Check the user has a role in trustedRoles
