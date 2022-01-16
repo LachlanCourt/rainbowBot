@@ -8,9 +8,13 @@ class RoleMenu(commands.Cog):
         self.client = client
         self.config = config
 
+    def log(self, msg):
+        self.config.logger.debug(f"RoleMenu: {msg}")
+
     # Moderate level authorisation required
     @commands.command("create")
     async def create(self, msg, *args):
+        self.log("Create command received")
         if not self.config.checkPerms(
             msg.message.author, level=1
         ):  # Check the user has a role in trustedRoles
@@ -217,6 +221,7 @@ class RoleMenu(commands.Cog):
     # Moderate level authorisation required
     @commands.command("edit")
     async def edit(self, msg, *args):
+        self.log("Edit command receieved")
         if not self.config.checkPerms(
             msg.message.author, level=1
         ):  # Check the user has a role in trustedRoles
@@ -331,6 +336,7 @@ class RoleMenu(commands.Cog):
         msg = await channel.fetch_message(reaction.message_id)
 
         if channel.name in self.config.rolemenuData:
+            self.log("Reaction add event for role assignment")
             roles = await reaction.member.guild.fetch_roles()
             # If the message the user reacted to is a rolemenu, get the name of the role related to the reaction they added and give the user that role
             if (
@@ -346,7 +352,7 @@ class RoleMenu(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, reaction):
-        # Grab necessary data to analyse the event. A lot of the calls used in reaction_add returns null for reaction_remove
+        # Grab necessary data to analyse the event. A lot of the calls used in reaction_add returns None for reaction_remove
         # because they no longer react to the message so bit of a clunky workaround
         guild = self.client.get_guild(reaction.guild_id)
         member = guild.get_member(reaction.user_id)
@@ -358,6 +364,7 @@ class RoleMenu(commands.Cog):
         msg = await channel.fetch_message(reaction.message_id)
 
         if channel.name in self.config.rolemenuData:
+            self.log("Reaction remove event for role assignment")
             # If the message the user reacted to is a rolemenu, get the name of the role related to the reaction they removed and remove that role from the user
             if (
                 str(msg.id) in self.config.rolemenuData[channel.name]
