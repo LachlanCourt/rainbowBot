@@ -8,6 +8,9 @@ class FileHandler(commands.Cog):
         self.bot = bot
         self.config = config
 
+    def log(self, msg):
+        self.config.logger.debug(f"FileHandler: {msg}")
+
     def findNewFilename(self, filename):
         # Check if the filename has an integer in parentheses like filename(1).dat
         # Don't change the filename if the file doesn't already exist
@@ -39,6 +42,7 @@ class FileHandler(commands.Cog):
     # High level authorisation required
     @commands.command("addfile")
     async def addfile(self, msg, *args):
+        self.log("Add file command received")
         if not self.config.checkPerms(
             msg.message.author
         ):  # Check the user has a role in trustedRoles
@@ -79,10 +83,12 @@ class FileHandler(commands.Cog):
             message.attachments[0].filename, seek_begin=True, use_cached=False
         )
         await msg.send(f'File added with filename "{message.attachments[0].filename}".')
+        self.log(f'Added file with filename "{filename}".')
 
     # High level authorisation required
     @commands.command("remfile")
     async def remfile(self, msg, *args):
+        self.log("Remove file command received")
         if not self.config.checkPerms(
             msg.message.author
         ):  # Check the user has a role in trustedRoles
@@ -105,6 +111,7 @@ class FileHandler(commands.Cog):
     # High level authorisation required
     @commands.command("listfiles")
     async def listfiles(self, msg, *args):
+        self.log("List files command received")
         if not self.config.checkPerms(
             msg.message.author
         ):  # Check the user has a role in trustedRoles
@@ -121,6 +128,7 @@ class FileHandler(commands.Cog):
     # High level authorisation required
     @commands.command("update")
     async def update(self, msg, *args):
+        self.log("Update command received")
         if not self.config.checkPerms(
             msg.message.author
         ):  # Check the user has a role in trustedRoles
@@ -132,3 +140,4 @@ class FileHandler(commands.Cog):
             sys.exit()
         else:
             await msg.channel.send("No update script found")
+            self.log("Update script not found")

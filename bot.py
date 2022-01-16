@@ -15,14 +15,23 @@ from cogs.Tasks import Tasks
 intents = discord.Intents.all()
 client = commands.Bot(command_prefix="$rain", intents=intents)
 
-# Load the global config which will run some file reads and set default variables
-config = GlobalConfig()
-
 
 @client.event
 async def on_ready():
     print("We have logged in as {0.user}".format(client))
 
+
+# Configure Logging
+logger = logging.getLogger("discord")
+logger.setLevel(logging.DEBUG)
+handler = logging.FileHandler(filename="rainbowBot.log", encoding="utf-8", mode="w")
+handler.setFormatter(
+    logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s")
+)
+logger.addHandler(handler)
+
+# Load the global config which will run some file reads and set default variables
+config = GlobalConfig(logger)
 
 # Add each of the cogs, passing in the configuration
 client.add_cog(FileHandler(client, config))
@@ -30,13 +39,6 @@ client.add_cog(Moderation(client, config))
 client.add_cog(RoleMenu(client, config))
 client.add_cog(MessageHandler(client, config))
 client.add_cog(Tasks(client, config))
-
-# Configure Logging
-logger = logging.getLogger('discord')
-logger.setLevel(logging.DEBUG)
-handler = logging.FileHandler(filename='rainbowBot.log', encoding='utf-8', mode='w')
-handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
-logger.addHandler(handler)
 
 # Start bot
 if __name__ == "__main__":

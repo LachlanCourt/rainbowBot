@@ -2,7 +2,8 @@ import json
 
 
 class GlobalConfig:
-    def __init__(self):
+    def __init__(self, logger):
+        self.logger = logger
         self.whitelist = []
         self.trustedRoles = [[], [], []]
         self.logChannelName = ""

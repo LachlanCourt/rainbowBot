@@ -7,6 +7,9 @@ class MessageHandler(commands.Cog):
         self.client = client
         self.config = config
 
+    def log(self, msg):
+        self.config.logger.debug(f"MessageHandler: {msg}")
+
     @commands.Cog.listener()
     async def on_message(self, message):
         # Don't handle messages from ourself
@@ -14,6 +17,7 @@ class MessageHandler(commands.Cog):
             return
         # Messages that have been sent as a direct message to the bot will be reposted in the channel specified in logChannel
         if message.channel.type == discord.ChannelType.private:
+            self.log(f"Direct message received: {message.content}")
             if (
                 self.config.logChannelName == ""
             ):  # Handle gracefully if no channel is specified to send a DM
@@ -40,6 +44,9 @@ class MessageHandler(commands.Cog):
             and message.channel.name in self.config.reportingChannels
             and message.author.name not in self.config.whitelist
         ):
+            self.log(
+                f"Message sent in a reporting channel {message.channel.name}: {message.content}"
+            )
             await message.delete(delay=None)
             channel = discord.utils.get(
                 self.client.get_all_channels(),
