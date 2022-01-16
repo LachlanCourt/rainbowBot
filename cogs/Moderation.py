@@ -7,8 +7,12 @@ class Moderation(commands.Cog):
         self.client = client
         self.config = config
 
+    def log(self, msg):
+        self.config.logger.debug(f"Moderation: {msg}")
+
     @commands.Cog.listener()
     async def on_raw_message_delete(self, rawMessage):
+        self.log("Message delete event")
         guild = self.client.get_guild(rawMessage.guild_id)
         channel = self.client.get_channel(rawMessage.channel_id)
         # If the message was sent before the bot was logged on, it is unfortunately innaccessible. Ignore also if the author is on the whitelist or if the channel is locked (The lock channel command deletes the message of the sender automatically)
@@ -19,6 +23,7 @@ class Moderation(commands.Cog):
             or channel.name in list(self.config.lockedChannels.values())
             or rawMessage.cached_message.content.startswith("$rain")
         ):
+            self.log("Message not eligible for reposting")
             return
         message = rawMessage.cached_message
         member = guild.get_member(message.author.id)
@@ -65,11 +70,13 @@ class Moderation(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_message_edit(self, rawMessage):
+        self.log("Message edit event")
         # If the message was sent before the bot was logged on, it is unfortunately innaccessible. Ignore also if the author is on the whitelist
         if (
             not rawMessage.cached_message
             or rawMessage.cached_message.author.name in self.config.whitelist
         ):
+            self.log(f"Message not eligible for reposting")
             return
         guild = self.client.get_guild(rawMessage.cached_message.author.guild.id)
         channel = self.client.get_channel(rawMessage.channel_id)
@@ -84,12 +91,14 @@ class Moderation(commands.Cog):
         try:
             after = rawMessage.data["content"]
         except:
+            self.log(f"Edit message after content not available. Early exit")
             return
         beforeAttach = rawMessage.cached_message.attachments
         afterAttach = rawMessage.data["attachments"]
 
         # Pinning a message triggers an edit event. Ignore it
         if before == after and len(beforeAttach) == len(afterAttach):
+            self.log(f"Edit message pin event")
             return
 
         # Inform the moderation team
@@ -141,6 +150,7 @@ class Moderation(commands.Cog):
     # Low level authorisation required
     @commands.command("lock")
     async def lock(self, msg, *args):
+        self.log("Lock command received")
         if not self.config.checkPerms(
             msg.author, level=2
         ):  # Check the user has a role in trustedRoles
@@ -169,12 +179,7 @@ class Moderation(commands.Cog):
                 return
 
         # Find the role that affects send message permissions in this channel
-        roleName = channel.name.upper()
-        guild = msg.guild
-        role = None
-        for i in guild.roles:
-            if i.name == roleName:
-                role = i
+        role = self.config.getRole(channel.name.upper(), msg.guild)
 
         # The role name needs to match the uppercase version of the channel name. This will be the case if channels have been made with the automatic channel creation
         if role == None:
@@ -218,16 +223,16 @@ class Moderation(commands.Cog):
         messageChannel = self.client.get_channel(reaction.channel_id)
         message = await messageChannel.fetch_message(reaction.message_id)
 
-        # Check first if the reaction is for a channel that is currently locked
+        # Check if the reaction is for a channel that is currently locked
         if str(message.id) in self.config.lockedChannels:
-            # Get the channel that was locked
-
             if reaction.emoji.name == "🔓" and self.config.checkPerms(
                 reaction.member, level=2
             ):
+                self.log("Reaction add event to unlock channel")
                 await self.unlock(message, self.config.lockedChannels[str(message.id)])
 
     async def unlock(self, message, channelName):
+        self.log("Unlock channel")
         channel = discord.utils.get(
             self.client.get_all_channels(),
             guild__name=message.guild.name,
