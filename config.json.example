@@ -1,5 +1,5 @@
 {
-    "whitelisted": [],
+    "userAllowlist": [],
     "trustedRoles": [[], [], []],
     "logChannel": "",
     "moderationChannel": "",

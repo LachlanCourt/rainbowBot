@@ -4,7 +4,7 @@ import json
 class GlobalConfig:
     def __init__(self, logger):
         self.logger = logger
-        self.whitelist = []
+        self.userAllowlist = []
         self.trustedRoles = [[], [], []]
         self.logChannelName = ""
         self.moderationChannelName = ""
@@ -53,7 +53,7 @@ class GlobalConfig:
             raise Exception(e)
         try:
             data = json.load(f)
-            self.whitelist = data["whitelisted"]
+            self.userAllowlist = data["userAllowlist"]
             self.trustedRoles = data["trustedRoles"]
             self.logChannelName = data["logChannel"]
             self.moderationChannelName = data["moderationChannel"]
