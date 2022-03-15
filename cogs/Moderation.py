@@ -15,7 +15,7 @@ class Moderation(commands.Cog):
         self.log("Message delete event")
         guild = self.client.get_guild(rawMessage.guild_id)
         channel = self.client.get_channel(rawMessage.channel_id)
-        # If the message was sent before the bot was logged on, it is unfortunately innaccessible. Ignore also if the author is on the userAllowlist or if the channel is locked (The lock channel command deletes the message of the sender automatically)
+        # If the message was sent before the bot was logged on, it is unfortunately innaccessible. Ignore also if the author or channel is on the allowlist or if the channel is locked (The lock channel command deletes the message of the sender automatically)
         if (
             not rawMessage.cached_message
             or channel.name in self.config.reportingChannels
@@ -73,7 +73,7 @@ class Moderation(commands.Cog):
     async def on_raw_message_edit(self, rawMessage):
         self.log("Message edit event")
         channel = self.client.get_channel(rawMessage.channel_id)
-        # If the message was sent before the bot was logged on, it is unfortunately innaccessible. Ignore also if the author is on the userAllowlist
+        # If the message was sent before the bot was logged on, it is unfortunately innaccessible. Ignore also if the author  or channel is on the allowlist
         if (
             not rawMessage.cached_message
             or rawMessage.cached_message.author.name in self.config.userAllowlist
