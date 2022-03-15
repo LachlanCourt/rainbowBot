@@ -42,7 +42,7 @@ class MessageHandler(commands.Cog):
         if (
             message.channel.type != discord.ChannelType.private
             and message.channel.name in self.config.reportingChannels
-            and message.author.name not in self.config.whitelist
+            and message.author.name not in self.config.userAllowlist
         ):
             self.log(
                 f"Message sent in a reporting channel {message.channel.name}: {message.content}"

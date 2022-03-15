@@ -169,7 +169,7 @@ class RoleMenu(commands.Cog):
             )
         }
         for i in guild.roles:
-            if i.name in self.config.trustedRoles:
+            if i.name in self.config.trustedRoles[0]:
                 roleMenuOverwrites[i] = discord.PermissionOverwrite(
                     view_channel=True, send_messages=True
                 )
