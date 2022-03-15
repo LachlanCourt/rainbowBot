@@ -22,6 +22,7 @@ async def on_ready():
 
 
 # Configure Logging
+FileHandler.saveOldLogFile(None)
 logger = logging.getLogger("discord")
 logger.setLevel(logging.DEBUG)
 handler = logging.FileHandler(filename="rainbowBot.log", encoding="utf-8", mode="w")
