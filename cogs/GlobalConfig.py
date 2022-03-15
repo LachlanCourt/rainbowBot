@@ -1,4 +1,4 @@
-import json
+import json, re
 
 
 class GlobalConfig:
@@ -109,8 +109,23 @@ class GlobalConfig:
             return True
         return False
 
-    def getRole(self, roleName, guild):
+    def getRole(self, roleIdentifier, guild, compareId=False):
         for i in guild.roles:
-            if i.name == roleName:
+            if not compareId and i.name == roleIdentifier:
+                return i
+            print(i.id)
+            if compareId and i.id == roleIdentifier:
                 return i
         return None
+
+    def sanitiseMentions(self, message, guild):
+        matchString = r"\<@&\d*?\>"
+        while re.search(matchString, message) != None:
+            roleNameIndex = re.search(matchString, message).span()
+            roleId = message[roleNameIndex[0] + 3 : roleNameIndex[1] - 1]
+            role = self.getRole(int(roleId), guild, compareId=True)
+            if (
+                role != None
+            ):  # Only replace if the role actually exists. If not, keep searching through replyMessage
+                message = message.replace(role.mention, f"@{role.name}")
+        return message
