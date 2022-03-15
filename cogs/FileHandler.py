@@ -39,6 +39,11 @@ class FileHandler(commands.Cog):
             filename = f"{start}{mid}{end}"
         return filename
 
+    def saveOldLogFile(self):
+        f = Path("rainbowBot.log")
+        if f.is_file():
+            os.rename(f.name, FileHandler.findNewFilename(None, f.name))
+
     # High level authorisation required
     @commands.command("addfile")
     async def addfile(self, msg, *args):
