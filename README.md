@@ -20,7 +20,7 @@ This bot is used to generate and maintain text channels for courses taken by uni
 
 ## Authorisation
 
-Commands are restricted by discord roles specified in the config file. There are three levels of authorisation that restrict the moderation and bot management commands, in the format `[[highLevelAuthorisation], [moderateLevelAuthorisation], [lowLevelAutherisation]]`. If a restriction is not specified for a command below, it can be used by anyone in the server.
+Commands are restricted by discord roles specified in the config file. There are three levels of authorisation that restrict the moderation and bot management commands, in the format `[[rolesWithHighLevelAuthorisation], [rolesWithModerateLevelAuthorisation], [rolesWithLowLevelAutherisation]]`. If a restriction is not specified for a command below, it can be used by anyone in the server.
 
 ## Automated channel creation
 
@@ -64,7 +64,7 @@ In the "reportingChannels" section of `config.json` you can add a list of lists 
 Feature can be disabled by leaving "reportingChannels" an empty list `[]`
 
 ## Message edit and delete monitoring
-To allow for academic integrity moderation, any edited or deleted message will be reposted in a channel specified in `config.json` under "moderationChannel". By default this is `edit-delete-log`
+To allow for academic integrity moderation, any edited or deleted message will be reposted in a channel specified in `config.json` under "moderationChannel". By default this is `edit-delete-log`. Users and channels can be added to an allowlist in relevant fields in the config file to assist with custom moderation of specific parts of the server.
 
 Feature can be disabled by leaving "moderationChannel" an empty string `""`
 
