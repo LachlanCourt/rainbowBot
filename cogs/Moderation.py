@@ -21,6 +21,7 @@ class Moderation(commands.Cog):
             or channel.name in self.config.reportingChannels
             or rawMessage.cached_message.author.name in self.config.userAllowlist
             or channel.name in list(self.config.lockedChannels.values())
+            or channel.name in self.config.channelAllowlist
             or rawMessage.cached_message.content.startswith("$rain")
         ):
             self.log("Message not eligible for reposting")
@@ -71,15 +72,16 @@ class Moderation(commands.Cog):
     @commands.Cog.listener()
     async def on_raw_message_edit(self, rawMessage):
         self.log("Message edit event")
+        channel = self.client.get_channel(rawMessage.channel_id)
         # If the message was sent before the bot was logged on, it is unfortunately innaccessible. Ignore also if the author is on the userAllowlist
         if (
             not rawMessage.cached_message
             or rawMessage.cached_message.author.name in self.config.userAllowlist
+            or channel.name in self.config.channelAllowlist
         ):
             self.log(f"Message not eligible for reposting")
             return
         guild = self.client.get_guild(rawMessage.cached_message.author.guild.id)
-        channel = self.client.get_channel(rawMessage.channel_id)
         member = guild.get_member(rawMessage.cached_message.author.id)
 
         # Ignore deleted messages if the member no longer exists, they are a bot, or if this functionality is disabled

@@ -5,6 +5,7 @@ class GlobalConfig:
     def __init__(self, logger):
         self.logger = logger
         self.userAllowlist = []
+        self.channelAllowlist = []
         self.trustedRoles = [[], [], []]
         self.logChannelName = ""
         self.moderationChannelName = ""
@@ -54,6 +55,7 @@ class GlobalConfig:
         try:
             data = json.load(f)
             self.userAllowlist = data["userAllowlist"]
+            self.channelAllowlist = data["channelAllowlist"]
             self.trustedRoles = data["trustedRoles"]
             self.logChannelName = data["logChannel"]
             self.moderationChannelName = data["moderationChannel"]
