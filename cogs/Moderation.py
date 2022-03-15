@@ -43,7 +43,7 @@ class Moderation(commands.Cog):
         if self.config.checkPerms(message.author, level=2):
             user = message.author.name
 
-        sanitisedMessage = self.config.sanitiseMentions(message.content)
+        sanitisedMessage = self.config.sanitiseMentions(message.content, guild)
 
         if len(message.attachments) == 0:  # There are no attachments, it was just text
             await moderationChannel.send(
@@ -91,9 +91,9 @@ class Moderation(commands.Cog):
             return
 
         # Try and grab the data of the message and any attachments
-        before = self.config.sanitiseMentions(rawMessage.cached_message.content)
+        before = self.config.sanitiseMentions(rawMessage.cached_message.content, guild)
         try:
-            after = self.config.sanitiseMentions(rawMessage.data["content"])
+            after = self.config.sanitiseMentions(rawMessage.data["content"], guild)
         except:
             self.log(f"Edit message after content not available. Early exit")
             return
