@@ -114,3 +114,6 @@ class GlobalConfig:
             if i.name == roleName:
                 return i
         return None
+
+    def sanitiseMentions(self, message):
+        return message

@@ -43,14 +43,16 @@ class Moderation(commands.Cog):
         if self.config.checkPerms(message.author, level=2):
             user = message.author.name
 
+        sanitisedMessage = self.config.sanitiseMentions(message.content)
+
         if len(message.attachments) == 0:  # There are no attachments, it was just text
             await moderationChannel.send(
-                f"{user} deleted a message in {message.channel.mention}. The message was: \n\n{message.content}"
+                f"{user} deleted a message in {message.channel.mention}. The message was: \n\n{sanitisedMessage}"
             )
         else:  # There was an attachment
             if message.content != "":
                 await moderationChannel.send(
-                    f"{user} deleted a message in {message.channel.mention}. The message was: \n\n{message.content}\n\nAnd had the following attachment(s)"
+                    f"{user} deleted a message in {message.channel.mention}. The message was: \n\n{sanitisedMessage}\n\nAnd had the following attachment(s)"
                 )
             else:
                 await moderationChannel.send(
@@ -89,9 +91,9 @@ class Moderation(commands.Cog):
             return
 
         # Try and grab the data of the message and any attachments
-        before = rawMessage.cached_message.content
+        before = self.config.sanitiseMentions(rawMessage.cached_message.content)
         try:
-            after = rawMessage.data["content"]
+            after = self.config.sanitiseMentions(rawMessage.data["content"])
         except:
             self.log(f"Edit message after content not available. Early exit")
             return
