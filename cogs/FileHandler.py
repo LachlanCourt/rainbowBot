@@ -40,9 +40,13 @@ class FileHandler(commands.Cog):
         return filename
 
     def saveOldLogFile(self):
-        f = Path("rainbowBot.log")
+        if not Path("log").is_dir():
+            os.mkdir("log")
+        f = Path("log/rainbowBot.log")
         if f.is_file():
-            os.rename(f.name, FileHandler.findNewFilename(None, f.name))
+            os.rename(
+                f"log/{f.name}", FileHandler.findNewFilename(None, f"log/{f.name}")
+            )
 
     # High level authorisation required
     @commands.command("addfile")
