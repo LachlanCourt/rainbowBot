@@ -113,7 +113,6 @@ class GlobalConfig:
         for i in guild.roles:
             if not compareId and i.name == roleIdentifier:
                 return i
-            print(i.id)
             if compareId and i.id == roleIdentifier:
                 return i
         return None
