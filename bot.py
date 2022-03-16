@@ -22,10 +22,10 @@ async def on_ready():
 
 
 # Configure Logging
-FileHandler.saveOldLogFile(None)
+FileHandler.saveOldLogFile(None)  # Makes log directory if it doesn't already exist
 logger = logging.getLogger("discord")
 logger.setLevel(logging.DEBUG)
-handler = logging.FileHandler(filename="rainbowBot.log", encoding="utf-8", mode="w")
+handler = logging.FileHandler(filename="log/rainbowBot.log", encoding="utf-8", mode="w")
 handler.setFormatter(
     logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s")
 )
