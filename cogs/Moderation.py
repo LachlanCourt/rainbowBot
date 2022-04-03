@@ -45,18 +45,23 @@ class Moderation(commands.Cog):
 
         sanitisedMessage = self.config.sanitiseMentions(message.content, guild)
 
+        # Get the time the message was originally posted. The created_at attribute is in utc format so convert to local time by applying the offset
+        rawTime = datetime.datetime.fromisoformat(str(message.created_at))
+        rawTime = rawTime.astimezone(datetime.datetime.now().tzinfo)
+        time = f"<t:{int(datetime.datetime.timestamp(rawTime) + rawTime.utcoffset().seconds)}>"
+
         if len(message.attachments) == 0:  # There are no attachments, it was just text
             await moderationChannel.send(
-                f"{user} deleted a message in {message.channel.mention}. The message was: \n\n{sanitisedMessage}"
+                f"{user} deleted a message in {message.channel.mention}. The message was: \n\n{sanitisedMessage}\n\nMessage originally sent at {time}"
             )
         else:  # There was an attachment
             if message.content != "":
                 await moderationChannel.send(
-                    f"{user} deleted a message in {message.channel.mention}. The message was: \n\n{sanitisedMessage}\n\nAnd had the following attachment(s)"
+                    f"{user} deleted a message in {message.channel.mention}.\n\nMessage originally sent at {time}\n\nThe message was: \n\n{sanitisedMessage}\n\nAnd had the following attachment(s)"
                 )
             else:
                 await moderationChannel.send(
-                    f"{user} deleted a message in {message.channel.mention}. The message consisted of the following attachement(s)"
+                    f"{user} deleted a message in {message.channel.mention}.\n\nMessage originally sent at {time}\n\nThe message consisted of the following attachement(s)"
                 )
             for i in message.attachments:
                 # The cached attachment URL becomes invalid after a few minutes. The following ensures valid media is accessible for moderation purposes
@@ -75,7 +80,7 @@ class Moderation(commands.Cog):
     async def on_raw_message_edit(self, rawMessage):
         self.log("Message edit event")
         channel = self.client.get_channel(rawMessage.channel_id)
-        # If the message was sent before the bot was logged on, it is unfortunately innaccessible. Ignore also if the author  or channel is on the allowlist
+        # If the message was sent before the bot was logged on, it is unfortunately innaccessible. Ignore also if the author or channel is on the allowlist
         if (
             not rawMessage.cached_message
             or rawMessage.cached_message.author.name in self.config.userAllowlist
@@ -122,7 +127,7 @@ class Moderation(commands.Cog):
         if self.config.checkPerms(rawMessage.cached_message.author, level=2):
             user = rawMessage.cached_message.author.name
 
-        # Get the time the message was originally posted
+        # Get the time the message was originally posted. The timestamp attribute is in local format so no need to convert from utc
         rawTime = datetime.datetime.fromisoformat(rawMessage.data["timestamp"])
         time = f"<t:{int(datetime.datetime.timestamp(rawTime))}>"
 
