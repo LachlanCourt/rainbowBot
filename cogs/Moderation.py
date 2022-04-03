@@ -1,4 +1,4 @@
-import discord, json, os
+import discord, json, os, datetime
 from discord.ext import commands
 
 
@@ -121,8 +121,13 @@ class Moderation(commands.Cog):
         user = rawMessage.cached_message.author.mention
         if self.config.checkPerms(rawMessage.cached_message.author, level=2):
             user = rawMessage.cached_message.author.name
+
+        # Get the time the message was originally posted
+        rawTime = datetime.datetime.fromisoformat(rawMessage.data["timestamp"])
+        time = f"<t:{int(datetime.datetime.timestamp(rawTime))}>"
+
         await moderationChannel.send(
-            f"{user} just edited their message in {channel.mention}, they changed their original message which said\n\n{before}\n\nTo a new message saying\n\n{after}"
+            f"{user} just edited their message in {channel.mention}, they changed their original message which said\n\n{before}\n\nTo a new message saying\n\n{after}\n\nMessage originally sent at {time}"
         )
 
         if len(rawMessage.cached_message.attachments) != len(
