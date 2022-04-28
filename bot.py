@@ -18,8 +18,8 @@ client = commands.Bot(command_prefix="$rain", intents=intents)
 
 @client.event
 async def on_ready():
+    await addCogs()
     print("We have logged in as {0.user}".format(client))
-
 
 # Configure Logging
 FileHandler.saveOldLogFile(None)  # Makes log directory if it doesn't already exist
@@ -35,11 +35,12 @@ logger.addHandler(handler)
 config = GlobalConfig(logger)
 
 # Add each of the cogs, passing in the configuration
-client.add_cog(FileHandler(client, config))
-client.add_cog(Moderation(client, config))
-client.add_cog(RoleMenu(client, config))
-client.add_cog(MessageHandler(client, config))
-client.add_cog(Tasks(client, config))
+async def addCogs():
+    await client.add_cog(FileHandler(client, config))
+    await client.add_cog(Moderation(client, config))
+    await client.add_cog(RoleMenu(client, config))
+    await client.add_cog(MessageHandler(client, config))
+    await client.add_cog(Tasks(client, config))
 
 # Start bot
 if __name__ == "__main__":

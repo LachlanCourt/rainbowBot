@@ -11,18 +11,12 @@ class Tasks(commands.Cog):
         self.client = client
         self.config = config
         self.sendTick = False
-
-    def log(self, msg):
-        self.config.logger.debug(f"Tasks: {msg}")
-
-    @commands.Cog.listener()
-    async def on_ready(self):
-        # If there are no registered tasks there is no reason for the scheduler to run
-        # Start this in here rather than in init function because init function runs before file read
-        # So registeredTasks would always be 0
         if len(self.config.registeredTasks) > 0:
             self.log("Starting scheduler")
             self.scheduler.start()
+
+    def log(self, msg):
+        self.config.logger.debug(f"Tasks: {msg}")
 
     @staticmethod
     def isNow(cronStamp):
