@@ -47,8 +47,7 @@ class Moderation(commands.Cog):
 
         # Get the time the message was originally posted. The created_at attribute is in utc format so convert to local time by applying the offset
         rawTime = datetime.datetime.fromisoformat(str(message.created_at))
-        rawTime = rawTime.astimezone(datetime.datetime.now().tzinfo)
-        time = f"<t:{int(datetime.datetime.timestamp(rawTime) + rawTime.utcoffset().seconds)}>"
+        time = f"<t:{int(datetime.datetime.timestamp(rawTime))}>"
 
         if len(message.attachments) == 0:  # There are no attachments, it was just text
             await moderationChannel.send(
