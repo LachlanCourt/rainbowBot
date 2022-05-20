@@ -3,12 +3,12 @@ from discord.ext import commands
 
 
 class Moderation(commands.Cog):
-    def __init__(self, client, config):
+    def __init__(self, client, state):
         self.client = client
-        self.config = config
+        self.state = state
 
     def log(self, msg):
-        self.config.logger.debug(f"Moderation: {msg}")
+        self.state.logger.debug(f"Moderation: {msg}")
 
     @commands.Cog.listener()
     async def on_raw_message_delete(self, rawMessage):
@@ -18,10 +18,10 @@ class Moderation(commands.Cog):
         # If the message was sent before the bot was logged on, it is unfortunately innaccessible. Ignore also if the author or channel is on the allowlist or if the channel is locked (The lock channel command deletes the message of the sender automatically)
         if (
             not rawMessage.cached_message
-            or channel.name in self.config.reportingChannels
-            or rawMessage.cached_message.author.name in self.config.userAllowlist
-            or channel.name in list(self.config.lockedChannels.values())
-            or channel.name in self.config.channelAllowlist
+            or channel.name in self.state.reportingChannels
+            or rawMessage.cached_message.author.name in self.state.userAllowlist
+            or channel.name in list(self.state.lockedChannels.values())
+            or channel.name in self.state.channelAllowlist
             or rawMessage.cached_message.content.startswith("$rain")
         ):
             self.log("Message not eligible for reposting")
@@ -29,21 +29,21 @@ class Moderation(commands.Cog):
         message = rawMessage.cached_message
         member = guild.get_member(message.author.id)
         # Ignore deleted messages if the member no longer exists, they are a bot, or if this functionality is disabled
-        if member == None or member.bot or self.config.moderationChannelName == "":
+        if member == None or member.bot or self.state.moderationChannelName == "":
             return
         moderationChannel = discord.utils.get(
             self.client.get_all_channels(),
             guild__name=guild.name,
-            name=self.config.moderationChannelName,
+            name=self.state.moderationChannelName,
         )
 
         # People with trusted roles will likely have access to the log channel for deleted messages
         # Getting a ping every time might get annoying, so don't ping people with trusted roles.
         user = message.author.mention
-        if self.config.checkPerms(message.author, level=2):
+        if self.state.checkPerms(message.author, level=2):
             user = message.author.name
 
-        sanitisedMessage = self.config.sanitiseMentions(message.content, guild)
+        sanitisedMessage = self.state.sanitiseMentions(message.content, guild)
 
         # Get the time the message was originally posted. The created_at attribute is in utc format so convert to local time by applying the offset
         rawTime = datetime.datetime.fromisoformat(str(message.created_at))
@@ -82,8 +82,8 @@ class Moderation(commands.Cog):
         # If the message was sent before the bot was logged on, it is unfortunately innaccessible. Ignore also if the author or channel is on the allowlist
         if (
             not rawMessage.cached_message
-            or rawMessage.cached_message.author.name in self.config.userAllowlist
-            or channel.name in self.config.channelAllowlist
+            or rawMessage.cached_message.author.name in self.state.userAllowlist
+            or channel.name in self.state.channelAllowlist
         ):
             self.log(f"Message not eligible for reposting")
             return
@@ -91,13 +91,13 @@ class Moderation(commands.Cog):
         member = guild.get_member(rawMessage.cached_message.author.id)
 
         # Ignore deleted messages if the member no longer exists, they are a bot, or if this functionality is disabled
-        if member == None or member.bot or self.config.moderationChannelName == "":
+        if member == None or member.bot or self.state.moderationChannelName == "":
             return
 
         # Try and grab the data of the message and any attachments
-        before = self.config.sanitiseMentions(rawMessage.cached_message.content, guild)
+        before = self.state.sanitiseMentions(rawMessage.cached_message.content, guild)
         try:
-            after = self.config.sanitiseMentions(rawMessage.data["content"], guild)
+            after = self.state.sanitiseMentions(rawMessage.data["content"], guild)
         except:
             self.log(f"Edit message after content not available. Early exit")
             return
@@ -113,7 +113,7 @@ class Moderation(commands.Cog):
         moderationChannel = discord.utils.get(
             self.client.get_all_channels(),
             guild__name=guild.name,
-            name=self.config.moderationChannelName,
+            name=self.state.moderationChannelName,
         )
         if before == "":
             before = "<<No message content>>"
@@ -123,7 +123,7 @@ class Moderation(commands.Cog):
         # People with trusted roles will likely have access to the log channel for edited messages
         # Getting a ping every time might get annoying, so don't ping people with trusted roles.
         user = rawMessage.cached_message.author.mention
-        if self.config.checkPerms(rawMessage.cached_message.author, level=2):
+        if self.state.checkPerms(rawMessage.cached_message.author, level=2):
             user = rawMessage.cached_message.author.name
 
         # Get the time the message was originally posted. The timestamp attribute is in local format so no need to convert from utc
@@ -164,10 +164,10 @@ class Moderation(commands.Cog):
     @commands.command("lock")
     async def lock(self, msg, *args):
         self.log("Lock command received")
-        if not self.config.checkPerms(
+        if not self.state.checkPerms(
             msg.author, level=2
         ):  # Check the user has a role in trustedRoles
-            await msg.channel.send(self.config.permsError)
+            await msg.channel.send(self.state.permsError)
             return
 
         # If no arguments are given, assume the channel the message was sent in should be locked
@@ -192,7 +192,7 @@ class Moderation(commands.Cog):
                 return
 
         # Find the role that affects send message permissions in this channel
-        role = self.config.getRole(channel.name.upper(), msg.guild)
+        role = self.state.getRole(channel.name.upper(), msg.guild)
 
         # The role name needs to match the uppercase version of the channel name. This will be the case if channels have been made with the automatic channel creation
         if role == None:
@@ -209,7 +209,7 @@ class Moderation(commands.Cog):
         await message.add_reaction("🔓")
 
         # Add the locked channel to the list so that it can be unlocked again
-        self.config.lockedChannels[str(message.id)] = channel.name
+        self.state.lockedChannels[str(message.id)] = channel.name
         # Delete the command message. If this comes as a command then the first line will run, if it is called from Tasks cog then the second line will run
         if len(args) > 1 and args[1]:
             await msg.delete(delay=None)
@@ -218,7 +218,7 @@ class Moderation(commands.Cog):
 
         # Lock channel
         await channel.set_permissions(role, read_messages=True, send_messages=False)
-        data = {"channels": self.config.lockedChannels}
+        data = {"channels": self.state.lockedChannels}
 
         # Save the list of currently locked channels incase the bot goes offline
         f = open("locked.dat", "w")
@@ -237,12 +237,12 @@ class Moderation(commands.Cog):
         message = await messageChannel.fetch_message(reaction.message_id)
 
         # Check if the reaction is for a channel that is currently locked
-        if str(message.id) in self.config.lockedChannels:
-            if reaction.emoji.name == "🔓" and self.config.checkPerms(
+        if str(message.id) in self.state.lockedChannels:
+            if reaction.emoji.name == "🔓" and self.state.checkPerms(
                 reaction.member, level=2
             ):
                 self.log("Reaction add event to unlock channel")
-                await self.unlock(message, self.config.lockedChannels[str(message.id)])
+                await self.unlock(message, self.state.lockedChannels[str(message.id)])
 
     async def unlock(self, message, channelName):
         self.log("Unlock channel")
@@ -253,14 +253,14 @@ class Moderation(commands.Cog):
         )
         guild = channel.guild
 
-        roleName = self.config.lockedChannels[str(message.id)].upper()
-        role = self.config.getRole(roleName, guild)
+        roleName = self.state.lockedChannels[str(message.id)].upper()
+        role = self.state.getRole(roleName, guild)
         if role == None:
             return
 
         await channel.set_permissions(role, read_messages=True, send_messages=None)
-        del self.config.lockedChannels[str(message.id)]
-        data = {"channels": self.config.lockedChannels}
+        del self.state.lockedChannels[str(message.id)]
+        data = {"channels": self.state.lockedChannels}
 
         await message.delete(delay=None)
 

@@ -7,16 +7,16 @@ from cogs.helpers._taskValidator import Validator
 
 
 class Tasks(commands.Cog):
-    def __init__(self, client, config):
+    def __init__(self, client, state):
         self.client = client
-        self.config = config
+        self.state = state
         self.sendTick = False
-        if len(self.config.registeredTasks) > 0:
+        if len(self.state.registeredTasks) > 0:
             self.log("Starting scheduler")
             self.scheduler.start()
 
     def log(self, msg):
-        self.config.logger.debug(f"Tasks: {msg}")
+        self.state.logger.debug(f"Tasks: {msg}")
 
     @staticmethod
     def isNow(cronStamp):
@@ -58,8 +58,8 @@ class Tasks(commands.Cog):
     async def scheduler(self):
         # Reads file in the same format as crontab
         # Minute Hour Date Month Day
-        for filename in self.config.registeredTasks.keys():
-            guildId = self.config.registeredTasks[filename]
+        for filename in self.state.registeredTasks.keys():
+            guildId = self.state.registeredTasks[filename]
             valid, n = Validator.validate(filename)
             if not valid:
                 continue
@@ -79,7 +79,7 @@ class Tasks(commands.Cog):
                 logChannel = discord.utils.get(
                     self.client.get_all_channels(),
                     guild__name=guild.name,
-                    name=self.config.logChannelName,
+                    name=self.state.logChannelName,
                 )
                 await logChannel.send(
                     "Status tick for task loop. Ticks are only sent once per `taskstatus` command"
@@ -95,13 +95,13 @@ class Tasks(commands.Cog):
                 if command == "lock":
                     # Only lock channel if it is not already locked
                     if self.isNow(start) and args not in list(
-                        self.config.lockedChannels.values()
+                        self.state.lockedChannels.values()
                     ):
                         # Get log channel
                         logChannel = discord.utils.get(
                             self.client.get_all_channels(),
                             guild__name=guild.name,
-                            name=self.config.logChannelName,
+                            name=self.state.logChannelName,
                         )
                         # Send lock message
                         message = await logChannel.send(f"Locking channel {args}...")
@@ -109,15 +109,15 @@ class Tasks(commands.Cog):
                         await Moderation.lock(self, message, args, True)
                         self.log(f"Channel {args} locked automatically")
                     if preposition == "until" and self.isNow(end):
-                        if args in list(self.config.lockedChannels.values()):
+                        if args in list(self.state.lockedChannels.values()):
                             messageID = None
-                            for i in self.config.lockedChannels:
-                                if self.config.lockedChannels[i] == args:
+                            for i in self.state.lockedChannels:
+                                if self.state.lockedChannels[i] == args:
                                     messageID = i
                             logChannel = discord.utils.get(
                                 self.client.get_all_channels(),
                                 guild__name=guild.name,
-                                name=self.config.logChannelName,
+                                name=self.state.logChannelName,
                             )
                             message = await logChannel.fetch_message(int(messageID))
                             # Call the unlock function on the channel which will delete the message
@@ -128,10 +128,10 @@ class Tasks(commands.Cog):
     @commands.command("checktask")
     async def checktask(self, msg, *args):
         self.log("Check task command receieved")
-        if not self.config.checkPerms(
+        if not self.state.checkPerms(
             msg.message.author
         ):  # Check the user has a role in trustedRoles
-            await msg.channel.send(self.config.permsError)
+            await msg.channel.send(self.state.permsError)
             return
         if len(args) == 0:
             await msg.channel.send("No file specified")
@@ -150,16 +150,16 @@ class Tasks(commands.Cog):
         self.log("Taskstatus command receieved")
         # Not that if the last task has only just been removed, this function will return a false positive for the
         # minute afterwards as the loop doesn't properly stop until the minute is up in order to close gracefully
-        if not self.config.checkPerms(
+        if not self.state.checkPerms(
             msg.message.author
         ):  # Check the user has a role in trustedRoles
-            await msg.channel.send(self.config.permsError)
+            await msg.channel.send(self.state.permsError)
             return
         if self.scheduler.is_running():
-            n = "\n" + ("\n" if len(self.config.registeredTasks) > 0 else "")
-            files = n + "\n".join(self.config.registeredTasks.keys()) + n
+            n = "\n" + ("\n" if len(self.state.registeredTasks) > 0 else "")
+            files = n + "\n".join(self.state.registeredTasks.keys()) + n
             await msg.channel.send(
-                f"Task loop is running, watching the following files:{files}Status tick will be sent to {self.config.logChannelName} within one minute"
+                f"Task loop is running, watching the following files:{files}Status tick will be sent to {self.state.logChannelName} within one minute"
             )
             self.sendTick = True
         else:
@@ -171,10 +171,10 @@ class Tasks(commands.Cog):
     @commands.command("addtask")
     async def addtask(self, msg, *args):
         self.log("Addtask command receieved")
-        if not self.config.checkPerms(
+        if not self.state.checkPerms(
             msg.message.author
         ):  # Check the user has a role in trustedRoles
-            await msg.channel.send(self.config.permsError)
+            await msg.channel.send(self.state.permsError)
             return
         if len(args) == 0:
             await msg.channel.send("No file specified")
@@ -189,10 +189,10 @@ class Tasks(commands.Cog):
             return
 
         valid, response = Validator.validate(filename)
-        if valid and filename not in self.config.registeredTasks:
-            self.config.registeredTasks[filename] = msg.guild.id
+        if valid and filename not in self.state.registeredTasks:
+            self.state.registeredTasks[filename] = msg.guild.id
             f = open("tasks.dat", "w")
-            json.dump({"registeredTasks": self.config.registeredTasks}, f)
+            json.dump({"registeredTasks": self.state.registeredTasks}, f)
             f.close()
             await msg.channel.send(f"Task file {filename} registered successfully")
             if not self.scheduler.is_running():
@@ -208,10 +208,10 @@ class Tasks(commands.Cog):
     @commands.command("remtask")
     async def remtask(self, msg, *args):
         self.log("Remtask command receieved")
-        if not self.config.checkPerms(
+        if not self.state.checkPerms(
             msg.message.author
         ):  # Check the user has a role in trustedRoles
-            await msg.channel.send(self.config.permsError)
+            await msg.channel.send(self.state.permsError)
             return
         if len(args) == 0:
             await msg.channel.send("No file specified")
@@ -221,13 +221,13 @@ class Tasks(commands.Cog):
         if not filename.endswith(".json"):
             filename += ".json"
 
-        if filename in self.config.registeredTasks:
-            del self.config.registeredTasks[filename]
-            f = open(self.config.tasksFilepath, "w")
-            json.dump({"registeredTasks": self.config.registeredTasks}, f)
+        if filename in self.state.registeredTasks:
+            del self.state.registeredTasks[filename]
+            f = open(self.state.tasksFilepath, "w")
+            json.dump({"registeredTasks": self.state.registeredTasks}, f)
             f.close()
             await msg.channel.send(f"Task file {filename} unregistered successfully")
-            if len(self.config.registeredTasks) == 0:
+            if len(self.state.registeredTasks) == 0:
                 self.scheduler.stop()
         else:
             await msg.channel.send(f"Task file {filename} is not currently registered")

@@ -4,12 +4,12 @@ from pathlib import Path
 
 
 class FileHandler(commands.Cog):
-    def __init__(self, bot, config):
+    def __init__(self, bot, state):
         self.bot = bot
-        self.config = config
+        self.state = state
 
     def log(self, msg):
-        self.config.logger.debug(f"FileHandler: {msg}")
+        self.state.logger.debug(f"FileHandler: {msg}")
 
     def findNewFilename(self, filename):
         # Check if the filename has an integer in parentheses like filename(1).dat
@@ -52,10 +52,10 @@ class FileHandler(commands.Cog):
     @commands.command("addfile")
     async def addfile(self, msg, *args):
         self.log("Add file command received")
-        if not self.config.checkPerms(
+        if not self.state.checkPerms(
             msg.message.author
         ):  # Check the user has a role in trustedRoles
-            await msg.channel.send(self.config.permsError)
+            await msg.channel.send(self.state.permsError)
             return
         message = msg.message
         if len(message.attachments) != 1:
@@ -98,10 +98,10 @@ class FileHandler(commands.Cog):
     @commands.command("remfile")
     async def remfile(self, msg, *args):
         self.log("Remove file command received")
-        if not self.config.checkPerms(
+        if not self.state.checkPerms(
             msg.message.author
         ):  # Check the user has a role in trustedRoles
-            await msg.channel.send(self.config.permsError)
+            await msg.channel.send(self.state.permsError)
             return
         if len(args) != 1:
             await msg.send("Filename not specified")
@@ -110,7 +110,7 @@ class FileHandler(commands.Cog):
             not f.is_file()
             or "/" in args[0]
             or "\\" in args[0]
-            or args[0] in self.config.sourceFiles
+            or args[0] in self.state.sourceFiles
         ):
             await msg.send("File does not exist")
             return
@@ -121,14 +121,14 @@ class FileHandler(commands.Cog):
     @commands.command("listfiles")
     async def listfiles(self, msg, *args):
         self.log("List files command received")
-        if not self.config.checkPerms(
+        if not self.state.checkPerms(
             msg.message.author
         ):  # Check the user has a role in trustedRoles
-            await msg.channel.send(self.config.permsError)
+            await msg.channel.send(self.state.permsError)
             return
         message = ""
         for file in os.listdir("./"):
-            if file not in self.config.sourceFiles:
+            if file not in self.state.sourceFiles:
                 message += f"{file}\n"
         if message == "":
             message = "None"
@@ -138,10 +138,10 @@ class FileHandler(commands.Cog):
     @commands.command("update")
     async def update(self, msg, *args):
         self.log("Update command received")
-        if not self.config.checkPerms(
+        if not self.state.checkPerms(
             msg.message.author
         ):  # Check the user has a role in trustedRoles
-            await msg.channel.send(self.config.permsError)
+            await msg.channel.send(self.state.permsError)
             return
         f = Path("updatebot.sh")
         if f.is_file():

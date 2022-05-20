@@ -3,12 +3,12 @@ from discord.ext import commands
 
 
 class MessageHandler(commands.Cog):
-    def __init__(self, client, config):
+    def __init__(self, client, state):
         self.client = client
-        self.config = config
+        self.state = state
 
     def log(self, msg):
-        self.config.logger.debug(f"MessageHandler: {msg}")
+        self.state.logger.debug(f"MessageHandler: {msg}")
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -19,7 +19,7 @@ class MessageHandler(commands.Cog):
         if message.channel.type == discord.ChannelType.private:
             self.log(f"Direct message received: {message.content}")
             if (
-                self.config.logChannelName == ""
+                self.state.logChannelName == ""
             ):  # Handle gracefully if no channel is specified to send a DM
                 await message.channel.send(
                     "I am not set up to receive direct messages, please contact your server administrators another way!"
@@ -33,7 +33,7 @@ class MessageHandler(commands.Cog):
                 logChannel = discord.utils.get(
                     self.client.get_all_channels(),
                     guild__name=guild.name,
-                    name=self.config.logChannelName,
+                    name=self.state.logChannelName,
                 )
                 await logChannel.send(
                     f"{message.author.mention} sent a direct message, they said\n\n{message.content}"
@@ -41,8 +41,8 @@ class MessageHandler(commands.Cog):
         # Messages that are sent into a channel specified in reportingChannels will be deleted and reposted in the specified reporting log with the custom message
         if (
             message.channel.type != discord.ChannelType.private
-            and message.channel.name in self.config.reportingChannels
-            and message.author.name not in self.config.userAllowlist
+            and message.channel.name in self.state.reportingChannels
+            and message.author.name not in self.state.userAllowlist
         ):
             self.log(
                 f"Message sent in a reporting channel {message.channel.name}: {message.content}"
@@ -51,9 +51,9 @@ class MessageHandler(commands.Cog):
             channel = discord.utils.get(
                 self.client.get_all_channels(),
                 guild__name=message.guild.name,
-                name=self.config.reportingChannels[message.channel.name][0],
+                name=self.state.reportingChannels[message.channel.name][0],
             )
-            replyMessage = self.config.reportingChannels[message.channel.name][1]
+            replyMessage = self.state.reportingChannels[message.channel.name][1]
             replyMessage = replyMessage.replace("@user", message.author.mention)
             replyMessage = replyMessage.replace("@message", message.content)
             # If there are multiple different role mentions discord replaces each with <@38473847387837> and we want to ignore these
@@ -62,7 +62,7 @@ class MessageHandler(commands.Cog):
             while re.search(matchString, replyMessage) != None:
                 roleNameIndex = re.search(matchString, replyMessage).span()
                 roleName = replyMessage[roleNameIndex[0] + 1 : roleNameIndex[1] - 1]
-                role = self.config.getRole(roleName, message.guild)
+                role = self.state.getRole(roleName, message.guild)
                 if (
                     role != None
                 ):  # Only replace if the role actually exists. If not, keep searching through replyMessage
