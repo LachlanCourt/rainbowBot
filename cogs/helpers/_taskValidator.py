@@ -52,6 +52,9 @@ class Validator:
                     out += f"    Revert command `{command} {args}` at {end[1] if end[1] != '*' else 'any'}:{end[0] if end[0] != '*' else 'any'}"
                     out += f" on day {end[2] if end[2] != '*' else 'any'} of {months[end[3]]} if it is {days[end[4]]}day\n\n"
 
+                # Add custom EOL character to split on in output command
+                out += chr(255)
+
             return (
                 True,
                 "File is valid. Tasks will run at the following times:\n\n" + out,
