@@ -1,7 +1,7 @@
 import json, re
 
 
-class GlobalConfig:
+class State:
     def __init__(self, logger):
         self.logger = logger
         self.userAllowlist = []

@@ -2,7 +2,7 @@ import discord, argparse, logging
 from discord.ext import commands
 
 # To hold global configuration and variables
-from cogs.GlobalConfig import GlobalConfig
+from cogs.State import State
 
 # Import cogs
 from cogs.FileHandler import FileHandler
@@ -21,6 +21,7 @@ async def on_ready():
     await addCogs()
     print("We have logged in as {0.user}".format(client))
 
+
 # Configure Logging
 FileHandler.saveOldLogFile(None)  # Makes log directory if it doesn't already exist
 logger = logging.getLogger("discord")
@@ -32,15 +33,16 @@ handler.setFormatter(
 logger.addHandler(handler)
 
 # Load the global config which will run some file reads and set default variables
-config = GlobalConfig(logger)
+state = State(logger)
 
 # Add each of the cogs, passing in the configuration
 async def addCogs():
-    await client.add_cog(FileHandler(client, config))
-    await client.add_cog(Moderation(client, config))
-    await client.add_cog(RoleMenu(client, config))
-    await client.add_cog(MessageHandler(client, config))
-    await client.add_cog(Tasks(client, config))
+    await client.add_cog(FileHandler(client, state))
+    await client.add_cog(Moderation(client, state))
+    await client.add_cog(RoleMenu(client, state))
+    await client.add_cog(MessageHandler(client, state))
+    await client.add_cog(Tasks(client, state))
+
 
 # Start bot
 if __name__ == "__main__":
@@ -84,13 +86,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     try:
-        config.parseAll(
+        state.parseAll(
             args.configFilePath,
             args.roleMenuFilePath,
             args.lockedChannelFilePath,
             args.taskFilePath,
         )
-        client.run(config.OAuthToken)
+        client.run(state.OAuthToken)
         print("Closed")
     except Exception as e:
         print(e)
