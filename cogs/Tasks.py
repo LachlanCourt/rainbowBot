@@ -142,7 +142,7 @@ class Tasks(commands.Cog):
             filename += ".json"
 
         valid, response = Validator.validate(filename)
-        await msg.channel.send(response)
+        await self.state.sendLongMessage(response, msg.channel, splitOnDelimeter=True)
 
     # High level authorisation required
     @commands.command("taskstatus")
