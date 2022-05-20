@@ -50,17 +50,20 @@ class Moderation(commands.Cog):
         time = f"<t:{int(datetime.datetime.timestamp(rawTime))}>"
 
         if len(message.attachments) == 0:  # There are no attachments, it was just text
-            await moderationChannel.send(
-                f"{user} deleted a message in {message.channel.mention}. The message was: \n\n{sanitisedMessage}\n\nMessage originally sent at {time}"
+            await self.state.sendLongMessage(
+                f"{user} deleted a message in {message.channel.mention}. The message was: \n\n{sanitisedMessage}\n\nMessage originally sent at {time}",
+                moderationChannel,
             )
         else:  # There was an attachment
             if message.content != "":
-                await moderationChannel.send(
-                    f"{user} deleted a message in {message.channel.mention}.\n\nMessage originally sent at {time}\n\nThe message was: \n\n{sanitisedMessage}\n\nAnd had the following attachment(s)"
+                await self.state.sendLongMessage(
+                    f"{user} deleted a message in {message.channel.mention}.\n\nMessage originally sent at {time}\n\nThe message was: \n\n{sanitisedMessage}\n\nAnd had the following attachment(s)",
+                    moderationChannel,
                 )
             else:
-                await moderationChannel.send(
-                    f"{user} deleted a message in {message.channel.mention}.\n\nMessage originally sent at {time}\n\nThe message consisted of the following attachement(s)"
+                await self.state.sendLongMessage(
+                    f"{user} deleted a message in {message.channel.mention}.\n\nMessage originally sent at {time}\n\nThe message consisted of the following attachement(s)",
+                    moderationChannel,
                 )
             for i in message.attachments:
                 # The cached attachment URL becomes invalid after a few minutes. The following ensures valid media is accessible for moderation purposes
