@@ -128,3 +128,16 @@ class State:
             ):  # Only replace if the role actually exists. If not, keep searching through replyMessage
                 message = message.replace(role.mention, f"@{role.name}")
         return message
+
+    async def sendLongMessage(self, message, channel):
+        if len(message) > 20000:
+            self.logger.debug(
+                f"State: Message is more than 20000 characters long and has been ratelimited. Message is as follows\n{message}"
+            )
+            await channel.send("Your request could not be processed")
+            raise Exception(
+                "Message is more than 20000 characters long and has been ratelimited. Full message available in logs"
+            )
+        chunks = [message[i : i + 2000] for i in range(0, len(message), 2000)]
+        for chunk in chunks:
+            await channel.send(chunk)
