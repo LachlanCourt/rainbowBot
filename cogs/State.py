@@ -1,5 +1,7 @@
 import json, re
 
+DISCORD_MAX_MESSAGE_LENGTH = 2000
+
 
 class State:
     def __init__(self, logger):
@@ -129,8 +131,8 @@ class State:
                 message = message.replace(role.mention, f"@{role.name}")
         return message
 
-    async def sendLongMessage(self, message, channel):
-        if len(message) > 20000:
+    async def sendLongMessage(self, message, channel, splitOnDelimeter=False):
+        if len(message) > DISCORD_MAX_MESSAGE_LENGTH * 10:
             self.logger.debug(
                 f"State: Message is more than 20000 characters long and has been ratelimited. Message is as follows\n{message}"
             )
@@ -138,6 +140,20 @@ class State:
             raise Exception(
                 "Message is more than 20000 characters long and has been ratelimited. Full message available in logs"
             )
-        chunks = [message[i : i + 2000] for i in range(0, len(message), 2000)]
+        if not splitOnDelimeter:
+            chunks = [
+                message[i : i + DISCORD_MAX_MESSAGE_LENGTH]
+                for i in range(0, len(message), DISCORD_MAX_MESSAGE_LENGTH)
+            ]
+        else:
+            splitChunks = message.split(chr(255))
+            chunks = []
+            currentChunk = ""
+            for chunk in splitChunks:
+                if len(currentChunk) + len(chunk) <= DISCORD_MAX_MESSAGE_LENGTH:
+                    currentChunk += chunk
+                else:
+                    chunks.append(currentChunk)
+                    currentChunk = chunk
         for chunk in chunks:
             await channel.send(chunk)
