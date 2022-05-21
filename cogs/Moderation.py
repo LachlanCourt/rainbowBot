@@ -248,7 +248,7 @@ class Moderation(commands.Cog):
                 self.log("Reaction add event to unlock channel")
                 await self.unlock(message, self.state.lockedChannels[str(message.id)])
 
-    async def unlock(self, message, channelName):
+    async def unlock(self, message, channelName, calledFromTask=False):
         self.log("Unlock channel")
         channel = discord.utils.get(
             self.client.get_all_channels(),
@@ -266,7 +266,10 @@ class Moderation(commands.Cog):
         del self.state.lockedChannels[str(message.id)]
         data = {"channels": self.state.lockedChannels}
 
-        await message.delete(delay=None)
+        if not calledFromTask:
+            await message.delete(delay=None)
+        else:
+            await message.channel.send(f"Channel {channel.mention} unlocked!")
 
         f = open("locked.dat", "w")
         json.dump(data, f)

@@ -121,7 +121,9 @@ class Tasks(commands.Cog):
                             )
                             message = await logChannel.fetch_message(int(messageID))
                             # Call the unlock function on the channel which will delete the message
-                            await Moderation.unlock(self, message, args)
+                            await Moderation.unlock(
+                                self, message, args, calledFromTask=True
+                            )
                             self.log(f"Channel {args} unlocked automatically")
 
     # High level authorisation required
