@@ -8,13 +8,19 @@ This bot is used to generate and maintain text channels for courses taken by uni
 
         pip install -r requirements.txt
 
-2. Create configuration file from example
+2. Until the next discord.py release, install discord.py directly from source
+
+        git clone https://github.com/Rapptz/discord.py
+        cd discord.py
+        python3 -m pip install -U .
+
+3. Create configuration file from example
 
         cp config.json.example config.json
 
-3. Generate OAuth Token (see [here](https://discord.com/developers/applications)) and populate config.json
+4. Generate OAuth Token (see [here](https://discord.com/developers/applications)) and populate config.json
 
-4. Run bot!
+5. Run bot!
 
         python3 bot.py
 
