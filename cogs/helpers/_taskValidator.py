@@ -57,7 +57,7 @@ class Validator:
 
             return (
                 True,
-                "File is valid. Tasks will run at the following times:\n\n" + out,
+                "File is valid. Tasks will run at the following times:\n'0'\n" + out,
             )
         except Exception as e:
-            return False, "File is not valid. See below:\n\n" + str(e)
+            return False, "File is not valid. See below:\n'0'\n" + str(e)
