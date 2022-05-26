@@ -20,7 +20,7 @@ class Validator:
                 "04": "Thurs",
                 "05": "Fri",
                 "06": "Satur",
-                "*": "any month ",
+                "*": "any day",
             }
             months = {
                 "01": "January",
@@ -32,9 +32,9 @@ class Validator:
                 "07": "July",
                 "08": "August",
                 "09": "September",
-                "010": "October",
-                "011": "November",
-                "012": "December",
+                "10": "October",
+                "11": "November",
+                "12": "December",
                 "*": "any month",
             }
 
@@ -45,12 +45,12 @@ class Validator:
                 args = task[2]
                 preposition = task[3]
                 end = task[4].split()
-                out += f"Execute command `{command} {args}` at {start[1] if start[1] != '*' else 'any'}:{start[0] if start[0] != '*' else 'any'}"
+                out += f"Execute command `{command} {args}` at {start[1] if start[1] != '*' else 'any month'}:{start[0] if start[0] != '*' else 'any day'}"
                 out += f" on day {start[2] if start[2] != '*' else 'any'} of {months[start[3]]} if it is {days[start[4]]}day\n"
 
                 if preposition == "until":
                     out += f"    Revert command `{command} {args}` at {end[1] if end[1] != '*' else 'any'}:{end[0] if end[0] != '*' else 'any'}"
-                    out += f" on day {end[2] if end[2] != '*' else 'any'} of {months[end[3]]} if it is {days[end[4]]}day\n\n"
+                    out += f" on day {end[2] if end[2] != '*' else 'any day'} of {months[end[3]]} if it is {days[end[4]]}day\n\n"
 
                 # Add custom EOL character to split on in output command
                 out += chr(255)
