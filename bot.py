@@ -46,6 +46,7 @@ async def addCogs():
 
 # Start bot
 if __name__ == "__main__":
+    state.generateSourceList()
     parser = argparse.ArgumentParser(description="Process command line arguments")
     parser.add_argument(
         "-C",

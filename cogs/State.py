@@ -1,4 +1,5 @@
 import json, re
+from git import Repo
 
 DISCORD_MAX_MESSAGE_LENGTH = 2000
 
@@ -21,18 +22,26 @@ class State:
         self.reactions = "🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿".split()
         self.permsError = "You don't have permission to use this command"
         # Source files cannot be removed and will not show up with a listfiles command, but they can be overwritten
+        # The following is only the files not tracked by git. Source files tracked by git are auto generated in the function below
         self.sourceFiles = [
             ".git",
-            ".gitignore",
             "config.json",
-            "bot.py",
-            "README.md",
-            "Examples",
             "updatebot.sh",
-            "LICENCE",
             "locked.dat",
             "rolemenu.dat",
+            "tasks.dat",
+            "log",
         ]
+
+    def generateSourceList(self):
+        repo = Repo("./")
+        tree = repo.heads.main.commit.tree
+        files = tree.blobs
+        subdirectories = tree.trees
+        for file in files:
+            self.sourceFiles.append(file.name)
+        for subdirectory in subdirectories:
+            self.sourceFiles.append(subdirectory.name)
 
     # Parse all configs
     def parseAll(
