@@ -225,7 +225,7 @@ class Moderation(commands.Cog):
         await channel.set_permissions(role, read_messages=True, send_messages=False)
 
         # Save the list of currently locked channels incase the bot goes offline
-        Storage.save(self)
+        Storage(self.state).save()
 
     # Reaction add event specific to unlocking channels
     # For the reaction add event regarding assigning roles, check RoleMenu cog
@@ -268,5 +268,5 @@ class Moderation(commands.Cog):
         else:
             await message.channel.send(f"Channel {channel.mention} unlocked!")
 
-        Storage.save(self)
+        Storage(self.state).save()
         return
