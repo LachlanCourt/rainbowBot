@@ -4,6 +4,7 @@ from discord.ext import tasks
 
 from cogs.Moderation import Moderation
 from cogs.helpers._taskValidator import Validator
+from cogs.helpers._storage import Storage
 
 
 class Tasks(commands.Cog):
@@ -193,9 +194,7 @@ class Tasks(commands.Cog):
         valid, response = Validator.validate(filename)
         if valid and filename not in self.state.registeredTasks:
             self.state.registeredTasks[filename] = msg.guild.id
-            f = open("tasks.dat", "w")
-            json.dump({"registeredTasks": self.state.registeredTasks}, f)
-            f.close()
+            Storage.save(self)
             await msg.channel.send(f"Task file {filename} registered successfully")
             if not self.scheduler.is_running():
                 self.scheduler.start()
@@ -225,9 +224,7 @@ class Tasks(commands.Cog):
 
         if filename in self.state.registeredTasks:
             del self.state.registeredTasks[filename]
-            f = open(self.state.tasksFilepath, "w")
-            json.dump({"registeredTasks": self.state.registeredTasks}, f)
-            f.close()
+            Storage.save(self)
             await msg.channel.send(f"Task file {filename} unregistered successfully")
             if len(self.state.registeredTasks) == 0:
                 self.scheduler.stop()

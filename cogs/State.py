@@ -1,5 +1,6 @@
 import json, re
 from git import Repo
+from cogs.helpers._storage import Storage
 
 DISCORD_MAX_MESSAGE_LENGTH = 2000
 
@@ -50,7 +51,7 @@ class State:
         ]
 
     def generateSourceList(self):
-        ## Make this work again
+        # TODO Make this work again
 
         # repo = Repo("./")
         # tree = repo.heads.main.commit.tree
@@ -67,9 +68,7 @@ class State:
         self, configFilePath, roleMenuFilePath, lockedChannelFilePath, taskFilePath
     ):
         self._parseConfig(configFilePath)
-        self._parseRoleMenuData(roleMenuFilePath)
-        self._parseLockedChannelData(lockedChannelFilePath)
-        self._parseTaskData(taskFilePath)
+        self._parseData()
 
     # Parse main config
     def _parseConfig(self, filePath):
@@ -97,35 +96,12 @@ class State:
         except Exception as e:
             raise Exception(f"Error: Cannot parse {filePath}: " + str(e))
 
-    # Parse role menu data
-    def _parseRoleMenuData(self, filePath):
-        try:
-            f = open(filePath)
-            self.rolemenuData = json.load(f)
-            f.close()
-        except Exception:
-            self.rolemenuData = {}
-
-    # Parse locked channel data
-    def _parseLockedChannelData(self, filePath):
-        try:
-            f = open(filePath)
-            data = json.load(f)
-            self.lockedChannels = data["channels"]
-            f.close()
-        except Exception:
-            self.lockedChannels = {}
-
-    # Parse task data
-    def _parseTaskData(self, filePath):
-        self.tasksFilepath = filePath
-        try:
-            f = open(filePath)
-            data = json.load(f)
-            self.registeredTasks = data["registeredTasks"]
-            f.close()
-        except Exception:
-            self.registeredTasks = {}
+    # Parse data
+    def _parseData(self):
+        data = Storage.load(self)
+        self.rolemenuData = data["rolemenuData"]
+        self.lockedChannels = data["lockedChannels"]
+        self.registeredTasks = data["registeredTasks"]
 
     # Only discord users with a role in the trustedRoles list will be allowed to use bot commands
     # Permission levels start at the strictest level at 0 and go to 2
