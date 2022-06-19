@@ -194,7 +194,7 @@ class Tasks(commands.Cog):
         valid, response = Validator.validate(filename)
         if valid and filename not in self.state.registeredTasks:
             self.state.registeredTasks[filename] = msg.guild.id
-            Storage(self).save()
+            Storage(self.state).save()
             await msg.channel.send(f"Task file {filename} registered successfully")
             if not self.scheduler.is_running():
                 self.scheduler.start()
@@ -224,7 +224,7 @@ class Tasks(commands.Cog):
 
         if filename in self.state.registeredTasks:
             del self.state.registeredTasks[filename]
-            Storage(self).save()
+            Storage(self.state).save()
             await msg.channel.send(f"Task file {filename} unregistered successfully")
             if len(self.state.registeredTasks) == 0:
                 self.scheduler.stop()
