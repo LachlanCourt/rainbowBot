@@ -31,17 +31,36 @@ class State:
             "rolemenu.dat",
             "tasks.dat",
             "log",
+            "testconfig.json",
+            "Procfile",
+            ".profile.d",
+            "cogs",
+            "LICENCE",
+            ".vscode",
+            "runtime.txt",
+            "requirements.txt",
+            ".git-blame-ignore-revs",
+            "README.md",
+            ".gitignore",
+            "examples",
+            "contribution guide.md",
+            ".heroku",
+            "bot.py",
+            "config.json.example",
         ]
 
     def generateSourceList(self):
-        repo = Repo("./")
-        tree = repo.heads.main.commit.tree
-        files = tree.blobs
-        subdirectories = tree.trees
-        for file in files:
-            self.sourceFiles.append(file.name)
-        for subdirectory in subdirectories:
-            self.sourceFiles.append(subdirectory.name)
+        ## Make this work again
+
+        # repo = Repo("./")
+        # tree = repo.heads.main.commit.tree
+        # files = tree.blobs
+        # subdirectories = tree.trees
+        # for file in files:
+        #     self.sourceFiles.append(file.name)
+        # for subdirectory in subdirectories:
+        #     self.sourceFiles.append(subdirectory.name)
+        pass
 
     # Parse all configs
     def parseAll(
