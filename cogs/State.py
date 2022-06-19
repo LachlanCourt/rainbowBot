@@ -1,4 +1,4 @@
-import json, re
+import json, re, os
 from git import Repo
 from cogs.helpers._storage import Storage
 
@@ -75,12 +75,19 @@ class State:
             for i in self.reportingChannelsList:
                 self.reportingChannels[i[0]] = [i[1], i[2]]
 
+        data = None
+        if os.environ.get("AMAZON_S3_ACCESS_ID") and os.environ.get(
+            "AMAZON_S3_SECRET_ACCESS_KEY"
+        ):
+            data = Storage(self).loadConfig()
+        if not data:
+            try:
+                f = open(filePath)
+                data = json.load(f)
+            except Exception as e:
+                raise Exception(e)
         try:
-            f = open(filePath)
-        except Exception as e:
-            raise Exception(e)
-        try:
-            data = json.load(f)
+
             self.userAllowlist = data["userAllowlist"]
             self.channelAllowlist = data["channelAllowlist"]
             self.trustedRoles = data["trustedRoles"]
