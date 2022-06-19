@@ -31,7 +31,6 @@ class State:
             "rolemenu.dat",
             "tasks.dat",
             "log",
-            "testconfig.json",
             "Procfile",
             ".profile.d",
             "cogs",
@@ -47,6 +46,7 @@ class State:
             ".heroku",
             "bot.py",
             "config.json.example",
+            "tempconfig.json",
         ]
 
     def generateSourceList(self):
