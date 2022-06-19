@@ -12,11 +12,11 @@ This bot is used to generate and maintain text channels for courses taken by uni
 
         cp config.json.example config.json
 
-3.  Generate OAuth Token (see [here](https://discord.com/developers/applications)) and populate config.json
+3.  Generate OAuth Token (see [here](https://discord.com/developers/applications)) - either add it to config.json or run with an environment variable, and populate config.json
 
 4.  Run bot!
 
-        python3 bot.py
+        OAuthToken=<token> python3 bot.py
 
 ## Authorisation
 

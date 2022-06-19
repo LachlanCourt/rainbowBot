@@ -1,4 +1,4 @@
-import discord, argparse, logging
+import discord, argparse, logging, os
 from discord.ext import commands
 
 # To hold global configuration and variables
@@ -93,7 +93,11 @@ if __name__ == "__main__":
             args.lockedChannelFilePath,
             args.taskFilePath,
         )
-        client.run(state.OAuthToken)
+        if os.environ.get("OAuthToken"):
+            client.run(os.environ.get("OAuthToken"))
+        else:
+            client.run(state.OAuthToken)
+
         print("Closed")
     except Exception as e:
         print(e)

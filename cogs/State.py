@@ -90,7 +90,8 @@ class State:
             self.logChannelName = data["logChannel"]
             self.moderationChannelName = data["moderationChannel"]
             self.reportingChannelsList = data["reportingChannels"]
-            self.OAuthToken = data["OAuthToken"]
+            if "OAuthToken" in data:
+                self.OAuthToken = data["OAuthToken"]
             prepReportingChannels()
             f.close()
         except Exception as e:
