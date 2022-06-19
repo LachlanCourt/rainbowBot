@@ -1,4 +1,4 @@
-import discord, os, subprocess, re
+import discord, os, subprocess, re, sys
 from discord.ext import commands
 from pathlib import Path
 

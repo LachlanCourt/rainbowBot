@@ -26,10 +26,16 @@ async def on_ready():
 FileHandler.saveOldLogFile(None)  # Makes log directory if it doesn't already exist
 logger = logging.getLogger("discord")
 logger.setLevel(logging.DEBUG)
-handler = logging.FileHandler(filename="log/rainbowBot.log", encoding="utf-8", mode="w")
-handler.setFormatter(
-    logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s")
-)
+logging.getLogger("discord.http").setLevel(logging.INFO)
+if os.environ.get("ENVIRONMENT") == "PRODUCTION":
+    handler = logging.StreamHandler()
+else:
+    handler = logging.FileHandler(
+        filename="log/rainbowBot.log", encoding="utf-8", mode="w"
+    )
+    handler.setFormatter(
+        logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s")
+    )
 logger.addHandler(handler)
 
 # Load the global config which will run some file reads and set default variables
@@ -74,9 +80,19 @@ if __name__ == "__main__":
             args.dataFilePath,
         )
         if os.environ.get("OAuthToken"):
-            client.run(os.environ.get("OAuthToken"))
+            client.run(
+                token=os.environ.get("OAuthToken"),
+                log_handler=handler,
+                log_formatter=handler.formatter,
+                log_level=logger.level,
+            )
         else:
-            client.run(state.OAuthToken)
+            client.run(
+                token=state.OAuthToken,
+                log_handler=handler,
+                log_formatter=handler.formatter,
+                log_level=logger.level,
+            )
 
         print("Closed")
     except Exception as e:
