@@ -53,7 +53,7 @@ if __name__ == "__main__":
         "--config-file",
         action="store",
         dest="configFilePath",
-        default="config.json",
+        default="tempconfig.json",
         required=False,
         help="File to load config from",
     )
