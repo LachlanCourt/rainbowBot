@@ -27,10 +27,15 @@ FileHandler.saveOldLogFile(None)  # Makes log directory if it doesn't already ex
 logger = logging.getLogger("discord")
 logger.setLevel(logging.DEBUG)
 logging.getLogger("discord.http").setLevel(logging.INFO)
-handler = logging.FileHandler(filename="log/rainbowBot.log", encoding="utf-8", mode="w")
-handler.setFormatter(
-    logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s")
-)
+if os.environ.get("ENVIRONMENT") == "PRODUCTION":
+    handler = logging.StreamHandler()
+else:
+    handler = logging.FileHandler(
+        filename="log/rainbowBot.log", encoding="utf-8", mode="w"
+    )
+    handler.setFormatter(
+        logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s")
+    )
 logger.addHandler(handler)
 
 # Load the global config which will run some file reads and set default variables
