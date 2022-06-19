@@ -206,7 +206,7 @@ class RoleMenu(commands.Cog):
 
         self.state.rolemenuData[data["roleMenuChannel"]] = channelMenu
         # Save the file so that if the bot disconnects it will be able to reload
-        Storage.save(self)
+        Storage(self).save()
         await statusMessage.edit(content="And that's a wrap! No more work to do")
 
     # Moderate level authorisation required
@@ -256,7 +256,7 @@ class RoleMenu(commands.Cog):
             await editMessage.add_reaction(newReaction)
             self.state.rolemenuData[channelName][rolemenuKey][newReaction] = args[2]
 
-            Storage.save(self)
+            Storage(self).save()
 
             await msg.send("Role added successfully")
             return
@@ -276,7 +276,7 @@ class RoleMenu(commands.Cog):
             await editMessage.clear_reaction(removeReaction)
             del self.state.rolemenuData[channelName][rolemenuKey][removeReaction]
 
-            Storage.save(self)
+            Storage(self).save()
 
             await msg.send("Role removed successfully")
             return
@@ -299,7 +299,7 @@ class RoleMenu(commands.Cog):
             reaction = editMessage.content[startIndex - 2 : startIndex - 1]
             self.state.rolemenuData[channelName][rolemenuKey][reaction] = args[3]
 
-            Storage.save(self)
+            Storage(self).save()
 
             await msg.send("Role updated successfully")
             return

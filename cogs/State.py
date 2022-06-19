@@ -96,7 +96,7 @@ class State:
 
     # Parse data
     def _parseData(self):
-        data = Storage.load(self)
+        data = Storage(self).load()
         self.rolemenuData = data["rolemenuData"]
         self.lockedChannels = data["lockedChannels"]
         self.registeredTasks = data["registeredTasks"]
