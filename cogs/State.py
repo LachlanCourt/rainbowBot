@@ -84,6 +84,7 @@ class State:
             try:
                 f = open(filePath)
                 data = json.load(f)
+                f.close()
             except Exception as e:
                 raise Exception(e)
         try:
@@ -97,7 +98,6 @@ class State:
             if "OAuthToken" in data:
                 self.OAuthToken = data["OAuthToken"]
             prepReportingChannels()
-            f.close()
         except Exception as e:
             raise Exception(f"Error: Cannot parse {filePath}: " + str(e))
 

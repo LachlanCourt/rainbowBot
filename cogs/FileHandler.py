@@ -1,6 +1,7 @@
 import discord, os, subprocess, re, sys
 from discord.ext import commands
 from pathlib import Path
+from cogs.helpers._storage import Storage
 
 
 class FileHandler(commands.Cog):
@@ -150,3 +151,27 @@ class FileHandler(commands.Cog):
         else:
             await msg.channel.send("No update script found")
             self.log("Update script not found")
+
+    # High level authorisation required
+    @commands.command("addconfig")
+    async def addfile(self, msg, *args):
+        self.log("Add config command received")
+        if not self.state.checkPerms(
+            msg.message.author
+        ):  # Check the user has a role in trustedRoles
+            await msg.channel.send(self.state.permsError)
+            return
+        message = msg.message
+        if len(message.attachments) != 1:
+            await msg.send("Please attach a single file to this message")
+            return
+        filename = message.attachments[0].filename
+        if filename != "config.json":
+            await msg.send('File must be named "config.json"')
+            return
+        await message.attachments[0].save(
+            message.attachments[0].filename, seek_begin=True, use_cached=False
+        )
+        Storage(self.state).addConfig()
+        await msg.send(f"Config updated!")
+        self.log("Config added")

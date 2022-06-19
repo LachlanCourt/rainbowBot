@@ -98,9 +98,8 @@ class Storage:
         s3 = session.resource("s3")
         bucket = s3.Bucket(os.environ.get("AMAZON_S3_BUCKET_NAME"))
         sendfile = open("config.json", "rb")
-        bucket.put_object(Key=f"config.json.dat", Body=sendfile)
+        bucket.put_object(Key=f"config.json", Body=sendfile)
         sendfile.close()
-        os.remove("config.json")
 
     def loadConfig(self):
         self.log("Downloading config")
