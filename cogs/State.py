@@ -64,9 +64,7 @@ class State:
         pass
 
     # Parse all configs
-    def parseAll(
-        self, configFilePath, roleMenuFilePath, lockedChannelFilePath, taskFilePath
-    ):
+    def parseAll(self, configFilePath, dataFilePath):
         self._parseConfig(configFilePath)
         self._parseData()
 

@@ -53,45 +53,25 @@ if __name__ == "__main__":
         "--config-file",
         action="store",
         dest="configFilePath",
-        default="config.json",
+        default="tempconfig.json",
         required=False,
         help="File to load config from",
     )
     parser.add_argument(
         "-R",
-        "--role-file",
+        "--data-file",
         action="store",
-        dest="roleMenuFilePath",
-        default="rolemenu.dat",
+        dest="dataFilePath",
+        default="data.dat",
         required=False,
-        help="File to load role data from",
-    )
-    parser.add_argument(
-        "-L",
-        "--locked-file",
-        action="store",
-        dest="lockedChannelFilePath",
-        default="locked.dat",
-        required=False,
-        help="File to load locked channel data from",
-    )
-    parser.add_argument(
-        "-T",
-        "--task-file",
-        action="store",
-        dest="taskFilePath",
-        default="tasks.dat",
-        required=False,
-        help="File to load task data from",
+        help="File to load data from",
     )
     args = parser.parse_args()
 
     try:
         state.parseAll(
             args.configFilePath,
-            args.roleMenuFilePath,
-            args.lockedChannelFilePath,
-            args.taskFilePath,
+            args.dataFilePath,
         )
         if os.environ.get("OAuthToken"):
             client.run(os.environ.get("OAuthToken"))
