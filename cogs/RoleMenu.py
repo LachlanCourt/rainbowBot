@@ -1,6 +1,7 @@
 import discord, json
 from discord.ext import commands
 from pathlib import Path
+from cogs.helpers._storage import Storage
 
 
 class RoleMenu(commands.Cog):
@@ -42,14 +43,6 @@ class RoleMenu(commands.Cog):
         statusMessage = await msg.channel.send(
             "File loaded successfully! Validating file..."
         )
-        self.state.rolemenuData = {}
-        # If a rolemenu.dat file exists, load the existing rolemenu data
-        try:
-            f = open("rolemenu.dat")
-            self.state.rolemenuData = json.load(f)
-            f.close()
-        except:
-            await statusMessage.edit(content="Creating new rolemenu file...")
 
         # Check if a channel menu already exists - if the -c argument was given then we will overwrite it. Otherwise we will load the one that currently exists
         createNewMenu = True
@@ -213,9 +206,7 @@ class RoleMenu(commands.Cog):
 
         self.state.rolemenuData[data["roleMenuChannel"]] = channelMenu
         # Save the file so that if the bot disconnects it will be able to reload
-        f = open("rolemenu.dat", "w")
-        json.dump(self.state.rolemenuData, f)
-        f.close()
+        Storage(self.state).save()
         await statusMessage.edit(content="And that's a wrap! No more work to do")
 
     # Moderate level authorisation required
@@ -265,9 +256,7 @@ class RoleMenu(commands.Cog):
             await editMessage.add_reaction(newReaction)
             self.state.rolemenuData[channelName][rolemenuKey][newReaction] = args[2]
 
-            f = open("rolemenu.dat", "w")
-            json.dump(self.state.rolemenuData, f)
-            f.close()
+            Storage(self.state).save()
 
             await msg.send("Role added successfully")
             return
@@ -287,9 +276,7 @@ class RoleMenu(commands.Cog):
             await editMessage.clear_reaction(removeReaction)
             del self.state.rolemenuData[channelName][rolemenuKey][removeReaction]
 
-            f = open("rolemenu.dat", "w")
-            json.dump(self.state.rolemenuData, f)
-            f.close()
+            Storage(self.state).save()
 
             await msg.send("Role removed successfully")
             return
@@ -312,9 +299,7 @@ class RoleMenu(commands.Cog):
             reaction = editMessage.content[startIndex - 2 : startIndex - 1]
             self.state.rolemenuData[channelName][rolemenuKey][reaction] = args[3]
 
-            f = open("rolemenu.dat", "w")
-            json.dump(self.state.rolemenuData, f)
-            f.close()
+            Storage(self.state).save()
 
             await msg.send("Role updated successfully")
             return

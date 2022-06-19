@@ -4,6 +4,5 @@
     "trustedRoles": [[], [], []],
     "logChannel": "",
     "moderationChannel": "",
-    "reportingChannels": [],
-    "OAuthToken": ""
+    "reportingChannels": []
 }

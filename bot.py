@@ -1,4 +1,4 @@
-import discord, argparse, logging
+import discord, argparse, logging, os
 from discord.ext import commands
 
 # To hold global configuration and variables
@@ -26,10 +26,16 @@ async def on_ready():
 FileHandler.saveOldLogFile(None)  # Makes log directory if it doesn't already exist
 logger = logging.getLogger("discord")
 logger.setLevel(logging.DEBUG)
-handler = logging.FileHandler(filename="log/rainbowBot.log", encoding="utf-8", mode="w")
-handler.setFormatter(
-    logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s")
-)
+logging.getLogger("discord.http").setLevel(logging.INFO)
+if os.environ.get("ENVIRONMENT") == "PRODUCTION":
+    handler = logging.StreamHandler()
+else:
+    handler = logging.FileHandler(
+        filename="log/rainbowBot.log", encoding="utf-8", mode="w"
+    )
+    handler.setFormatter(
+        logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s")
+    )
 logger.addHandler(handler)
 
 # Load the global config which will run some file reads and set default variables
@@ -59,41 +65,35 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "-R",
-        "--role-file",
+        "--data-file",
         action="store",
-        dest="roleMenuFilePath",
-        default="rolemenu.dat",
+        dest="dataFilePath",
+        default="data.dat",
         required=False,
-        help="File to load role data from",
-    )
-    parser.add_argument(
-        "-L",
-        "--locked-file",
-        action="store",
-        dest="lockedChannelFilePath",
-        default="locked.dat",
-        required=False,
-        help="File to load locked channel data from",
-    )
-    parser.add_argument(
-        "-T",
-        "--task-file",
-        action="store",
-        dest="taskFilePath",
-        default="tasks.dat",
-        required=False,
-        help="File to load task data from",
+        help="File to load data from",
     )
     args = parser.parse_args()
 
     try:
         state.parseAll(
             args.configFilePath,
-            args.roleMenuFilePath,
-            args.lockedChannelFilePath,
-            args.taskFilePath,
+            args.dataFilePath,
         )
-        client.run(state.OAuthToken)
+        if os.environ.get("OAuthToken"):
+            client.run(
+                token=os.environ.get("OAuthToken"),
+                log_handler=handler,
+                log_formatter=handler.formatter,
+                log_level=logger.level,
+            )
+        else:
+            client.run(
+                token=state.OAuthToken,
+                log_handler=handler,
+                log_formatter=handler.formatter,
+                log_level=logger.level,
+            )
+
         print("Closed")
     except Exception as e:
         print(e)

@@ -1,5 +1,6 @@
-import json, re
+import json, re, os
 from git import Repo
+from cogs.helpers._storage import Storage
 
 DISCORD_MAX_MESSAGE_LENGTH = 2000
 
@@ -31,26 +32,41 @@ class State:
             "rolemenu.dat",
             "tasks.dat",
             "log",
+            "Procfile",
+            ".profile.d",
+            "cogs",
+            "LICENCE",
+            ".vscode",
+            "runtime.txt",
+            "requirements.txt",
+            ".git-blame-ignore-revs",
+            "README.md",
+            ".gitignore",
+            "examples",
+            "contribution guide.md",
+            ".heroku",
+            "bot.py",
+            "config.json.example",
+            "tempconfig.json",
         ]
 
     def generateSourceList(self):
-        repo = Repo("./")
-        tree = repo.heads.main.commit.tree
-        files = tree.blobs
-        subdirectories = tree.trees
-        for file in files:
-            self.sourceFiles.append(file.name)
-        for subdirectory in subdirectories:
-            self.sourceFiles.append(subdirectory.name)
+        # TODO Make this work again
+
+        # repo = Repo("./")
+        # tree = repo.heads.main.commit.tree
+        # files = tree.blobs
+        # subdirectories = tree.trees
+        # for file in files:
+        #     self.sourceFiles.append(file.name)
+        # for subdirectory in subdirectories:
+        #     self.sourceFiles.append(subdirectory.name)
+        pass
 
     # Parse all configs
-    def parseAll(
-        self, configFilePath, roleMenuFilePath, lockedChannelFilePath, taskFilePath
-    ):
+    def parseAll(self, configFilePath, dataFilePath):
         self._parseConfig(configFilePath)
-        self._parseRoleMenuData(roleMenuFilePath)
-        self._parseLockedChannelData(lockedChannelFilePath)
-        self._parseTaskData(taskFilePath)
+        self._parseData()
 
     # Parse main config
     def _parseConfig(self, filePath):
@@ -59,53 +75,38 @@ class State:
             for i in self.reportingChannelsList:
                 self.reportingChannels[i[0]] = [i[1], i[2]]
 
+        data = None
+        if os.environ.get("AMAZON_S3_ACCESS_ID") and os.environ.get(
+            "AMAZON_S3_SECRET_ACCESS_KEY"
+        ):
+            data = Storage(self).loadConfig()
+        if not data:
+            try:
+                f = open(filePath)
+                data = json.load(f)
+                f.close()
+            except Exception as e:
+                raise Exception(e)
         try:
-            f = open(filePath)
-        except Exception as e:
-            raise Exception(e)
-        try:
-            data = json.load(f)
+
             self.userAllowlist = data["userAllowlist"]
             self.channelAllowlist = data["channelAllowlist"]
             self.trustedRoles = data["trustedRoles"]
             self.logChannelName = data["logChannel"]
             self.moderationChannelName = data["moderationChannel"]
             self.reportingChannelsList = data["reportingChannels"]
-            self.OAuthToken = data["OAuthToken"]
+            if "OAuthToken" in data:
+                self.OAuthToken = data["OAuthToken"]
             prepReportingChannels()
-            f.close()
         except Exception as e:
             raise Exception(f"Error: Cannot parse {filePath}: " + str(e))
 
-    # Parse role menu data
-    def _parseRoleMenuData(self, filePath):
-        try:
-            f = open(filePath)
-            self.rolemenuData = json.load(f)
-            f.close()
-        except Exception:
-            self.rolemenuData = {}
-
-    # Parse locked channel data
-    def _parseLockedChannelData(self, filePath):
-        try:
-            f = open(filePath)
-            data = json.load(f)
-            self.lockedChannels = data["channels"]
-            f.close()
-        except Exception:
-            self.lockedChannels = {}
-
-    # Parse task data
-    def _parseTaskData(self, filePath):
-        self.tasksFilepath = filePath
-        try:
-            f = open(filePath)
-            data = json.load(f)
-            self.registeredTasks = data["registeredTasks"]
-            f.close()
-        except Exception:
-            self.registeredTasks = {}
+    # Parse data
+    def _parseData(self):
+        data = Storage(self).load()
+        self.rolemenuData = data["rolemenuData"]
+        self.lockedChannels = data["lockedChannels"]
+        self.registeredTasks = data["registeredTasks"]
 
     # Only discord users with a role in the trustedRoles list will be allowed to use bot commands
     # Permission levels start at the strictest level at 0 and go to 2
