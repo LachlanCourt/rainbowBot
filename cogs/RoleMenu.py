@@ -42,14 +42,6 @@ class RoleMenu(commands.Cog):
         statusMessage = await msg.channel.send(
             "File loaded successfully! Validating file..."
         )
-        self.state.rolemenuData = {}
-        # If a rolemenu.dat file exists, load the existing rolemenu data
-        try:
-            f = open("rolemenu.dat")
-            self.state.rolemenuData = json.load(f)
-            f.close()
-        except:
-            await statusMessage.edit(content="Creating new rolemenu file...")
 
         # Check if a channel menu already exists - if the -c argument was given then we will overwrite it. Otherwise we will load the one that currently exists
         createNewMenu = True
