@@ -4,23 +4,17 @@ This bot is used to generate and maintain text channels for courses taken by uni
 
 ## Setup
 
-1. Install requirements
+1.  Install requirements
 
         pip install -r requirements.txt
 
-2. Until the next discord.py release, install discord.py directly from source
-
-        git clone https://github.com/Rapptz/discord.py
-        cd discord.py
-        python3 -m pip install -U .
-
-3. Create configuration file from example
+2.  Create configuration file from example
 
         cp config.json.example config.json
 
-4. Generate OAuth Token (see [here](https://discord.com/developers/applications)) and populate config.json
+3.  Generate OAuth Token (see [here](https://discord.com/developers/applications)) and populate config.json
 
-5. Run bot!
+4.  Run bot!
 
         python3 bot.py
 
@@ -34,6 +28,7 @@ Moderate level authorisation required
 
 The bot has functionality to read courses from a JSON file and automatically create text and voice channels accordingly.
 The format is as follows:
+
 1. A category for each item in the `courses` dictionary in the specified JSON
 2. Nested in this category, a text channel for each item in that category's list
 3. Nested in this category, a single voice channel
@@ -49,27 +44,28 @@ The format of the courses JSON can be seen in the examples directory. The channe
 `<arg1>` should be one of the following commands `add`, `remove`, `update`
 
 `add` will add a role to a rolemenu
-    `arg2` should be the name of the role to be added
-    `arg3` is not required
+`arg2` should be the name of the role to be added
+`arg3` is not required
 
 `remove` will remove a role from a rolemenu
-    `arg2` should be the name of the role to be removed
-    `arg3` is not required
+`arg2` should be the name of the role to be removed
+`arg3` is not required
 
 `update` will edit the name of a role in a rolemenu
-    `arg2` should be the name of the role to change
-    `arg3` should be the name you wish to change it to
+`arg2` should be the name of the role to change
+`arg3` should be the name you wish to change it to
 
 ## Reporting and Verification
 
 There is a number of reasons why you might wish messages to be automatically deleted and reposted elsewhere. Whether it is for sending in personal data to the moderation team for verification, or as a reporting system for people to bring things to the moderators attention.
 
 In the "reportingChannels" section of `config.json` you can add a list of lists to specify what channels should be listened to and where messages should be reposted. The first item in the list is the listening channel, the second item is the channel to repost the message in, and the final item is the message that should be reposted.
- The `@user`, `@message`, and `@<Role>$` keywords will be replaced with the author (As a mention), message of the sender, and the role name respectively
- 
+The `@user`, `@message`, and `@<Role>$` keywords will be replaced with the author (As a mention), message of the sender, and the role name respectively
+
 Feature can be disabled by leaving "reportingChannels" an empty list `[]`
 
 ## Message edit and delete monitoring
+
 To allow for academic integrity moderation, any edited or deleted message will be reposted in a channel specified in `config.json` under "moderationChannel". By default this is `edit-delete-log`. Users and channels can be added to an allowlist in relevant fields in the config file to assist with custom moderation of specific parts of the server.
 
 Feature can be disabled by leaving "moderationChannel" an empty string `""`
@@ -92,7 +88,7 @@ It is possible to update the config file or add a new json file for channel crea
 
 `$rainaddfile` with an attached file will add a file to the cwd - if the file already exists you can pass either `-o` to overwrite, or `-a` to add a copy in which case the file will be added with an integer eg. `(1)` added to the filename
 
-`$rainremfile <filename>` will remove a file from the cwd  - Source files are protected
+`$rainremfile <filename>` will remove a file from the cwd - Source files are protected
 
 `$rainlistfiles` will list all files currently the cwd - Source files are excluded
 
@@ -111,11 +107,13 @@ The bot has the capability to receive Direct Messages from users and repost thei
 Feature can be disabled by leaving "logChannel" an empty string `""`
 
 ## Contribution
+
 Contributions are welcome! Please read the [contribution guide](https://github.com/LachlanCourt/rainbowBot/blob/master/contribution%20guide.md) before commencing development
 
-
 ## TODO
+
 Tasks for future development are maintained as [issues](https://github.com/LachlanCourt/rainbowBot/issues)
 
 ## License
+
 [MIT](https://github.com/LachlanCourt/rainbowBot/blob/master/LICENCE)
