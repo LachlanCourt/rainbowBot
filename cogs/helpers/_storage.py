@@ -5,8 +5,9 @@ class Storage:
     def __init__(self, state):
         self.state = state
 
-    def save(self, guildId):
-        # TODO find a way of obtaining the guildId here rather than passing as parameter
+    def save(self):
+        # TODO find a way of obtaining the guildId here
+        guildId = "data"
 
         data = {}
         data["rolemenuData"] = self.state.rolemenuData
@@ -22,8 +23,9 @@ class Storage:
             json.dump(data, f)
             f.close()
 
-    def load(self, guildId):
-        # TODO find a way of obtaining the guildId here rather than passing as parameter
+    def load(self):
+        # TODO find a way of obtaining the guildId here
+        guildId = "data"
 
         if os.environ.get("S3Credentials"):
             # Save to S3
@@ -31,13 +33,13 @@ class Storage:
         else:
             # Local Storage
             try:
-                f = open(f"{str(guildId)}.dat", "w")
+                f = open(f"{str(guildId)}.dat", "r")
                 data = json.load(f)
                 f.close()
                 return data
             except:
                 data = {"rolemenuData": {}, "lockedChannels": {}, "registeredTasks": {}}
-                f = open(f"{str(guildId)}.dat", "w")
+                f = open(f"{str(guildId)}.dat", "r")
                 json.dump(data, f)
                 f.close()
-                return {data}
+                return data

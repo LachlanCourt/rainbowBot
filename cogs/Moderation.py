@@ -1,5 +1,6 @@
 import discord, json, os, datetime
 from discord.ext import commands
+from cogs.helpers._storage import Storage
 
 
 class Moderation(commands.Cog):
@@ -222,12 +223,9 @@ class Moderation(commands.Cog):
 
         # Lock channel
         await channel.set_permissions(role, read_messages=True, send_messages=False)
-        data = {"channels": self.state.lockedChannels}
 
         # Save the list of currently locked channels incase the bot goes offline
-        f = open("locked.dat", "w")
-        json.dump(data, f)
-        f.close()
+        Storage.save(self)
 
     # Reaction add event specific to unlocking channels
     # For the reaction add event regarding assigning roles, check RoleMenu cog
@@ -264,14 +262,11 @@ class Moderation(commands.Cog):
 
         await channel.set_permissions(role, read_messages=True, send_messages=None)
         del self.state.lockedChannels[str(message.id)]
-        data = {"channels": self.state.lockedChannels}
 
         if not calledFromTask:
             await message.delete(delay=None)
         else:
             await message.channel.send(f"Channel {channel.mention} unlocked!")
 
-        f = open("locked.dat", "w")
-        json.dump(data, f)
-        f.close()
+        Storage.save(self)
         return
