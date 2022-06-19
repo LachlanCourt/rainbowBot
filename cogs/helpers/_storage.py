@@ -39,7 +39,7 @@ class Storage:
                 return data
             except:
                 data = {"rolemenuData": {}, "lockedChannels": {}, "registeredTasks": {}}
-                f = open(f"{str(guildId)}.dat", "r")
+                f = open(f"{str(guildId)}.dat", "w")
                 json.dump(data, f)
                 f.close()
                 return data
