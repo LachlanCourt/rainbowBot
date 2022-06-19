@@ -64,7 +64,6 @@ class Storage:
                 data = json.load(tempfile)
                 tempfile.close()
                 os.remove("temp.dat")
-                print(data)
                 return data
             except Exception as e:
                 self.log(f"S3 download failed with following error: {e}")
@@ -88,3 +87,36 @@ class Storage:
                 json.dump(data, f)
                 f.close()
                 return data
+
+    def addConfig(self):
+        self.log("Uploading config")
+        # Save to S3
+        session = boto3.Session(
+            aws_access_key_id=os.environ.get("AMAZON_S3_ACCESS_ID"),
+            aws_secret_access_key=os.environ.get("AMAZON_S3_SECRET_ACCESS_KEY"),
+        )
+        s3 = session.resource("s3")
+        bucket = s3.Bucket(os.environ.get("AMAZON_S3_BUCKET_NAME"))
+        sendfile = open("config.json", "rb")
+        bucket.put_object(Key=f"config.json", Body=sendfile)
+        sendfile.close()
+
+    def loadConfig(self):
+        self.log("Downloading config")
+        # Load from S3
+        try:
+            session = boto3.Session(
+                aws_access_key_id=os.environ.get("AMAZON_S3_ACCESS_ID"),
+                aws_secret_access_key=os.environ.get("AMAZON_S3_SECRET_ACCESS_KEY"),
+            )
+            s3 = session.resource("s3")
+            bucket = s3.Bucket(os.environ.get("AMAZON_S3_BUCKET_NAME"))
+            bucket.download_file(Key=f"config.json", Filename="tempconfig.dat")
+            tempfile = open("tempconfig.dat", "rb")
+            data = json.load(tempfile)
+            tempfile.close()
+            os.remove("tempconfig.dat")
+            return data
+        except Exception as e:
+            self.log(f"S3 download failed with following error: {e}")
+            return None
