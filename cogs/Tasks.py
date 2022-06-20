@@ -162,7 +162,7 @@ class Tasks(commands.Cog):
             n = "\n" + ("\n" if len(self.state.registeredTasks) > 0 else "")
             files = n + "\n".join(self.state.registeredTasks.keys()) + n
             await msg.channel.send(
-                f"Task loop is running, watching the following files:{files}Status tick will be sent to {self.state.logChannelName} within one minute"
+                f"Task loop is running, watching tasks configured from the following files:{files}Status tick will be sent to {self.state.logChannelName} within one minute"
             )
             self.sendTick = True
         else:
