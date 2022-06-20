@@ -193,7 +193,14 @@ class Tasks(commands.Cog):
 
         valid, response = Validator.validate(filename)
         if valid and filename not in self.state.registeredTasks:
-            self.state.registeredTasks[filename] = msg.guild.id
+
+            f = open(filename)
+            data = json.load(f)
+            f.close()
+            self.state.registeredTasks[filename] = {
+                "guildId": msg.guild.id,
+                "tasks": data["tasks"],
+            }
             Storage(self.state).save()
             await msg.channel.send(f"Task file {filename} registered successfully")
             if not self.scheduler.is_running():
@@ -203,7 +210,7 @@ class Tasks(commands.Cog):
                 "That task file has already been registered! Use the `taskstatus` for a list of currently registered tasks"
             )
         else:
-            await msg.channel.send(f"Invalid filename {args[0]}")
+            await msg.channel.send(f"Invalid file {args[0]}")
 
     # High level authorisation required
     @commands.command("remtask")
