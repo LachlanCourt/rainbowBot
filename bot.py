@@ -64,7 +64,7 @@ if __name__ == "__main__":
         help="File to load config from",
     )
     parser.add_argument(
-        "-R",
+        "-D",
         "--data-file",
         action="store",
         dest="dataFilePath",
