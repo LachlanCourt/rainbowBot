@@ -63,7 +63,7 @@ class FileHandler(commands.Cog):
             await msg.send("Please attach a single file to this message")
             return
         filename = message.attachments[0].filename
-        if filename == "updatebot.sh":
+        if filename == "updatebot.sh" or filename == "bot.py":
             await msg.send(
                 "Due to security risks, this file cannot be changed this way. Please find another way to add it to the cwd"
             )
