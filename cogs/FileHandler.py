@@ -137,7 +137,7 @@ class FileHandler(commands.Cog):
 
     # High level authorisation required
     @commands.command("update")
-    async def update(self, msg, *args):
+    async def update(self, msg):
         self.log("Update command received")
         if not self.state.checkPerms(
             msg.message.author
