@@ -92,6 +92,7 @@ class Tasks(commands.Cog):
                     if self.isNow(start) and args not in list(
                         self.state.lockedChannels.values()
                     ):
+                        self.log(f"Locking channel {args}")
                         # Get log channel
                         logChannel = discord.utils.get(
                             self.client.get_all_channels(),
@@ -113,6 +114,9 @@ class Tasks(commands.Cog):
                                 self.client.get_all_channels(),
                                 guild__name=guild.name,
                                 name=self.state.logChannelName,
+                            )
+                            self.log(
+                                f"Unlocking channel {args} with messageID {messageID} and channel {logChannel.name}"
                             )
                             message = await logChannel.fetch_message(int(messageID))
                             # Call the unlock function on the channel which will delete the message
