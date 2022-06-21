@@ -165,13 +165,13 @@ class Tasks(commands.Cog):
             self.sendTick = True
         else:
             await msg.channel.send(
-                "Task loop is stopped. Add a task with `addtask` to start the loop"
+                "Task loop is stopped. Register a task with `regtask` to start the loop"
             )
 
     # High level authorisation required
-    @commands.command("addtask")
-    async def addtask(self, msg, *args):
-        self.log("Addtask command receieved")
+    @commands.command("regtask")
+    async def regtask(self, msg, *args):
+        self.log("Regtask command receieved")
         if not self.state.checkPerms(
             msg.message.author
         ):  # Check the user has a role in trustedRoles
@@ -211,9 +211,9 @@ class Tasks(commands.Cog):
             await msg.channel.send(f"Invalid file {args[0]}")
 
     # High level authorisation required
-    @commands.command("remtask")
-    async def remtask(self, msg, *args):
-        self.log("Remtask command receieved")
+    @commands.command("unregtask")
+    async def unregtask(self, msg, *args):
+        self.log("Unregtask command receieved")
         if not self.state.checkPerms(
             msg.message.author
         ):  # Check the user has a role in trustedRoles
@@ -230,8 +230,8 @@ class Tasks(commands.Cog):
         if filename in self.state.registeredTasks:
             del self.state.registeredTasks[filename]
             Storage(self.state).save()
-            await msg.channel.send(f"Task file {filename} unregistered successfully")
+            await msg.channel.send(f"Task {filename} unregistered successfully")
             if len(self.state.registeredTasks) == 0:
                 self.scheduler.stop()
         else:
-            await msg.channel.send(f"Task file {filename} is not currently registered")
+            await msg.channel.send(f"Task {filename} is not currently registered")
