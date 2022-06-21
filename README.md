@@ -20,9 +20,9 @@ This bot is used to generate and maintain text channels for courses taken by uni
 
 ## Authorisation and Command Structure
 
-Commands are restricted by discord roles specified in the config file. There are three levels of authorisation that restrict the moderation and bot management commands, in the format `[[rolesWithHighLevelAuthorisation], [rolesWithModerateLevelAuthorisation], [rolesWithLowLevelAutherisation]]`. If a restriction is not specified for a command below, it can be used by anyone in the server.
-
 All commands are prefixed with `$rain`. All commands and arguments are case sensitive.
+
+Commands are restricted by discord roles specified in the config file. There are three levels of authorisation that restrict the moderation and bot management commands, in the format `[[rolesWithHighLevelAuthorisation], [rolesWithModerateLevelAuthorisation], [rolesWithLowLevelAutherisation]]`. If a restriction is not specified for a command below, it can be used by anyone in the server. A lot of commands are restricted by role name so in order to make the most use of the functionality, be sure to fill this out correctly.
 
 ## Automated channel creation
 
@@ -112,11 +112,15 @@ Rainbow bot can be deployed in two different ways, on a local server or deployed
 
 ### Local
 
-Local deployment can be setup as per the instructions specified at the start of this README. The OAuth token can either be stored in the config file or passed in as an environment variable.
+Local deployment can be setup as per the instructions specified at the start of this README. The OAuth token can either be stored in the config file or passed in as an environment variable. The bot will create a data file named `data.dat` in the current working directory and will also look for the config file here by default. It is not necessary or recommended to change the data file in any way. This behaviour can be modified using the command line arguments specified below.
 
 ### Cloud
 
 Cloud deployment is optimised for Heroku with an AWS S3 bucket for persistent storage. Ensure that all required environment variables are defined or else the bot may not work as expected. It is recommended that the PaperTrail addon is included with a Heroku deployment to help manage logs.
+
+The first time the bot is run, the `config.json` file will need to be uploaded to the S3 bucket manually. This requirement will be changing in a future update as you will soon be able to optionally start the bot without a config file. Subsequent updates to the config can be achieved by sending the command `addconfig` with the updated `config.json` file attached to the discord message.
+
+In addition to `config.json`, the bot will create a second data file in the bucket which it will maintain. It is not necessary or recommended to change this in any way. By default this file will be named `data.dat`.
 
 ## Environment Variable Reference
 
@@ -125,6 +129,11 @@ Cloud deployment is optimised for Heroku with an AWS S3 bucket for persistent st
 - `AMAZON_S3_BUCKET_NAME`: Name of S3 bucket. Required when deployed to a cloud environment
 - `AMAZON_S3_ACCESS_ID`: Access ID of Amazon IAM user with S3 bucket read/write permissions. Required when deployed to a cloud environment
 - `AMAZON_S3_SECRET_ACCESS_KEY`: Secret Access Key of Amazon IAM user with S3 bucket read/write permissions. Required when deployed to a cloud environment
+
+## Command Line Arguments
+
+- `--config-file <filepath>` will modify the location that the bot looks for `config.json`
+- `--data-file <filepath>` will modify the location that the bot saves its data file.
 
 ## Contribution
 
