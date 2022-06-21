@@ -154,7 +154,7 @@ class FileHandler(commands.Cog):
 
     # High level authorisation required
     @commands.command("addconfig")
-    async def addfile(self, msg, *args):
+    async def addconfig(self, msg, *args):
         self.log("Add config command received")
         if not self.state.checkPerms(
             msg.message.author
