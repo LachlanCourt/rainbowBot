@@ -60,14 +60,8 @@ class Tasks(commands.Cog):
         # Reads file in the same format as crontab
         # Minute Hour Date Month Day
         for filename in self.state.registeredTasks.keys():
-            guildId = self.state.registeredTasks[filename]
-            valid, n = Validator.validate(filename)
-            if not valid:
-                continue
-            f = open(filename)
-            data = json.load(f)
-            f.close()
-            tasks = data["tasks"]
+            guildId = self.state.registeredTasks[filename]["guildId"]
+            tasks = self.state.registeredTasks[filename]["tasks"]
 
             guild = None
             for i in self.client.guilds:
