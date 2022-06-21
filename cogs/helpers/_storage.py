@@ -1,4 +1,4 @@
-import os, json, boto3
+import os, json, boto3, sys
 
 
 class Storage:
@@ -67,11 +67,7 @@ class Storage:
                 return data
             except Exception as e:
                 self.log(f"S3 download failed with following error: {e}")
-                data = {"rolemenuData": {}, "lockedChannels": {}, "registeredTasks": {}}
-                f = open(f"{str(guildId)}.dat", "w")
-                json.dump(data, f)
-                f.close()
-                return data
+                sys.exit(1)
         else:
             # Local Storage
             self.log("S3 Credentials not found, loading locally")

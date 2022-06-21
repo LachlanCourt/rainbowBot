@@ -1,4 +1,4 @@
-import discord, argparse, logging, os
+import discord, argparse, logging, os, sys
 from discord.ext import commands
 
 # To hold global configuration and variables
@@ -79,20 +79,18 @@ if __name__ == "__main__":
             args.configFilePath,
             args.dataFilePath,
         )
+        token = state.OAuthToken
         if os.environ.get("OAuthToken"):
-            client.run(
-                token=os.environ.get("OAuthToken"),
-                log_handler=handler,
-                log_formatter=handler.formatter,
-                log_level=logger.level,
-            )
-        else:
-            client.run(
-                token=state.OAuthToken,
-                log_handler=handler,
-                log_formatter=handler.formatter,
-                log_level=logger.level,
-            )
+            token = os.environ.get("OAuthToken")
+        if not token:
+            print("Invalid OAuthToken")
+            sys.exit(1)
+        client.run(
+            token=token,
+            log_handler=handler,
+            log_formatter=handler.formatter,
+            log_level=logger.level,
+        )
 
         print("Closed")
     except Exception as e:
