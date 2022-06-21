@@ -1,4 +1,4 @@
 git+https://github.com/Rapptz/discord.py@master
 black
-gitpython
+PyGithub
 boto3
