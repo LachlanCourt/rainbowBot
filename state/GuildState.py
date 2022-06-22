@@ -33,3 +33,16 @@ class GuildState:
         self.rolemenuData = data["rolemenuData"]
         self.lockedChannels = data["lockedChannels"]
         self.registeredTasks = data["registeredTasks"]
+
+    # Only discord users with a role in the trustedRoles list will be allowed to use bot commands
+    # Permission levels start at the strictest level at 0 and go to 2
+    def checkPerms(self, author, level=0):
+        roleNames = []
+        for i in range(len(author.roles)):
+            roleNames.append(author.roles[i].name)
+        allAllowedRoles = []
+        for i in range(level, -1, -1):
+            allAllowedRoles += self.trustedRoles[i][:]
+        if any(i in roleNames for i in allAllowedRoles):
+            return True
+        return False

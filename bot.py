@@ -46,7 +46,7 @@ async def on_ready():
     await state.initialiseGuildStates()
 
     # Add each of the cogs, passing in the configuration
-    # await client.add_cog(FileHandler(client, state))
+    await client.add_cog(FileHandler(client, state))
     # await client.add_cog(Moderation(client, state))
     # await client.add_cog(RoleMenu(client, state))
     # await client.add_cog(MessageHandler(client, state))
@@ -56,7 +56,7 @@ async def on_ready():
 
 # Start bot
 if __name__ == "__main__":
-    # state.generateSourceList()
+    state.generateSourceList()
     parser = argparse.ArgumentParser(description="Process command line arguments")
     parser.add_argument(
         "-C",

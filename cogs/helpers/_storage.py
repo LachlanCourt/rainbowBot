@@ -78,16 +78,22 @@ class Storage:
 
     def addConfig(self):
         self.log("Uploading config")
-        # Save to S3
-        session = boto3.Session(
-            aws_access_key_id=os.environ.get("AMAZON_S3_ACCESS_ID"),
-            aws_secret_access_key=os.environ.get("AMAZON_S3_SECRET_ACCESS_KEY"),
-        )
-        s3 = session.resource("s3")
-        bucket = s3.Bucket(os.environ.get("AMAZON_S3_BUCKET_NAME"))
-        sendfile = open("config.json", "rb")
-        bucket.put_object(Key="config.json", Body=sendfile)
-        sendfile.close()
+        try:
+            # Save to S3
+            self.log("S3 Credentials found, attempting to authenticate")
+            session = boto3.Session(
+                aws_access_key_id=os.environ.get("AMAZON_S3_ACCESS_ID"),
+                aws_secret_access_key=os.environ.get("AMAZON_S3_SECRET_ACCESS_KEY"),
+            )
+            s3 = session.resource("s3")
+            bucket = s3.Bucket(os.environ.get("AMAZON_S3_BUCKET_NAME"))
+            sendfile = open("config.json", "rb")
+            bucket.put_object(Key="config.json", Body=sendfile)
+            sendfile.close()
+            return True
+        except Exception as e:
+            self.log(f"File uploadd failed with following error: {e}")
+            return False
 
     def loadConfig(self):
         self.log("Downloading config")
