@@ -1,5 +1,11 @@
 import discord, argparse, logging, os, sys
 from discord.ext import commands
+from dotenv import load_dotenv
+from pathlib import Path
+
+dotenv_path = Path(".env")
+if dotenv_path.exists():
+    load_dotenv(dotenv_path=dotenv_path)
 
 # To hold global configuration and variables
 from cogs.State import State

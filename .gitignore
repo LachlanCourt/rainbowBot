@@ -2,5 +2,5 @@
 updatebot.sh
 *.dat
 *.log
-
+.env
 *__pycache__*
