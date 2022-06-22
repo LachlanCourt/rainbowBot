@@ -11,6 +11,15 @@ class Storage:
     def save(self):
         self.log("Saving data")
 
+        data = {}
+        for guildId in self.state.guildStates.keys():
+            guildState = self.state.guildStates[guildId]
+            data[guildState.guildId] = {
+                "rolemenuData": guildState.rolemenuData,
+                "lockedChannels": guildState.lockedChannels,
+                "registeredTasks": guildState.registeredTasks,
+            }
+
         if os.environ.get("AMAZON_S3_ACCESS_ID") and os.environ.get(
             "AMAZON_S3_SECRET_ACCESS_KEY"
         ):
@@ -23,7 +32,7 @@ class Storage:
             s3 = session.resource("s3")
             bucket = s3.Bucket(os.environ.get("AMAZON_S3_BUCKET_NAME"))
             tempfile = open("temp.dat", "wb")
-            json.dump(self.state, tempfile)
+            json.dump(data, tempfile)
             tempfile.close()
             sendfile = open("temp.dat", "rb")
             bucket.put_object(Key="data.dat", Body=sendfile)
@@ -34,7 +43,7 @@ class Storage:
             # Local Storage
             self.log("S3 Credentials not found, storing locally")
             f = open("data.dat", "wt")
-            json.dump(self.state, f)
+            json.dump(data, f)
             f.close()
 
     def load(self):
