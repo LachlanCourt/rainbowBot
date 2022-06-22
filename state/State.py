@@ -51,7 +51,8 @@ class State:
 
         async for (guild) in (
             self.client.fetch_guilds()
-        ):  # fetch_guilds limits to 100 for performance reasons. Can override by passing None but will likely need to reconsider if this becomes necessary anyway
+        ):  # fetch_guilds limits to 100 for performance reasons. Can override by passing None as
+            # an argument but will likely need to reconsider if this becomes necessary anyway
             guildState = GuildState(config[str(guild.id)], str(guild.id), self.logger)
             if str(guild.id) in data:
                 guildState.initialiseData(data[str(guild.id)])
