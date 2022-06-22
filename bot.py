@@ -49,7 +49,7 @@ async def on_ready():
     await client.add_cog(FileHandler(client, state))
     await client.add_cog(Moderation(client, state))
     # await client.add_cog(RoleMenu(client, state))
-    # await client.add_cog(MessageHandler(client, state))
+    await client.add_cog(MessageHandler(client, state))
     # await client.add_cog(Tasks(client, state))
     print("Logged in as {0.user}".format(client))
 
