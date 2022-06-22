@@ -51,7 +51,12 @@ class State:
             self.client.fetch_guilds()
         ):  # fetch_guilds limits to 100 for performance reasons. Can override by passing None but will likely need to reconsider if this becomes necessary anyway
             guildState = GuildState(config[str(guild.id)], str(guild.id), self.logger)
-            guildState.initialiseData(data[guildId])
+            if str(guild.id) in data:
+                guildState.initialiseData(data[str(guild.id)])
+            else:
+                print(
+                    f'Error loading data for guild "{guild.name}" with id {guild.id}. Initialising with no persistent data'
+                )
             self.guildStates[guild.id] = guildState
 
     def generateSourceList(self):
