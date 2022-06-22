@@ -28,6 +28,9 @@ class State:
         self.reactions = "🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿".split()
         self.permsError = "You don't have permission to use this command"
 
+    def log(self, msg):
+        self.logger.debug(f"State: {msg}")
+
     async def initialiseGuildStates(self):
         config = {}
         data = {}
@@ -35,14 +38,13 @@ class State:
         if os.environ.get("AMAZON_S3_ACCESS_ID") and os.environ.get(
             "AMAZON_S3_SECRET_ACCESS_KEY"
         ):
-            config = Storage().loadConfig()
+            config = Storage(self).loadConfig()
         if not config:
             try:
                 f = open("config.json")
                 config = json.load(f)
                 f.close()
             except Exception as e:
-                print(e)
                 raise Exception(e)
 
         data = Storage(self).load()
@@ -54,7 +56,7 @@ class State:
             if str(guild.id) in data:
                 guildState.initialiseData(data[str(guild.id)])
             else:
-                print(
+                self.log(
                     f'Error loading data for guild "{guild.name}" with id {guild.id}. Initialising with no persistent data'
                 )
             self.guildStates[guild.id] = guildState
