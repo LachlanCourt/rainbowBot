@@ -11,28 +11,29 @@ class GuildState:
         self.trustedRoles = (
             config["trustedRoles"] if "trustedRoles" in config else [[], [], []]
         )
-        self.logChannelName = (
-            config["logChannelName"] if "logChannelName" in config else ""
-        )
+        self.logChannelName = config["logChannel"] if "logChannel" in config else ""
         self.moderationChannelName = (
-            config["moderationChannelName"] if "moderationChannelName" in config else ""
+            config["moderationChannel"] if "moderationChannel" in config else ""
         )
         self.reportingChannelsList = (
-            config["reportingChannelsList"] if "reportingChannelsList" in config else []
+            config["reportingChannels"] if "reportingChannels" in config else []
         )
-        self.reportingChannels = (
-            config["reportingChannels"] if "reportingChannels" in config else {}
-        )
-
+        self.reportingChannels = {}
         self.rolemenuData = {}
         self.lockedChannels = {}
         self.registeredTasks = {}
+
+        self.prepReportingChannels()
 
     # Initialise data
     def initialiseData(self, data):
         self.rolemenuData = data["rolemenuData"]
         self.lockedChannels = data["lockedChannels"]
         self.registeredTasks = data["registeredTasks"]
+
+    def prepReportingChannels(self):
+        for i in self.reportingChannelsList:
+            self.reportingChannels[i[0]] = [i[1], i[2]]
 
     # Only discord users with a role in the trustedRoles list will be allowed to use bot commands
     # Permission levels start at the strictest level at 0 and go to 2
