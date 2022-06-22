@@ -103,7 +103,7 @@ class State:
 
     async def sendLongMessage(self, message, channel, splitOnDelimeter=False):
         if len(message) > DISCORD_MAX_MESSAGE_LENGTH * 10:
-            self.logger.debug(
+            self.log(
                 f"State: Message is more than 20000 characters long and has been ratelimited. Message is as follows\n{message}"
             )
             await channel.send("Your request could not be processed")
