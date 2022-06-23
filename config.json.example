@@ -1,8 +1,10 @@
 {
+  "<Guild Id>": {
     "userAllowlist": [],
-    "channelAllowList":[],
+    "channelAllowList": [],
     "trustedRoles": [[], [], []],
     "logChannel": "",
     "moderationChannel": "",
     "reportingChannels": []
+  }
 }

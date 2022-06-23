@@ -1,6 +1,6 @@
-# A Discord Bot for University Community Servers
+# A Multitenanted Discord Bot for University Community Servers
 
-This bot is used to generate and maintain text channels for courses taken by university students to collaborate and chat. It also provides a number of other moderation tools
+This bot is used to generate and maintain text channels for courses taken by university students to collaborate and chat. It also provides a number of other moderation tools. It is multitenanted and can manage several discord servers with a single instance of the bot.
 
 ## Setup
 
@@ -8,11 +8,12 @@ This bot is used to generate and maintain text channels for courses taken by uni
 
         pip install -r requirements.txt
 
-2.  Create configuration file from example
+2.  Create configuration files from examples
 
         cp config.json.example config.json
+        cp .env.example .env
 
-3.  Generate OAuth Token (see [here](https://discord.com/developers/applications)) - either add it to config.json or run with an environment variable, and populate config.json
+3.  Generate OAuth Token (see [here](https://discord.com/developers/applications)) - either add it to .env or run with an environment variable, and populate config.json using the ID of the server as a key. This can be found by right clicking the server icon in discord with developer settings turned on
 
 4.  Run bot!
 
@@ -112,7 +113,7 @@ Rainbow bot can be deployed in two different ways, on a local server or deployed
 
 ### Local
 
-Local deployment can be setup as per the instructions specified at the start of this README. The OAuth token can either be stored in the config file or passed in as an environment variable. The bot will create a data file named `data.dat` in the current working directory and will also look for the config file here by default. It is not necessary or recommended to change the data file in any way. This behaviour can be modified using the command line arguments specified below.
+Local deployment can be setup as per the instructions specified at the start of this README. The OAuth token can either be stored in the config file or passed in as an environment variable. The bot will create a data file named `data.dat` in the current working directory along with a `tenants` directory, and will also look for the config file here by default. It is not necessary or recommended to change the data file or the tenants directory in any way. The location of the data file and config file can be modified using the command line arguments specified below.
 
 ### Cloud
 
