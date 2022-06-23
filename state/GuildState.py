@@ -25,6 +25,8 @@ class GuildState:
 
         self.prepReportingChannels()
 
+        self._tasksSendTick = False
+
     # Initialise data
     def initialiseData(self, data):
         self.rolemenuData = data["rolemenuData"]

@@ -33,9 +33,9 @@ else:
     handler = logging.FileHandler(
         filename="log/rainbowBot.log", encoding="utf-8", mode="w"
     )
-    handler.setFormatter(
-        logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s")
-    )
+handler.setFormatter(
+    logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s")
+)
 logger.addHandler(handler)
 
 state = State(client, logger)
@@ -50,7 +50,7 @@ async def on_ready():
     await client.add_cog(Moderation(client, state))
     # await client.add_cog(RoleMenu(client, state))
     await client.add_cog(MessageHandler(client, state))
-    # await client.add_cog(Tasks(client, state))
+    await client.add_cog(Tasks(client, state))
     print("Logged in as {0.user}".format(client))
 
 

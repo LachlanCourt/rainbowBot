@@ -113,5 +113,7 @@ class State:
                 else:
                     chunks.append(currentChunk)
                     currentChunk = chunk
+            # Add the last chunk
+            chunks.append(currentChunk)
         for chunk in chunks:
             await channel.send(chunk)
