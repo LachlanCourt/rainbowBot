@@ -79,11 +79,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     try:
-        # state.parseAll(
-        #     args.configFilePath,
-        #     args.dataFilePath,
-        # )
-        # token = state.OAuthToken
         token = os.environ.get("OAuthToken")
         if not token:
             print("Invalid OAuthToken")
