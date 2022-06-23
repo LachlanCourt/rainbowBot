@@ -15,11 +15,12 @@ class MessageHandler(commands.Cog):
         # Don't handle messages from ourself
         if message.author == self.client.user:
             return
+        guildState = self.state.guildStates[str(message.guild.id)]
         # Messages that have been sent as a direct message to the bot will be reposted in the channel specified in logChannel
         if message.channel.type == discord.ChannelType.private:
             self.log(f"Direct message received: {message.content}")
             if (
-                self.state.logChannelName == ""
+                guildState.logChannelName == ""
             ):  # Handle gracefully if no channel is specified to send a DM
                 await message.channel.send(
                     "I am not set up to receive direct messages, please contact your server administrators another way!"
@@ -33,7 +34,7 @@ class MessageHandler(commands.Cog):
                 logChannel = discord.utils.get(
                     self.client.get_all_channels(),
                     guild__name=guild.name,
-                    name=self.state.logChannelName,
+                    name=guildState.logChannelName,
                 )
                 await logChannel.send(
                     f"{message.author.mention} sent a direct message, they said\n\n{message.content}"
@@ -41,8 +42,8 @@ class MessageHandler(commands.Cog):
         # Messages that are sent into a channel specified in reportingChannels will be deleted and reposted in the specified reporting log with the custom message
         if (
             message.channel.type != discord.ChannelType.private
-            and message.channel.name in self.state.reportingChannels
-            and message.author.name not in self.state.userAllowlist
+            and message.channel.name in guildState.reportingChannels
+            and message.author.name not in guildState.userAllowlist
         ):
             self.log(
                 f"Message sent in a reporting channel {message.channel.name}: {message.content}"
@@ -51,9 +52,9 @@ class MessageHandler(commands.Cog):
             channel = discord.utils.get(
                 self.client.get_all_channels(),
                 guild__name=message.guild.name,
-                name=self.state.reportingChannels[message.channel.name][0],
+                name=guildState.reportingChannels[message.channel.name][0],
             )
-            replyMessage = self.state.reportingChannels[message.channel.name][1]
+            replyMessage = guildState.reportingChannels[message.channel.name][1]
             replyMessage = replyMessage.replace("@user", message.author.mention)
             replyMessage = replyMessage.replace("@message", message.content)
             # If there are multiple different role mentions discord replaces each with <@38473847387837> and we want to ignore these

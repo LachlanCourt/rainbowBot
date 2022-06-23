@@ -14,40 +14,41 @@ class RoleMenu(commands.Cog):
 
     # Moderate level authorisation required
     @commands.command("create")
-    async def create(self, msg, *args):
+    async def create(self, ctx, *args):
         self.log("Create command received")
-        if not self.state.checkPerms(
-            msg.message.author, level=1
+        guildState = self.state.guildStates[str(ctx.guild.id)]
+        if not guildState.checkPerms(
+            ctx.message.author, level=1
         ):  # Check the user has a role in trustedRoles
-            await msg.channel.send(self.state.permsError)
+            await ctx.channel.send(self.state.permsError)
             return
         if len(args) == 0:  # Check for correct argument
-            await msg.channel.send(
+            await ctx.channel.send(
                 "Please specify the filename of a JSON file to load from"
             )
             return
 
-        guild = msg.guild
+        guild = ctx.guild
         filename = args[0]
         if not filename.endswith(".json"):
             filename += ".json"
         try:
-            f = open(filename)
+            f = open(f"tenants/{ctx.guild.id}/{filename}")
             data = json.load(f)
             f.close()
         except:
-            await msg.channel.send(f'Unable to open JSON file "{filename}" :frowning:')
+            await ctx.channel.send(f'Unable to open JSON file "{filename}" :frowning:')
             return
 
         # Accessing the discord API for this much work takes time so we will keep editing a message along the way to inform the user that it's still doing something
-        statusMessage = await msg.channel.send(
+        statusMessage = await ctx.channel.send(
             "File loaded successfully! Validating file..."
         )
 
         # Check if a channel menu already exists - if the -c argument was given then we will overwrite it. Otherwise we will load the one that currently exists
         createNewMenu = True
         channelMenu = {}
-        if data["roleMenuChannel"] in self.state.rolemenuData:
+        if data["roleMenuChannel"] in guildState.rolemenuData:
             # This seems obsolete to check the flag like this but on the offchance that more flags get introduced to this command later this will ensure it doesn't clash
             if len(args) < 2 or (len(args) > 1 and args[1] != "-c"):
                 if any(
@@ -57,7 +58,7 @@ class RoleMenu(commands.Cog):
                     await statusMessage.edit(
                         content="Role menu already exists, appending to existing menu..."
                     )
-                    channelMenu = self.state.rolemenuData[data["roleMenuChannel"]]
+                    channelMenu = guildState.rolemenuData[data["roleMenuChannel"]]
                     createNewMenu = False
                 else:
                     await statusMessage.edit(
@@ -70,7 +71,7 @@ class RoleMenu(commands.Cog):
                 )
                 # Further down when generating the role menu, the decision to make a new channel or not is made by seeing whether a menu exists in rolemenuData
                 # If we are clearing with the -c argument we should clear the old menu from rolemenuData
-                del self.state.rolemenuData[data["roleMenuChannel"]]
+                del guildState.rolemenuData[data["roleMenuChannel"]]
 
         ### CREATE CHANNELS ###
         courses = data["courses"]
@@ -112,7 +113,7 @@ class RoleMenu(commands.Cog):
                                 overwriteReference[customOverwrite[1]],
                             )
                         except AttributeError:
-                            await msg.channel.send(
+                            await ctx.channel.send(
                                 f"Invalid permission name {customOverwrite[0]}. Overwrite not applied"
                             )
                             print(
@@ -162,7 +163,7 @@ class RoleMenu(commands.Cog):
             )
         }
         for i in guild.roles:
-            if i.name in self.state.trustedRoles[0]:
+            if i.name in guildState.trustedRoles[0]:
                 roleMenuOverwrites[i] = discord.PermissionOverwrite(
                     view_channel=True, send_messages=True
                 )
@@ -204,37 +205,38 @@ class RoleMenu(commands.Cog):
             for j in range(len(courses[i])):
                 await menuMessage.add_reaction(self.state.reactions[j])
 
-        self.state.rolemenuData[data["roleMenuChannel"]] = channelMenu
+        guildState.rolemenuData[data["roleMenuChannel"]] = channelMenu
         # Save the file so that if the bot disconnects it will be able to reload
         Storage(self.state).save()
         await statusMessage.edit(content="And that's a wrap! No more work to do")
 
     # Moderate level authorisation required
     @commands.command("edit")
-    async def edit(self, msg, *args):
+    async def edit(self, ctx, *args):
         self.log("Edit command receieved")
-        if not self.state.checkPerms(
-            msg.message.author, level=1
+        guildState = self.state.guildStates[str(ctx.guild.id)]
+        if not guildState.checkPerms(
+            ctx.message.author, level=1
         ):  # Check the user has a role in trustedRoles
-            await msg.channel.send(self.state.permsError)
+            await ctx.channel.send(self.state.permsError)
             return
         if len(args) < 3 or len(args) > 4:
-            await msg.send(
+            await ctx.send(
                 "Incorrect number of arguments!\nUsage: <menuName> <add/remove/update> <roleName> [<newRoleName>]"
             )
             return
-        channelName = msg.channel.name
+        channelName = ctx.channel.name
         # Find message to edit
         editMessage = None
         rolemenuKey = None
-        for i in self.state.rolemenuData[channelName]:
-            tempMsg = await msg.channel.fetch_message(int(i))
+        for i in guildState.rolemenuData[channelName]:
+            tempMsg = await ctx.channel.fetch_message(int(i))
             if f"**{args[0]}**" in tempMsg.content:
                 editMessage = tempMsg
                 rolemenuKey = i
                 break
         if editMessage == None:
-            await msg.send("Could not find a menu with that name")
+            await ctx.send("Could not find a menu with that name")
             return
 
         if args[1] == "add":  # Add a new role to an existing role menu
@@ -242,28 +244,28 @@ class RoleMenu(commands.Cog):
             for i in range(len(self.state.reactions)):
                 if (
                     self.state.reactions[i]
-                    not in self.state.rolemenuData[channelName][rolemenuKey]
+                    not in guildState.rolemenuData[channelName][rolemenuKey]
                 ):
                     newReactionIndex = i
                     break
             if newReactionIndex == None or newReactionIndex >= 20:
-                await msg.send("Too many menu items! I can only add 20 reactions!")
+                await ctx.send("Too many menu items! I can only add 20 reactions!")
                 return
             newReaction = self.state.reactions[newReactionIndex]
             await editMessage.edit(
                 content=f"{editMessage.content}\n\n{newReaction} {args[2]}\n\n"
             )
             await editMessage.add_reaction(newReaction)
-            self.state.rolemenuData[channelName][rolemenuKey][newReaction] = args[2]
+            guildState.rolemenuData[channelName][rolemenuKey][newReaction] = args[2]
 
             Storage(self.state).save()
 
-            await msg.send("Role added successfully")
+            await ctx.send("Role added successfully")
             return
 
         if args[1] == "remove":  # Remove a role from an existing role menu
             if args[2] not in editMessage.content:
-                await msg.send("That role does not exist in this menu")
+                await ctx.send("That role does not exist in this menu")
                 return
             for i in editMessage.content:
                 startIndex = editMessage.content.find(args[2])
@@ -274,21 +276,21 @@ class RoleMenu(commands.Cog):
                 content=f"{editMessage.content[:startIndex]}{editMessage.content[endIndex:]}"
             )
             await editMessage.clear_reaction(removeReaction)
-            del self.state.rolemenuData[channelName][rolemenuKey][removeReaction]
+            del guildState.rolemenuData[channelName][rolemenuKey][removeReaction]
 
             Storage(self.state).save()
 
-            await msg.send("Role removed successfully")
+            await ctx.send("Role removed successfully")
             return
 
         if (
             args[1] == "update"
         ):  # Update a role in an existing role menu (Change spelling etc.)
             if args[2] not in editMessage.content:
-                await msg.send("That role does not exist in this menu")
+                await ctx.send("That role does not exist in this menu")
                 return
             if len(args) < 4:
-                await msg.send("Please specify the value to change the role to")
+                await ctx.send("Please specify the value to change the role to")
                 return
             for i in editMessage.content:
                 startIndex = editMessage.content.find(args[2])
@@ -297,15 +299,15 @@ class RoleMenu(commands.Cog):
                 content=f"{editMessage.content[:startIndex]}{args[3]}{editMessage.content[endIndex:]}"
             )
             reaction = editMessage.content[startIndex - 2 : startIndex - 1]
-            self.state.rolemenuData[channelName][rolemenuKey][reaction] = args[3]
+            guildState.rolemenuData[channelName][rolemenuKey][reaction] = args[3]
 
             Storage(self.state).save()
 
-            await msg.send("Role updated successfully")
+            await ctx.send("Role updated successfully")
             return
 
         # The three valid commands return at the end of them
-        await msg.send("Could not process your request! Check your spelling...")
+        await ctx.send("Could not process your request! Check your spelling...")
 
     # Reaction add event specific to assigning roles in Role Menu
     # For the reaction add event regarding channel locking, check Moderation cog
@@ -318,19 +320,19 @@ class RoleMenu(commands.Cog):
 
         # Grab necessary data to analyse the event
         channel = self.client.get_channel(reaction.channel_id)
-        msg = await channel.fetch_message(reaction.message_id)
 
-        if channel.name in self.state.rolemenuData:
+        guildState = self.state.guildStates[str(channel.guild.id)]
+
+        if channel.name in guildState.rolemenuData:
             self.log("Reaction add event for role assignment")
             roles = await reaction.member.guild.fetch_roles()
             # If the message the user reacted to is a rolemenu, get the name of the role related to the reaction they added and give the user that role
             if (
-                str(msg.id) in self.state.rolemenuData[channel.name]
-                and msg.author == self.client.user
+                str(reaction.message_id) in guildState.rolemenuData[channel.name]
             ):  # The message id comes in as an integer but is serialised as a string when saved to JSON
-                roleName = self.state.rolemenuData[channel.name][str(msg.id)][
-                    reaction.emoji.name
-                ]
+                roleName = guildState.rolemenuData[channel.name][
+                    str(reaction.message_id)
+                ][reaction.emoji.name]
                 for i in range(len(roles)):
                     if roles[i].name == roleName:
                         await reaction.member.add_roles(roles[i])
@@ -340,24 +342,23 @@ class RoleMenu(commands.Cog):
         # Grab necessary data to analyse the event. A lot of the calls used in reaction_add returns None for reaction_remove
         # because they no longer react to the message so bit of a clunky workaround
         guild = self.client.get_guild(reaction.guild_id)
+        guildState = self.state.guildStates[str(guild.id)]
         member = guild.get_member(reaction.user_id)
         # Ignore reaction remove and add events from itself (when editing the menu)
         if member.bot:
             return
         roles = await guild.fetch_roles()
         channel = self.client.get_channel(reaction.channel_id)
-        msg = await channel.fetch_message(reaction.message_id)
 
-        if channel.name in self.state.rolemenuData:
+        if channel.name in guildState.rolemenuData:
             self.log("Reaction remove event for role assignment")
             # If the message the user reacted to is a rolemenu, get the name of the role related to the reaction they removed and remove that role from the user
             if (
-                str(msg.id) in self.state.rolemenuData[channel.name]
-                and msg.author == self.client.user
+                str(reaction.message_id) in guildState.rolemenuData[channel.name]
             ):  # The message id comes in as an integer but is serialised as a string when saved to JSON
-                roleName = self.state.rolemenuData[channel.name][str(msg.id)][
-                    reaction.emoji.name
-                ]
+                roleName = guildState.rolemenuData[channel.name][
+                    str(reaction.message_id)
+                ][reaction.emoji.name]
                 for i in range(len(roles)):
                     if roles[i].name == roleName:
                         await member.remove_roles(roles[i])

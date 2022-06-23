@@ -1,5 +1,4 @@
 {
-"serverName": "Lachlans server",
 "tasks": [
 	["55 9 15 11 *", "lock", "comp1000", "until", "5 12 15 11 *"],
 	["55 13 17 11 *", "lock", "comp1000", "until", "5 16 17 11 *"],

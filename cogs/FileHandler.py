@@ -5,17 +5,20 @@ from cogs.helpers._storage import Storage
 
 
 class FileHandler(commands.Cog):
-    def __init__(self, bot, state):
-        self.bot = bot
+    def __init__(self, client, state):
+        self.client = client
         self.state = state
 
     def log(self, msg):
         self.state.logger.debug(f"FileHandler: {msg}")
 
-    def findNewFilename(self, filename):
+    def findNewFilename(self, filename, prefix=""):
         # Check if the filename has an integer in parentheses like filename(1).dat
         # Don't change the filename if the file doesn't already exist
-        if re.match(r".*\(\d+\)\..*", filename) == None and Path(filename).is_file():
+        if (
+            re.match(r".*\(\d+\)\..*", filename) == None
+            and Path(f"{prefix}{filename}").is_file()
+        ):
             # Separate the filename into two sections
             # The section up to the last decimal
             startMatch = re.match(r".*\.", filename).span()
@@ -24,7 +27,7 @@ class FileHandler(commands.Cog):
             end = filename[startMatch[1] - 1 :]
             # Add a 1 and put it back together
             filename = f"{start}(1){end}"
-        while Path(filename).is_file():
+        while Path(f"{prefix}{filename}").is_file():
             # Separate the filename into three sections.
             # The section up to the opening parenthesis
             startMatch = re.match(r".*\(", filename).span()
@@ -51,127 +54,144 @@ class FileHandler(commands.Cog):
 
     # High level authorisation required
     @commands.command("addfile")
-    async def addfile(self, msg, *args):
+    async def addfile(self, ctx, *args):
         self.log("Add file command received")
-        if not self.state.checkPerms(
-            msg.message.author
+        guildState = self.state.guildStates[str(ctx.guild.id)]
+        self.state.ensureGuildDirectoryExists(ctx.guild.id)
+        if not guildState.checkPerms(
+            ctx.message.author
         ):  # Check the user has a role in trustedRoles
-            await msg.channel.send(self.state.permsError)
+            await ctx.channel.send(self.state.permsError)
             return
-        message = msg.message
+        message = ctx.message
         if len(message.attachments) != 1:
-            await msg.send("Please attach a single file to this message")
+            await ctx.send("Please attach a single file to this message")
             return
         filename = message.attachments[0].filename
-        if filename == "updatebot.sh" or filename == "bot.py":
-            await msg.send(
+        if filename in ["updatebot.sh", "bot.py", "temp"]:
+            await ctx.send(
                 "Due to security risks, this file cannot be changed this way. Please find another way to add it to the cwd"
             )
             return
-        f = Path(filename)
+        f = Path(f"tenants/{ctx.guild.id}/{filename}")
         if f.is_file() and "-o" not in args and "-a" not in args:
-            await msg.send(
+            await ctx.send(
                 "File already exists. Please specify either -o to overwrite or -a to add a duplicate"
             )
             return
         if len(args) > 1:
-            await msg.send(
+            await ctx.send(
                 "Please specify a single argument -o to overwrite or -a to add a duplicate"
             )
             return
         if len(args) == 1:
             if args[0] == "-o":
-                os.remove(message.attachments[0].filename)
+                os.remove(f"tenants/{ctx.guild.id}/{filename}")
             if args[0] == "-a":
-                filename = self.findNewFilename(message.attachments[0].filename)
-                await message.attachments[0].save(
-                    filename, seek_begin=True, use_cached=False
+                filename = self.findNewFilename(
+                    filename, prefix=f"tenants/{ctx.guild.id}/"
                 )
-                await msg.send(f'File added with filename "{filename}".')
+                await message.attachments[0].save(
+                    f"tenants/{ctx.guild.id}/{filename}",
+                    seek_begin=True,
+                    use_cached=False,
+                )
+                await ctx.send(f'File added with filename "{filename}".')
                 return
         await message.attachments[0].save(
-            message.attachments[0].filename, seek_begin=True, use_cached=False
+            f"tenants/{ctx.guild.id}/{filename}",
+            seek_begin=True,
+            use_cached=False,
         )
-        await msg.send(f'File added with filename "{message.attachments[0].filename}".')
+        await ctx.send(f'File added with filename "{filename}".')
         self.log(f'Added file with filename "{filename}".')
 
     # High level authorisation required
     @commands.command("remfile")
-    async def remfile(self, msg, *args):
+    async def remfile(self, ctx, *args):
         self.log("Remove file command received")
-        if not self.state.checkPerms(
-            msg.message.author
+        guildState = self.state.guildStates[str(ctx.guild.id)]
+        self.state.ensureGuildDirectoryExists(ctx.guild.id)
+        if not guildState.checkPerms(
+            ctx.message.author
         ):  # Check the user has a role in trustedRoles
-            await msg.channel.send(self.state.permsError)
+            await ctx.channel.send(self.state.permsError)
             return
         if len(args) != 1:
-            await msg.send("Filename not specified")
-        f = Path(args[0])
+            await ctx.send("Filename not specified")
+        f = Path(f"tenants/{ctx.guild.id}/{args[0]}")
         if (
             not f.is_file()
             or "/" in args[0]
             or "\\" in args[0]
             or args[0] in self.state.sourceFiles
         ):
-            await msg.send("File does not exist")
+            await ctx.send("File does not exist")
             return
-        os.remove(args[0])
-        await msg.send("File removed")
+        os.remove(f"tenants/{ctx.guild.id}/{args[0]}")
+        await ctx.send("File removed")
 
     # High level authorisation required
     @commands.command("listfiles")
-    async def listfiles(self, msg, *args):
+    async def listfiles(self, ctx, *args):
         self.log("List files command received")
-        if not self.state.checkPerms(
-            msg.message.author
+        guildState = self.state.guildStates[str(ctx.guild.id)]
+        self.state.ensureGuildDirectoryExists(ctx.guild.id)
+        if not guildState.checkPerms(
+            ctx.message.author
         ):  # Check the user has a role in trustedRoles
-            await msg.channel.send(self.state.permsError)
+            await ctx.channel.send(self.state.permsError)
             return
         message = ""
-        for file in os.listdir("./"):
-            if file not in self.state.sourceFiles:
+        for file in os.listdir(f"tenants/{ctx.guild.id}"):
+            if file not in self.state.sourceFiles and file != "temp":
                 message += f"{file}\n"
         if message == "":
             message = "None"
-        await msg.send(f"Files currently saved are as follows\n\n{message}")
+        await ctx.send(f"Files currently saved are as follows\n\n{message}")
 
     # High level authorisation required
     @commands.command("update")
-    async def update(self, msg):
+    async def update(self, ctx):
         self.log("Update command received")
-        if not self.state.checkPerms(
-            msg.message.author
+        guildState = self.state.guildStates[str(ctx.guild.id)]
+        if not guildState.checkPerms(
+            ctx.message.author
         ):  # Check the user has a role in trustedRoles
-            await msg.channel.send(self.state.permsError)
+            await ctx.channel.send(self.state.permsError)
             return
         f = Path("updatebot.sh")
         if f.is_file():
             subprocess.call(["sh", "./updatebot.sh"])
             sys.exit()
         else:
-            await msg.channel.send("No update script found")
+            await ctx.channel.send("No update script found")
             self.log("Update script not found")
 
     # High level authorisation required
     @commands.command("addconfig")
-    async def addconfig(self, msg, *args):
+    async def addconfig(self, ctx, *args):
         self.log("Add config command received")
-        if not self.state.checkPerms(
-            msg.message.author
+        guildState = self.state.guildStates[str(ctx.guild.id)]
+        if not guildState.checkPerms(
+            ctx.message.author
         ):  # Check the user has a role in trustedRoles
-            await msg.channel.send(self.state.permsError)
+            await ctx.channel.send(self.state.permsError)
             return
-        message = msg.message
+        message = ctx.message
         if len(message.attachments) != 1:
-            await msg.send("Please attach a single file to this message")
+            await ctx.send("Please attach a single file to this message")
             return
         filename = message.attachments[0].filename
         if filename != "config.json":
-            await msg.send('File must be named "config.json"')
+            await ctx.send('File must be named "config.json"')
             return
         await message.attachments[0].save(
             message.attachments[0].filename, seek_begin=True, use_cached=False
         )
-        Storage(self.state).addConfig()
-        await msg.send(f"Config updated!")
-        self.log("Config added")
+        if Storage(self.state).addConfig():
+            await ctx.send(f"Config updated!")
+            self.log("Config uploaded successfully")
+        else:
+            await ctx.send(f"Config file upload failed")
+            self.log("Config file upload failed")

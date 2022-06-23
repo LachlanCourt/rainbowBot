@@ -2,3 +2,4 @@ git+https://github.com/Rapptz/discord.py@master
 black
 PyGithub
 boto3
+python-dotenv
