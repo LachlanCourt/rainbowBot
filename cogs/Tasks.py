@@ -144,7 +144,7 @@ class Tasks(commands.Cog):
         if not filename.endswith(".json"):
             filename += ".json"
 
-        valid, response = Validator.validate(filename)
+        valid, response = Validator.validate(f"tenants/{ctx.guild.id}/{filename}")
         await self.state.sendLongMessage(response, ctx.channel, splitOnDelimeter=True)
 
     # High level authorisation required
@@ -193,10 +193,10 @@ class Tasks(commands.Cog):
             await ctx.channel.send("Cannot use relative filepaths or subdirectories")
             return
 
-        valid, response = Validator.validate(filename)
+        valid, response = Validator.validate(f"tenants/{ctx.guild.id}/{filename}")
         if valid and filename not in guildState.registeredTasks:
 
-            f = open(f"{ctx.guild.id}/{filename}")
+            f = open(f"tenants/{ctx.guild.id}/{filename}")
             data = json.load(f)
             f.close()
             guildState.registeredTasks[filename] = data["tasks"]

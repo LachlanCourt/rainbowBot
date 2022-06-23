@@ -117,3 +117,11 @@ class State:
             chunks.append(currentChunk)
         for chunk in chunks:
             await channel.send(chunk)
+
+    def ensureGuildDirectoryExists(self, guildId):
+        if "tenants" not in os.listdir():
+            os.mkdir("tenants")
+        if str(guildId) not in os.listdir("./tenants"):
+            os.mkdir(f"tenants/{guildId}")
+        if "temp" not in os.listdir(f"./tenants/{guildId}"):
+            os.mkdir(f"tenants/{guildId}/temp")

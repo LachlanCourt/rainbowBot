@@ -4,3 +4,5 @@ updatebot.sh
 *.log
 .env
 *__pycache__*
+tenants*
+

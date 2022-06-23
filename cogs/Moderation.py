@@ -70,15 +70,19 @@ class Moderation(commands.Cog):
             for i in message.attachments:
                 # The cached attachment URL becomes invalid after a few minutes. The following ensures valid media is accessible for moderation purposes
                 await i.save(
-                    i.filename, seek_begin=True, use_cached=False
+                    f"tenants/{guild.id}/{i.filename}",
+                    seek_begin=True,
+                    use_cached=False,
                 )  # Save the media locally from the cached URL before it becomes invalid
                 file = discord.File(
-                    fp=i.filename,
+                    fp=f"tenants/{guild.id}/{i.filename}",
                 )  # Create a discord file object based on this saved media
                 await moderationChannel.send(
                     content=None, file=file
                 )  # Reupload the media to the log channel
-                os.remove(i.filename)  # Remove the local download of the media
+                os.remove(
+                    f"tenants/{guild.id}/{i.filename}"
+                )  # Remove the local download of the media
 
     @commands.Cog.listener()
     async def on_raw_message_edit(self, rawMessage):
@@ -90,6 +94,7 @@ class Moderation(commands.Cog):
             return
         guild = self.client.get_guild(rawMessage.cached_message.author.guild.id)
         guildState = self.state.guildStates[str(guild.id)]
+        self.state.ensureGuildDirectoryExists(guild.id)
         if (
             rawMessage.cached_message.author.name in guildState.userAllowlist
             or channel.name in guildState.channelAllowlist
@@ -154,26 +159,35 @@ class Moderation(commands.Cog):
             ) in (
                 beforeAttach
             ):  # See message delete function for details of the following
-                await i.save(i.filename, seek_begin=True, use_cached=False)
+                await i.save(
+                    f"tenants/{guild.id}/{i.filename}",
+                    seek_begin=True,
+                    use_cached=False,
+                )
                 file = discord.File(
-                    fp=i.filename,
+                    fp=f"tenants/{guild.id}/{i.filename}",
                 )
                 await moderationChannel.send(content=None, file=file)
-                os.remove(i.filename)
+                os.remove(f"tenants/{guild.id}/{i.filename}")
             await moderationChannel.send("After:")
             for i in afterAttach:
-                await i.save(i.filename, seek_begin=True, use_cached=False)
+                await i.save(
+                    f"tenants/{guild.id}/{i.filename}",
+                    seek_begin=True,
+                    use_cached=False,
+                )
                 file = discord.File(
-                    fp=i.filename,
+                    fp=f"tenants/{guild.id}/{i.filename}",
                 )
                 await moderationChannel.send(content=None, file=file)
-                os.remove(i.filename)
+                os.remove(f"tenants/{guild.id}/{i.filename}")
 
     # Low level authorisation required
     @commands.command("lock")
     async def lock(self, ctx, *args):
         self.log("Lock command received")
         guildState = self.state.guildStates[str(ctx.guild.id)]
+        self.state.ensureGuildDirectoryExists(ctx.guild.id)
         if not guildState.checkPerms(
             ctx.author, level=2
         ):  # Check the user has a role in trustedRoles
