@@ -144,7 +144,7 @@ class FileHandler(commands.Cog):
             return
         message = ""
         for file in os.listdir(f"tenants/{ctx.guild.id}"):
-            if file not in self.state.sourceFiles:
+            if file not in self.state.sourceFiles and file != "temp":
                 message += f"{file}\n"
         if message == "":
             message = "None"
