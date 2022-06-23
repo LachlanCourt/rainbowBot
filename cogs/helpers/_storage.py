@@ -62,7 +62,7 @@ class Storage:
                 s3 = session.resource("s3")
                 bucket = s3.Bucket(os.environ.get("AMAZON_S3_BUCKET_NAME"))
                 bucket.download_file(Key="data.dat", Filename="temp.dat")
-                tempfile = open("temp.dat", "rb")
+                tempfile = open("temp.dat", "rt")
                 data = json.load(tempfile)
                 tempfile.close()
                 os.remove("temp.dat")
