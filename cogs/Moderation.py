@@ -16,6 +16,7 @@ class Moderation(commands.Cog):
         self.log("Message delete event")
         guild = self.client.get_guild(rawMessage.guild_id)
         guildState = self.state.guildStates[str(guild.id)]
+        self.state.ensureGuildDirectoryExists(guild.id)
         channel = self.client.get_channel(rawMessage.channel_id)
         # If the message was sent before the bot was logged on, it is unfortunately innaccessible. Ignore also if the author or channel is on the allowlist or if the channel is locked (The lock channel command deletes the message of the sender automatically)
         if (
