@@ -25,7 +25,7 @@ client = commands.Bot(command_prefix="$rain", intents=intents)
 # Configure Logging
 FileHandler.saveOldLogFile(None)  # Makes log directory if it doesn't already exist
 logger = logging.getLogger("discord")
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 logging.getLogger("discord.http").setLevel(logging.INFO)
 if os.environ.get("ENVIRONMENT") == "PRODUCTION":
     handler = logging.StreamHandler()
