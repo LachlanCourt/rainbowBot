@@ -61,6 +61,7 @@ class State:
                 self.log(
                     f'Error loading data for guild "{guild.name}" with id {guild.id}. Initialising with no persistent data'
                 )
+                guildState.initialiseDefaultData()
             self.guildStates[str(guild.id)] = guildState
 
     def generateSourceList(self):

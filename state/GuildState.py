@@ -33,6 +33,11 @@ class GuildState:
         self.lockedChannels = data["lockedChannels"]
         self.registeredTasks = data["registeredTasks"]
 
+    def initialiseDefaultData(self):
+        self.rolemenuData = {}
+        self.lockedChannels = {}
+        self.registeredTasks = {}
+
     def prepReportingChannels(self):
         for i in self.reportingChannelsList:
             self.reportingChannels[i[0]] = [i[1], i[2]]
