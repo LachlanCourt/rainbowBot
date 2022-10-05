@@ -298,49 +298,18 @@ class Moderation(commands.Cog):
     async def addCustomTask(self, ctx, args):
         guildState = self.state.guildStates[str(ctx.message.guild.id)]
 
-        now = datetime.datetime.now(pytz.timezone(guildState.timezone))
+        start = args[1].split(":")
+        end = args[2].split(":")
 
-        requestedStart = args[1].split(":")
-        startHours = requestedStart[0]
-        startMins = requestedStart[1]
-        start = datetime.datetime(
-            int(now.strftime("%Y")),
-            int(now.strftime("%m")),
-            int(now.strftime("%d")),
-            int(startHours),
-            int(startMins),
-            tzinfo=now.tzinfo,
-        )
-
-        if start < now:
-            # Time comes before today, so the date should be increased
-            start += datetime.timedelta(hours=24)
-
-        requestedEnd = args[2].split(":")
-        endHours = requestedEnd[0]
-        endMins = requestedEnd[1]
-        end = datetime.datetime(
-            int(start.strftime("%Y")),
-            int(start.strftime("%m")),
-            int(start.strftime("%d")),
-            int(endHours),
-            int(endMins),
-            tzinfo=start.tzinfo,
-        )
-
-        if end < start:
-            # Time comes before start, so the date should be increased
-            end += datetime.timedelta(hours=24)
-
-        taskId = f"{''.join(random.choice(string.ascii_lowercase + string.digits + string.ascii_uppercase) for i in range(20))}.temp"
+        taskId = f"{''.join(random.choice(string.ascii_lowercase + string.digits + string.ascii_uppercase) for _ in range(20))}.temp"
         taskData = {
             "tasks": [
                 [
-                    f"{start:%M %H %d %m *}",
+                    f"{start[1]} {start[0]} * * *",
                     "lock",
                     args[0],
                     "until",
-                    f"{end:%M %H %d %m *}",
+                    f"{end[1]} {end[0]} * * *",
                     1,
                 ],
             ]
