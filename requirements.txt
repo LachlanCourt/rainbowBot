@@ -3,3 +3,4 @@ black
 PyGithub
 boto3
 python-dotenv
+pytz
