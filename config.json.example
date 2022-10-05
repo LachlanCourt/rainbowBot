@@ -5,6 +5,7 @@
     "trustedRoles": [[], [], []],
     "logChannel": "",
     "moderationChannel": "",
-    "reportingChannels": []
+    "reportingChannels": [],
+    "timezone": "UTC"
   }
 }
