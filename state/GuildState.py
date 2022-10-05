@@ -1,3 +1,6 @@
+from cogs.helpers._storage import Storage
+
+
 class GuildState:
     def __init__(self, config, guildId, logger):
         self.guildId = guildId
@@ -55,3 +58,8 @@ class GuildState:
         if any(i in roleNames for i in allAllowedRoles):
             return True
         return False
+
+    def addTaskToState(self, state, client, filename, data):
+        self.registeredTasks[filename] = data
+        Storage(state).save()
+        client.cogs["Tasks"].startScheduler()
