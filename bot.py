@@ -27,6 +27,8 @@ FileHandler.saveOldLogFile(None)  # Makes log directory if it doesn't already ex
 logger = logging.getLogger("discord")
 logger.setLevel(logging.DEBUG)
 logging.getLogger("discord.http").setLevel(logging.INFO)
+logging.getLogger("discord.client").setLevel(logging.INFO)
+logging.getLogger("discord.gateway").setLevel(logging.INFO)
 if os.environ.get("ENVIRONMENT") == "PRODUCTION":
     handler = logging.StreamHandler()
 else:

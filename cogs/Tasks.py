@@ -1,4 +1,4 @@
-import discord, json, datetime
+import discord, json, datetime, pytz
 from discord.ext import commands
 from discord.ext import tasks
 
@@ -19,8 +19,8 @@ class Tasks(commands.Cog):
         self.state.logger.debug(f"Tasks: {msg}")
 
     @staticmethod
-    def isNow(cronStamp):
-        now = datetime.datetime.now()
+    def isNow(cronStamp, timezone):
+        now = datetime.datetime.now(pytz.timezone(timezone))
         cronStamp = cronStamp.split()
 
         # Minutes
@@ -55,6 +55,8 @@ class Tasks(commands.Cog):
         return True
 
     def schedulerShouldStart(self):
+        if self.scheduler.is_running():
+            return False
         for guildState in self.state.guildStates.values():
             if len(guildState.registeredTasks) > 0:
                 return True
@@ -88,7 +90,7 @@ class Tasks(commands.Cog):
                     end = task[4]
                     if command == "lock":
                         # Only lock channel if it is not already locked
-                        if self.isNow(start) and args not in list(
+                        if self.isNow(start, guildState.timezone) and args not in list(
                             guildState.lockedChannels.values()
                         ):
                             self.log(f"Locking channel {args}")
@@ -105,7 +107,9 @@ class Tasks(commands.Cog):
                             # Lock channel specified
                             await Moderation.lock(self, message, args, True)
                             self.log(f"Channel {args} locked automatically")
-                        if preposition == "until" and self.isNow(end):
+                        if preposition == "until" and self.isNow(
+                            end, guildState.timezone
+                        ):
                             if args in list(guildState.lockedChannels.values()):
                                 messageID = None
                                 for i in guildState.lockedChannels:
@@ -199,6 +203,7 @@ class Tasks(commands.Cog):
             f = open(f"tenants/{ctx.guild.id}/{filename}")
             data = json.load(f)
             f.close()
+
             guildState.registeredTasks[filename] = data["tasks"]
             Storage(self.state).save()
             await ctx.channel.send(f"Task file {filename} registered successfully")

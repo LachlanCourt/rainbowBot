@@ -79,7 +79,7 @@ Channels that have been created with the automated channel creation can also be 
 
 ### Tasks
 
-Alternatively, a file with a schedule of lock and unlock times can be added into the root directory and registered with `regtask <filename>`. Registered task files will lock and unlock channels automatically according to the times specified. Note that the time will not fall exactly on the minute so it is recommended to choose a time slightly earlier than the exact time that you need a channel to be locked. The format of times in this file should match that of linux cron jobs. If at any point you are not using a specific file anymore, it is recommended that you run `unregtask <filename>` to unmount the task and save processing power. Files can be validated by using the command `checktask <filename>` which will validate the task file.
+Alternatively, a file with a schedule of lock and unlock times can be added into the root directory and registered with `regtask <filename>`. Registered task files will lock and unlock channels automatically according to the times specified, and the timezone specified in the config file. Note that the time will not fall exactly on the minute so it is recommended to choose a time slightly earlier than the exact time that you need a channel to be locked. The format of times in this file should match that of linux cron jobs. If at any point you are not using a specific file anymore, it is recommended that you run `unregtask <filename>` to unmount the task and save processing power. Files can be validated by using the command `checktask <filename>` which will validate the task file.
 
 ## File Manipulation
 

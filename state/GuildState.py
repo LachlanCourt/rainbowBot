@@ -18,6 +18,7 @@ class GuildState:
         self.reportingChannelsList = (
             config["reportingChannels"] if "reportingChannels" in config else []
         )
+        self.timezone = config["timezone"] if "timezone" in config else "UTC"
         self.reportingChannels = {}
         self.rolemenuData = {}
         self.lockedChannels = {}
@@ -32,6 +33,11 @@ class GuildState:
         self.rolemenuData = data["rolemenuData"]
         self.lockedChannels = data["lockedChannels"]
         self.registeredTasks = data["registeredTasks"]
+
+    def initialiseDefaultData(self):
+        self.rolemenuData = {}
+        self.lockedChannels = {}
+        self.registeredTasks = {}
 
     def prepReportingChannels(self):
         for i in self.reportingChannelsList:

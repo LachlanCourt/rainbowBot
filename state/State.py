@@ -61,6 +61,7 @@ class State:
                 self.log(
                     f'Error loading data for guild "{guild.name}" with id {guild.id}. Initialising with no persistent data'
                 )
+                guildState.initialiseDefaultData()
             self.guildStates[str(guild.id)] = guildState
 
     def generateSourceList(self):
@@ -78,6 +79,8 @@ class State:
         return None
 
     def sanitiseMentions(self, message, guild):
+        # discord has an escape mentions function built in however it replaces users and roles with their ID
+        # however it is more preferable to have the name for moderation purposes so here is a custom one
         matchString = r"\<@&\d*?\>"
         while re.search(matchString, message) != None:
             roleNameIndex = re.search(matchString, message).span()
