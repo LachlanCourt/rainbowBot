@@ -75,11 +75,13 @@ Low level authorisation required
 
 Channels that have been created with the automated channel creation can also be locked for a period of time by disabling send message permissions to the role that makes that channel available. This can be helpful during exams and assessment tasks in order to help moderate for academic integrity.
 
-`lock [channelName]` is a manual command that will disable send message permissions to the role with the same name as the selected channel. If no argument is given, the selected channel is the name of the channel in which the command is sent. If an argument is given, the selected channel will be the channel whose name matches the argument. Either way, a message will be sent by the bot into the channel the command was sent with an unlocked padlock, a user with a "trustedRole" adding their reaction to this message will unlock the channel again.
+`lock [channelName [timestampStart timestampEnd] ]` is a manual command that will disable send message permissions to the role with the same name as the selected channel. If no arguments are given, the selected channel is the name of the channel in which the command is sent. If a single argument is given, the selected channel will be the channel whose name matches the argument. In either of these cases, a message will be sent by the bot into the channel the command was sent with an unlocked padlock, a user with low level authorisation adding their reaction to this message will unlock the channel again. 
+
+If a channel name is specified, additionally you can include two 24 hour timestamps to lock and unlock which will automatically add a temporary task as described below. The timestamps should be 24 hour colon separated integers in a format like `16:55`. The channel will lock the next time the current time matches the first timestamp, and unlock the next time the current time matches the second timestamp. In this case a message will be sent by the bot to confirm registration, and then at the time of locking a message will be sent to the log channel with an unlocked padlock reaction which can be used to unlock the channel early if necessary.
 
 ### Tasks
 
-Alternatively, a file with a schedule of lock and unlock times can be added into the root directory and registered with `regtask <filename>`. Registered task files will lock and unlock channels automatically according to the times specified, and the timezone specified in the config file. Note that the time will not fall exactly on the minute so it is recommended to choose a time slightly earlier than the exact time that you need a channel to be locked. The format of times in this file should match that of linux cron jobs. If at any point you are not using a specific file anymore, it is recommended that you run `unregtask <filename>` to unmount the task and save processing power. Files can be validated by using the command `checktask <filename>` which will validate the task file.
+Alternatively, a file with a schedule of lock and unlock times can be added into the root directory with an `addfile` command, and registered with `regtask <filename>`. Registered task files will lock and unlock channels automatically according to the times specified, and the timezone specified in the config file. Note that the time will not fall exactly on the minute so it is recommended to choose a time slightly earlier than the exact time that you need a channel to be locked. The format of times in this file should match that of linux cron jobs. If at any point you are not using a specific file anymore, it is recommended that you run `unregtask <filename>` to unmount the task and save processing power. Files can be validated by using the command `checktask <filename>` which will validate the task file.
 
 ## File Manipulation
 
@@ -99,7 +101,7 @@ High level authorisation required
 
 RainbowBot has a built in method of running a shell script on demand. This can be used to pull the latest update from GitHub and restart the bot, but it can have many other applications.
 
-`update` will run an executable shell script in the cwd named `updatebot.sh`.
+`update` will run an executable shell script in the cwd named `updatebot.sh`. This filename is hardcoded for security purposes and the file cannot be added or edited using any of the bot commands, it will need to be added to the server another way.
 
 ## Direct Message support
 
