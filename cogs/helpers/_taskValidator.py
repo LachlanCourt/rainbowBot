@@ -35,7 +35,7 @@ class Validator:
                 "10": "October",
                 "11": "November",
                 "12": "December",
-                "*": "any",
+                "*": "any month",
             }
 
             out = ""

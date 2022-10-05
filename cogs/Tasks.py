@@ -62,13 +62,19 @@ class Tasks(commands.Cog):
                 return True
         return False
 
+    def startScheduler(self):
+        if self.schedulerShouldStart():
+            self.scheduler.start()
+
     @tasks.loop(minutes=1.0)
     async def scheduler(self):
         # Reads file in the same format as crontab
         # Minute Hour Date Month Day
+        cleanedUpTasks = False
         for guildId in self.state.guildStates.keys():
             guildState = self.state.guildStates[guildId]
-            for tasks in guildState.registeredTasks.values():
+            tasksToCleanup = []
+            for (taskName, tasks) in guildState.registeredTasks.items():
                 guild = self.client.get_guild(int(guildId))
 
                 if guildState._tasksSendTick:
@@ -88,6 +94,8 @@ class Tasks(commands.Cog):
                     args = task[2]
                     preposition = task[3]
                     end = task[4]
+                    # Temporary tasks added by the moderation lock command will be cleaned up automatically once they are complete
+                    cleanup = len(task) == 6 and task[5] == 1
                     if command == "lock":
                         # Only lock channel if it is not already locked
                         if self.isNow(start, guildState.timezone) and args not in list(
@@ -129,6 +137,14 @@ class Tasks(commands.Cog):
                                     self, message, args, calledFromTask=True
                                 )
                                 self.log(f"Channel {args} unlocked automatically")
+                            if cleanup:
+                                tasksToCleanup.append(taskName)
+            for task in tasksToCleanup:
+                del guildState.registeredTasks[task]
+            if len(tasksToCleanup) > 0:
+                cleanedUpTasks = True
+        if cleanedUpTasks:
+            Storage(self.state).save()
 
     # High level authorisation required
     @commands.command("checktask")
@@ -145,7 +161,7 @@ class Tasks(commands.Cog):
             return
 
         filename = args[0]
-        if not filename.endswith(".json"):
+        if not filename.endswith(".json") and not filename.endswith(".temp"):
             filename += ".json"
 
         valid, response = Validator.validate(f"tenants/{ctx.guild.id}/{filename}")
@@ -190,7 +206,7 @@ class Tasks(commands.Cog):
             return
 
         filename = args[0]
-        if not filename.endswith(".json"):
+        if not filename.endswith(".json") and not filename.endswith(".temp"):
             filename += ".json"
 
         if "/" in filename or "\\" in filename or filename == "temp":
@@ -204,14 +220,13 @@ class Tasks(commands.Cog):
             data = json.load(f)
             f.close()
 
-            guildState.registeredTasks[filename] = data["tasks"]
-            Storage(self.state).save()
+            guildState.addTaskToState(self.state, self.client, filename, data["tasks"])
+
             await ctx.channel.send(f"Task file {filename} registered successfully")
-            if self.schedulerShouldStart():
-                self.scheduler.start()
+
         elif valid:
             await ctx.channel.send(
-                "That task file has already been registered! Use the `taskstatus` for a list of currently registered tasks"
+                "That task file has already been registered! Use the `taskstatus` command for a list of currently registered tasks"
             )
         else:
             await ctx.channel.send(f"Invalid file {args[0]}")
@@ -231,7 +246,7 @@ class Tasks(commands.Cog):
             return
 
         filename = args[0]
-        if not filename.endswith(".json"):
+        if not filename.endswith(".json") and not filename.endswith(".temp"):
             filename += ".json"
 
         if filename in guildState.registeredTasks:

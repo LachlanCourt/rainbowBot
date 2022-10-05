@@ -1,4 +1,4 @@
-import discord, json, os, datetime
+import discord, os, datetime, pytz, random, string
 from discord.ext import commands
 from cogs.helpers._storage import Storage
 
@@ -198,6 +198,9 @@ class Moderation(commands.Cog):
         # If no arguments are given, assume the channel the message was sent in should be locked
         if len(args) == 0:
             channel = ctx.channel
+        elif len(args) == 3:
+            await self.addCustomTask(ctx, args)
+            return
         else:
             # Try as given, lowercase and uppercase
             options = [args[0], args[0].lower(), args[0].upper()]
@@ -236,7 +239,7 @@ class Moderation(commands.Cog):
         # Add the locked channel to the list so that it can be unlocked again
         guildState.lockedChannels[str(message.id)] = channel.name
         # Delete the command message. If this comes as a command then the first line will run, if it is called from Tasks cog then the second line will run
-        if len(args) > 1 and args[1]:
+        if len(args) == 2 and args[1]:
             await ctx.delete(delay=None)
         else:
             await ctx.message.delete(delay=None)
@@ -291,3 +294,57 @@ class Moderation(commands.Cog):
 
         Storage(self.state).save()
         return
+
+    async def addCustomTask(self, ctx, args):
+        guildState = self.state.guildStates[str(ctx.message.guild.id)]
+
+        now = datetime.datetime.now(pytz.timezone(guildState.timezone))
+
+        requestedStart = args[1].split(":")
+        startHours = requestedStart[0]
+        startMins = requestedStart[1]
+        start = datetime.datetime(
+            int(now.strftime("%Y")),
+            int(now.strftime("%m")),
+            int(now.strftime("%d")),
+            int(startHours),
+            int(startMins),
+            tzinfo=now.tzinfo,
+        )
+
+        if start < now:
+            # Time comes before today, so the date should be increased
+            start += datetime.timedelta(hours=24)
+
+        requestedEnd = args[2].split(":")
+        endHours = requestedEnd[0]
+        endMins = requestedEnd[1]
+        end = datetime.datetime(
+            int(start.strftime("%Y")),
+            int(start.strftime("%m")),
+            int(start.strftime("%d")),
+            int(endHours),
+            int(endMins),
+            tzinfo=start.tzinfo,
+        )
+
+        if end < start:
+            # Time comes before start, so the date should be increased
+            end += datetime.timedelta(hours=24)
+
+        taskId = f"{''.join(random.choice(string.ascii_lowercase + string.digits + string.ascii_uppercase) for i in range(20))}.temp"
+        taskData = {
+            "tasks": [
+                [
+                    f"{start:%M %H %d %m *}",
+                    "lock",
+                    args[0],
+                    "until",
+                    f"{end:%M %H %d %m *}",
+                    1,
+                ],
+            ]
+        }
+
+        guildState.addTaskToState(self.state, self.client, taskId, taskData["tasks"])
+        await ctx.channel.send("Task registered successfully")
