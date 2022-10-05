@@ -245,7 +245,12 @@ class Moderation(commands.Cog):
             await ctx.message.delete(delay=None)
 
         # Lock channel
-        await channel.set_permissions(role, read_messages=True, send_messages=False)
+        await channel.set_permissions(
+            role,
+            read_messages=True,
+            send_messages=False,
+            send_messages_in_threads=False,
+        )
 
         # Save the list of currently locked channels incase the bot goes offline
         Storage(self.state).save()
@@ -284,7 +289,9 @@ class Moderation(commands.Cog):
         if role == None:
             return
 
-        await channel.set_permissions(role, read_messages=True, send_messages=None)
+        await channel.set_permissions(
+            role, read_messages=True, send_messages=None, send_messages_in_threads=None
+        )
         del guildState.lockedChannels[str(message.id)]
 
         if not calledFromTask:
