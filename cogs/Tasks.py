@@ -87,7 +87,7 @@ class Tasks(commands.Cog):
                         "Status tick for task loop. Ticks are only sent once per `taskstatus` command"
                     )
                     guildState._tasksSendTick = False
-
+                self.log(f"Running tasks for guild {guild.name}")
                 for task in tasks:
                     start = task[0]
                     command = task[1]
@@ -96,7 +96,9 @@ class Tasks(commands.Cog):
                     end = task[4]
                     # Temporary tasks added by the moderation lock command will be cleaned up automatically once they are complete
                     cleanup = len(task) == 6 and task[5] == 1
+                    self.log(f"Checking task for command {command} {args}")
                     if command == "lock":
+                        self.log("Task specifies lock")
                         # Only lock channel if it is not already locked
                         if self.isNow(start, guildState.timezone) and args not in list(
                             guildState.lockedChannels.values()
@@ -113,11 +115,14 @@ class Tasks(commands.Cog):
                                 f"Locking channel {args}..."
                             )
                             # Lock channel specified
-                            await Moderation.lock(self, message, args, True)
+                            await self.client.cogs["Moderation"].lock(
+                                message, args, True
+                            )
                             self.log(f"Channel {args} locked automatically")
                         if preposition == "until" and self.isNow(
                             end, guildState.timezone
                         ):
+                            self.log('"Lock until" running to unlock channel')
                             if args in list(guildState.lockedChannels.values()):
                                 messageID = None
                                 for i in guildState.lockedChannels:
@@ -133,13 +138,14 @@ class Tasks(commands.Cog):
                                 )
                                 message = await logChannel.fetch_message(int(messageID))
                                 # Call the unlock function on the channel which will delete the message
-                                await Moderation.unlock(
-                                    self, message, args, calledFromTask=True
+                                await self.client.cogs["Moderation"].unlock(
+                                    message, args, calledFromTask=True
                                 )
                                 self.log(f"Channel {args} unlocked automatically")
                             if cleanup:
                                 tasksToCleanup.append(taskName)
             for task in tasksToCleanup:
+                self.log(f"Cleaning up task {task}")
                 del guildState.registeredTasks[task]
             if len(tasksToCleanup) > 0:
                 cleanedUpTasks = True
