@@ -98,7 +98,6 @@ class Tasks(commands.Cog):
                     cleanup = len(task) == 6 and task[5] == 1
                     self.log(f"Checking task for command {command} {args}")
                     if command == "lock":
-                        self.log("Task specifies lock")
                         # Only lock channel if it is not already locked
                         if self.isNow(start, guildState.timezone) and args not in list(
                             guildState.lockedChannels.values()
