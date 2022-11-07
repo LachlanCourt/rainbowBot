@@ -96,7 +96,6 @@ class Tasks(commands.Cog):
                     end = task[4]
                     # Temporary tasks added by the moderation lock command will be cleaned up automatically once they are complete
                     cleanup = len(task) == 6 and task[5] == 1
-                    self.log(f"Checking task for command {command} {args}")
                     if command == "lock":
                         # Only lock channel if it is not already locked
                         if self.isNow(start, guildState.timezone) and args not in list(
