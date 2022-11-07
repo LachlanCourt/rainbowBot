@@ -128,7 +128,10 @@ class Tasks(commands.Cog):
                             ):
                                 messageID = None
                                 for i in guildState.lockedChannels:
-                                    if guildState.lockedChannels[i] == args:
+                                    if (
+                                        guildState.lockedChannels[i].upper()
+                                        == args.upper()
+                                    ):
                                         messageID = i
                                 logChannel = discord.utils.get(
                                     self.client.get_all_channels(),
