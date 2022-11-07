@@ -237,7 +237,7 @@ class Moderation(commands.Cog):
         await message.add_reaction("🔓")
 
         # Add the locked channel to the list so that it can be unlocked again
-        guildState.lockedChannels[str(message.id)] = channel.name.upper()
+        guildState.lockedChannels[str(message.id)] = channel.name
         # Delete the command message. If this comes as a command then the first line will run, if it is called from Tasks cog then the second line will run
         if len(args) == 2 and args[1]:
             await ctx.delete(delay=None)

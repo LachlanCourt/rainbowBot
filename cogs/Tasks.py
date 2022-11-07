@@ -91,7 +91,7 @@ class Tasks(commands.Cog):
                 for task in tasks:
                     start = task[0]
                     command = task[1]
-                    args = task[2].upper()
+                    args = task[2]
                     preposition = task[3]
                     end = task[4]
                     # Temporary tasks added by the moderation lock command will be cleaned up automatically once they are complete
@@ -122,7 +122,10 @@ class Tasks(commands.Cog):
                             end, guildState.timezone
                         ):
                             self.log('"Lock until" running to unlock channel')
-                            if args in list(guildState.lockedChannels.values()):
+                            if args in (
+                                channelName.upper()
+                                for channelName in guildState.lockedChannels.values()
+                            ):
                                 messageID = None
                                 for i in guildState.lockedChannels:
                                     if guildState.lockedChannels[i] == args:
