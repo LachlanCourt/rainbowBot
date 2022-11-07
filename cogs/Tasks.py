@@ -123,16 +123,18 @@ class Tasks(commands.Cog):
                         ):
                             self.log('"Lock until" running to unlock channel')
                             if args.upper() in (
-                                channelName.upper()
-                                for channelName in guildState.lockedChannels.values()
+                                name.upper()
+                                for name in guildState.lockedChannels.values()
                             ):
                                 messageID = None
+                                channelName = None
                                 for i in guildState.lockedChannels:
                                     if (
                                         guildState.lockedChannels[i].upper()
                                         == args.upper()
                                     ):
                                         messageID = i
+                                        channelName = guildState.lockedChannels[i]
                                 logChannel = discord.utils.get(
                                     self.client.get_all_channels(),
                                     guild__name=guild.name,
@@ -144,7 +146,7 @@ class Tasks(commands.Cog):
                                 message = await logChannel.fetch_message(int(messageID))
                                 # Call the unlock function on the channel which will delete the message
                                 await self.client.cogs["Moderation"].unlock(
-                                    message, args, calledFromTask=True
+                                    message, channelName, calledFromTask=True
                                 )
                                 self.log(f"Channel {args} unlocked automatically")
                             if cleanup:
