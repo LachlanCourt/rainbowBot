@@ -145,7 +145,9 @@ class RoleMenu(commands.Cog):
                         customOverwriteRole
                     ]
                 await guild.create_text_channel(
-                    name=courses[i][j], category=category, overwrites=channelOverwrites
+                    name=courses[i][j].upper(),
+                    category=category,
+                    overwrites=channelOverwrites,
                 )
 
             # Create voice channel and apply category overwrites
