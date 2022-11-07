@@ -122,7 +122,7 @@ class Tasks(commands.Cog):
                             end, guildState.timezone
                         ):
                             self.log('"Lock until" running to unlock channel')
-                            if args in (
+                            if args.upper() in (
                                 channelName.upper()
                                 for channelName in guildState.lockedChannels.values()
                             ):
