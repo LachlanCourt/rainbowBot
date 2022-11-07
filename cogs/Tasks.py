@@ -91,7 +91,7 @@ class Tasks(commands.Cog):
                 for task in tasks:
                     start = task[0]
                     command = task[1]
-                    args = task[2]
+                    args = task[2].upper()
                     preposition = task[3]
                     end = task[4]
                     # Temporary tasks added by the moderation lock command will be cleaned up automatically once they are complete
