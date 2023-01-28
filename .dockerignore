@@ -1,6 +1,7 @@
 .env
 tenants
 .vscode
+.github
 examples
 .env.examples
 .git-blame-ignore-revs

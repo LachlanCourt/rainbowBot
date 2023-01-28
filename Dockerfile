@@ -1,8 +1,6 @@
 FROM python:3.12-rc-alpine as base
 
 RUN apk add build-base libffi-dev
-#RUN apk add --no-cache --virtual .pynacl_deps build-base python3-dev libffi-dev py3-wheel
-
 
 COPY . /code
 WORKDIR /code
@@ -16,6 +14,3 @@ COPY --from=base /root/.local/lib/python3.12/site-packages /root/.local/lib/pyth
 
 WORKDIR /code
 COPY --from=base /code .
-
-
-
