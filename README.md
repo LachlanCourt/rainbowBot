@@ -4,6 +4,8 @@ This bot is used to generate and maintain text channels for courses taken by uni
 
 ## Setup
 
+Note that a Dockerfile is included and can be built and run using the provided Makefile commands. The push and pull commands will require changing if you wish to use your own container registry. Alternatively, the bot can also be run without docker.
+
 1.  Install requirements
 
         pip install -r requirements.txt
@@ -75,7 +77,7 @@ Low level authorisation required
 
 Channels that have been created with the automated channel creation can also be locked for a period of time by disabling send message permissions to the role that makes that channel available. This can be helpful during exams and assessment tasks in order to help moderate for academic integrity.
 
-`lock [channelName [timestampStart timestampEnd] ]` is a manual command that will disable send message permissions to the role with the same name as the selected channel. If no arguments are given, the selected channel is the name of the channel in which the command is sent. If a single argument is given, the selected channel will be the channel whose name matches the argument. In either of these cases, a message will be sent by the bot into the channel the command was sent with an unlocked padlock, a user with low level authorisation adding their reaction to this message will unlock the channel again. 
+`lock [channelName [timestampStart timestampEnd] ]` is a manual command that will disable send message permissions to the role with the same name as the selected channel. If no arguments are given, the selected channel is the name of the channel in which the command is sent. If a single argument is given, the selected channel will be the channel whose name matches the argument. In either of these cases, a message will be sent by the bot into the channel the command was sent with an unlocked padlock, a user with low level authorisation adding their reaction to this message will unlock the channel again.
 
 If a channel name is specified, additionally you can include two 24 hour timestamps to lock and unlock which will automatically add a temporary task as described below. The timestamps should be 24 hour colon separated integers in a format like `16:55`. The channel will lock the next time the current time matches the first timestamp, and unlock the next time the current time matches the second timestamp. In this case a message will be sent by the bot to confirm registration, and then at the time of locking a message will be sent to the log channel with an unlocked padlock reaction which can be used to unlock the channel early if necessary.
 
