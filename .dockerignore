@@ -1,0 +1,11 @@
+.env
+tenants
+.vscode
+examples
+.env.examples
+.git-blame-ignore-revs
+.gitignore
+*.json
+*.md
+*.dat
+Procfile
