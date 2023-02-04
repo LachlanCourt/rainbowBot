@@ -11,7 +11,6 @@ RUN pip3 install --no-cache-dir --user -r requirements.txt
 FROM python:${CONFIGURED_PYTHON_VERSION}-rc-alpine as final
 ARG CONFIGURED_PYTHON_VERSION
 
-
 COPY --from=base /root/.local/bin /root/.local/bin
 COPY --from=base /root/.local/lib/python${CONFIGURED_PYTHON_VERSION}/site-packages /root/.local/lib/python${CONFIGURED_PYTHON_VERSION}/site-packages
 
