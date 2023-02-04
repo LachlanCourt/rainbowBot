@@ -7,6 +7,6 @@ run:
 clean:
 	docker container rm -f $(shell docker container ls -aq)
 push:
-	docker tag rainbowbot:build ghcr.io/${USER_REPOSITORY}/rainbowbot:latest && docker push ghcr.io/${USER_REPOSITORY}/rainbowbot:latest
+	docker tag rainbowbot:build ghcr.io/${USER_REPOSITORY}:latest && docker push ghcr.io/${USER_REPOSITORY}:latest
 pull:
-	docker pull ghcr.io/${USER_REPOSITORY}/rainbowbot:latest && docker tag ghcr.io/${USER_REPOSITORY}/rainbowbot:latest rainbowbot:build
+	docker pull ghcr.io/${USER_REPOSITORY}:latest && docker tag ghcr.io/${USER_REPOSITORY}:latest rainbowbot:build
