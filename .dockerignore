@@ -1,0 +1,8 @@
+# Ignore everything
+*
+# Include required directories
+!cogs
+!examples
+!state
+!bot.py
+!requirements.txt
