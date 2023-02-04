@@ -1,4 +1,4 @@
-.PHONY build run clean push pull
+.PHONY: build run clean push pull
 
 build:
 	docker build -t rainbowbot:build .
