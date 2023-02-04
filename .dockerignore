@@ -1,12 +1,8 @@
-.env
-tenants
-.vscode
-.github
-examples
-.env.examples
-.git-blame-ignore-revs
-.gitignore
-*.json
-*.md
-*.dat
-Procfile
+# Ignore everything
+*
+# Include required directories
+!cogs
+!examples
+!state
+!bot.py
+!requirements.txt

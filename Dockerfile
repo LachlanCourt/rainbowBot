@@ -1,16 +1,19 @@
-FROM python:3.12-rc-alpine as base
+ARG PYTHON_VERSION=3.12
+FROM python:${PYTHON_VERSION}-rc-alpine as base
 
 RUN apk add build-base libffi-dev
 
-COPY . /code
 WORKDIR /code
+COPY requirements.txt .
 
-RUN pip3 install --user -r requirements.txt
+RUN pip3 install --no-cache-dir --user -r requirements.txt
 
-FROM python:3.12-rc-alpine as final
+FROM python:${PYTHON_VERSION}-rc-alpine as final
 
 COPY --from=base /root/.local/bin /root/.local/bin
-COPY --from=base /root/.local/lib/python3.12/site-packages /root/.local/lib/python3.12/site-packages
+COPY --from=base /root/.local/lib/python${PYTHON_VERSION}/site-packages /root/.local/lib/python${PYTHON_VERSION}/site-packages
 
 WORKDIR /code
-COPY --from=base /code .
+COPY . .
+
+CMD ["python3", "bot.py"]

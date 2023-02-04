@@ -12,6 +12,5 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
     - name: Build Docker Image
-      run: |
-        docker build -t rainbowbot:build .
+      run: make build
     
